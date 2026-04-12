@@ -5,8 +5,8 @@ exports.createOrder = async (req, res) => {
     try {
         const { buyer_id, delivery_address, total_amount, items } = req.body;
         const order = await Order.create({ buyer_id, delivery_address, total_amount });
-        const orderItems = items.map(item => ({ ...item, order_id: order._id }));
-        await OrderItem.insertMany(orderItems);
+        const orderItemsPayload = items.map(item => ({ ...item, order_id: order._id }));
+        const orderItems = await OrderItem.insertMany(orderItemsPayload);
         res.status(201).json({ order, orderItems });
     } catch (err) {
         res.status(400).json({ error: err.message });
