@@ -1,5 +1,9 @@
 # Uniformity
 
+<p align="center">
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="200"/>
+</p>
+
 > A web-based E-Commerce platform for buying and selling pre-loved uniforms — safely, conveniently, and sustainably.
 
 ---
@@ -10,10 +14,11 @@ Uniformity is a web-based marketplace designed to help users buy and sell pre-lo
 
 ---
 
-##  Group Information
+## 👥 Group Information
 
 **Group Name:** TechNic  
-**Course & Block:** BSIT-2A
+**Course & Block:** BSIT-2A  
+**School:** Bicol University Polangui
 
 ### Team Members & Roles
 
@@ -27,7 +32,7 @@ Uniformity is a web-based marketplace designed to help users buy and sell pre-lo
 
 ---
 
-##  Key Features
+## ✨ Key Features
 
 - **User Authentication** — Secure registration and login functionality implemented using JWT (JSON Web Tokens).
 - **Product Listing (Seller Feature)** — Capability to upload uniforms with specific details such as name, size, quantity, price, and images via Cloudinary API.
@@ -35,5 +40,6 @@ Uniformity is a web-based marketplace designed to help users buy and sell pre-lo
 - **Cart & Checkout System** — Functionality to add items to a cart, provide delivery information, and place orders via a mock payment system.
 - **Order Management** — Tools for users to track order status in their profile and for sellers to manage or fulfill orders.
 
+---
 
-*Note: This document is subject to change. Additional information will be added as development progresses.*
+> *Note: This document is subject to change. Additional information will be added as development progresses.*
