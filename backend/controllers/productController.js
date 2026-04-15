@@ -1,15 +1,22 @@
 const Product = require('../models/Product');
+const { uploadImageBuffer } = require('../config/cloudinary');
 
 // @desc    Create a new product listing
 exports.createProduct = async (req, res) => {
     try {
+        let imageUrl = '';
+
+        if (req.file) {
+            const uploadResult = await uploadImageBuffer(req.file.buffer);
+            imageUrl = uploadResult.secure_url;
+        }
+
         // Build product object
         const productData = {
             ...req.body,
             // The seller_id is taken from the token (Step 2 & 3)
             seller_id: req.user.id,
-            // The image_url is the path provided by Cloudinary
-            image_url: req.file ? req.file.path : ''
+            image_url: imageUrl
         };
 
         const product = new Product(productData);

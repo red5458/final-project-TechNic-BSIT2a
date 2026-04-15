@@ -1,5 +1,4 @@
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const multer = require('multer');
 
 cloudinary.config({
@@ -8,15 +7,43 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Set up the storage engine
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'uniformity_products', // Folder name in Cloudinary
-        allowed_formats: ['jpg', 'png', 'jpeg'],
+const storage = multer.memoryStorage();
+
+const fileFilter = (req, file, cb) => {
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+        return cb(null, true);
+    }
+
+    cb(new Error('Only JPG, JPEG, and PNG files are allowed.'));
+};
+
+const upload = multer({
+    storage,
+    fileFilter,
+    limits: {
+        fileSize: 5 * 1024 * 1024,
     },
 });
 
-const upload = multer({ storage: storage });
+const uploadImageBuffer = (fileBuffer) =>
+    new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: 'uniformity_products',
+                resource_type: 'image',
+            },
+            (error, result) => {
+                if (error) {
+                    return reject(error);
+                }
 
-module.exports = { cloudinary, upload };
+                resolve(result);
+            }
+        );
+
+        uploadStream.end(fileBuffer);
+    });
+
+module.exports = { cloudinary, upload, uploadImageBuffer };
