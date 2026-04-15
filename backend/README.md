@@ -9,6 +9,8 @@ A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school an
 - Node.js
 - Express
 - MongoDB + Mongoose
+- bcryptjs, jsonwebtoken (auth)
+- multer, cloudinary (media uploads)
 - dotenv, cors, nodemon
 
 ---
@@ -21,7 +23,10 @@ A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school an
 ├── seed.js
 ├── .env
 ├── /config
-│   └── db.js
+│   ├── db.js
+│   └── cloudinary.js
+├── /middleware
+│   └── auth.js
 ├── /models
 │   ├── User.js
 │   ├── Category.js
@@ -31,12 +36,14 @@ A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school an
 │   ├── Order.js
 │   └── OrderItem.js
 ├── /controllers
+│   ├── authController.js
 │   ├── userController.js
 │   ├── categoryController.js
 │   ├── productController.js
 │   ├── cartController.js
 │   └── orderController.js
 └── /routes
+    ├── authRoutes.js
     ├── userRoutes.js
     ├── categoryRoutes.js
     ├── productRoutes.js
@@ -50,9 +57,9 @@ A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school an
 
 | Model | Description |
 |---|---|
-| User | Stores buyer/seller accounts |
+| User | Stores buyer/seller accounts with hashed passwords |
 | Category | Uniform categories (School, Professional) |
-| Product | Uniform listings by sellers |
+| Product | Uniform listings by sellers, with Cloudinary image URL |
 | Cart | Shopping cart per user |
 | CartItem | Individual items inside a cart |
 | Order | Orders placed by buyers |
@@ -67,6 +74,10 @@ A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school an
 ```
 MONGO_URI=your_mongodb_connection_string_here
 PORT=5000
+JWT_SECRET=your_jwt_secret_here
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 ```
 
 2. Install dependencies:
@@ -86,6 +97,24 @@ node seed.js
 ```bash
 npm start
 ```
+
+---
+
+## 🔐 Authentication
+
+Authentication uses **JWT (JSON Web Tokens)**. Passwords are hashed with **bcryptjs** before storage.
+
+- Tokens are issued on login and must be sent in the `x-auth-token` request header to access protected routes.
+- The `auth` middleware in `/middleware/auth.js` verifies the token before allowing access to private endpoints.
+- Protected routes: creating, updating, and deleting products require a valid token. The `seller_id` is automatically set from the token.
+
+### Auth `/api/auth`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/register` | Register a new user (password is hashed) |
+| POST | `/api/auth/login` | Login and receive a JWT |
+| GET | `/api/auth/me` | Get logged-in user's data (requires token) |
 
 ---
 
@@ -111,13 +140,13 @@ npm start
 
 ### Products `/api/products`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/products` | List a uniform |
-| GET | `/api/products` | Browse all uniforms |
-| GET | `/api/products/:id` | Get uniform details |
-| PUT | `/api/products/:id` | Update a listing |
-| DELETE | `/api/products/:id` | Delete a listing |
+| Method | Endpoint | Description | Auth Required |
+|---|---|---|---|
+| POST | `/api/products` | List a uniform (image uploaded to Cloudinary) | ✅ |
+| GET | `/api/products` | Browse all uniforms | ❌ |
+| GET | `/api/products/:id` | Get uniform details | ❌ |
+| PUT | `/api/products/:id` | Update a listing | ✅ |
+| DELETE | `/api/products/:id` | Delete a listing | ✅ |
 
 ### Cart `/api/cart`
 
@@ -138,7 +167,6 @@ npm start
 | PATCH | `/api/orders/:orderId/deliver` | Buyer marks as delivered |
 
 ---
-
 
 ## 👥 Group
 
