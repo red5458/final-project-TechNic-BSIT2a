@@ -13,8 +13,6 @@ const auth = require('../middleware/auth');
 const { upload } = require('../config/cloudinary');
 
 // @route   POST /api/products
-// @desc    Create a product with an image (Private)
-// 'image' is the field name you will use in your frontend/Postman
 router.post('/', [auth, upload.single('image')], createProduct);
 
 // Public routes
