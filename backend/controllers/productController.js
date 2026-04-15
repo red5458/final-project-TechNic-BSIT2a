@@ -1,11 +1,22 @@
 const Product = require('../models/Product');
 
+// @desc    Create a new product listing
 exports.createProduct = async (req, res) => {
     try {
-        const product = new Product(req.body);
+        // Build product object
+        const productData = {
+            ...req.body,
+            // The seller_id is taken from the token (Step 2 & 3)
+            seller_id: req.user.id,
+            // The image_url is the path provided by Cloudinary
+            image_url: req.file ? req.file.path : ''
+        };
+
+        const product = new Product(productData);
         await product.save();
         res.status(201).json(product);
     } catch (err) {
+        console.error(err.message);
         res.status(400).json({ error: err.message });
     }
 };
@@ -15,6 +26,7 @@ exports.getAllProducts = async (req, res) => {
         const filter = {};
         if (req.query.category) filter.category_id = req.query.category;
         if (req.query.seller) filter.seller_id = req.query.seller;
+
         const products = await Product.find(filter)
             .populate('seller_id', 'name email')
             .populate('category_id', 'name');
@@ -29,6 +41,7 @@ exports.getProductById = async (req, res) => {
         const product = await Product.findById(req.params.id)
             .populate('seller_id', 'name email')
             .populate('category_id', 'name');
+
         if (!product) return res.status(404).json({ error: 'Product not found' });
         res.json(product);
     } catch (err) {
@@ -38,7 +51,12 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        // Ensure user is the owner before updating (Optional but recommended)
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
         res.json(product);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -48,7 +66,7 @@ exports.updateProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Product deleted' });
+        res.json({ message: 'Product deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
