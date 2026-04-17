@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile - Uniformity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><img src="img/logo.png" alt="Logo"
+          style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />Uniformity
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-label">Buyer</div>
+        <a href="dashboard.html" class="sidebar-link"><i class="bi bi-grid-fill"></i> Browse Uniforms</a>
+        <a href="cart.html" class="sidebar-link"><i class="bi bi-cart-fill"></i> My Cart</a>
+        <a href="my-orders.html" class="sidebar-link"><i class="bi bi-bag-fill"></i> My Orders</a>
+        <div class="sidebar-label">Seller</div>
+        <a href="my-listings.html" class="sidebar-link"><i class="bi bi-tags-fill"></i> My Listings</a>
+        <a href="add-listing.html" class="sidebar-link"><i class="bi bi-plus-circle-fill"></i> Add Listing</a>
+        <div class="sidebar-label">Account</div>
+        <a href="profile.html" class="sidebar-link active"><i class="bi bi-person-fill"></i> My Profile</a>
+        <a href="#" class="sidebar-link logout-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">J</div>
+          <div class="user-info">
+            <strong>Juan Dela Cruz</strong>
+            <span>Buyer and Seller</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn mobile-nav-toggle" type="button" aria-label="Open navigation">
+            <i class="bi bi-list"></i>
+          </button>
+          <span style="font-weight:700;font-size:.95rem;">My Profile</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="profileTopBtn" title="Account" type="button">
+            <i class="bi bi-person-fill"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="profile-header">
+          <div class="profile-header-inner">
+            <div class="profile-identity">
+              <div class="profile-avatar-lg">J</div>
+              <div class="profile-copy">
+                <div class="profile-name">Juan Dela Cruz</div>
+                <div class="profile-email">
+                  <i class="bi bi-envelope me-1"></i><span>juan@bicol-u.edu.ph</span>
+                </div>
+                <div class="profile-meta-list">
+                  <div class="profile-meta-pill"><i class="bi bi-calendar3"></i><span>Member since Oct 12, 2024</span>
+                  </div>
+                </div>
+              </div>
+              <div class="profile-header-actions">
+                <button class="btn btn-outline-light" type="button" data-bs-toggle="modal"
+                  data-bs-target="#editProfileModal"
+                  style="border-radius:50px;font-family:'Poppins',sans-serif;font-weight:600;">
+                  <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                </button>
+              </div>
+            </div>
+
+            <div class="profile-stat-grid">
+              <div class="profile-highlight-card">
+                <strong>4</strong>
+                <span>Orders placed</span>
+              </div>
+              <div class="profile-highlight-card">
+                <strong>3</strong>
+                <span>Active listings</span>
+              </div>
+              <div class="profile-highlight-card">
+                <strong>₱1200</strong>
+                <span>Total spent</span>
+              </div>
+              <div class="profile-highlight-card">
+                <strong>₱850</strong>
+                <span>Total earned</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-layout">
+          <div class="profile-main">
+            <section class="surface-card section-card">
+              <div class="section-card-header">
+                <div>
+                  <h5>Profile Details</h5>
+                  <p>Your account information.</p>
+                </div>
+              </div>
+              <div class="detail-list">
+                <div class="profile-detail-card">
+                  <span>Full Name</span>
+                  <strong>Juan Dela Cruz</strong>
+                </div>
+                <div class="profile-detail-card">
+                  <span>Email Address</span>
+                  <p>juan@bicol-u.edu.ph</p>
+                </div>
+                <div class="profile-detail-card">
+                  <span>Member Since</span>
+                  <p>Oct 12, 2024</p>
+                </div>
+                <div class="profile-detail-card">
+                  <span>Primary Role</span>
+                  <p>Buyer and Seller</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="surface-card section-card">
+              <div class="section-card-header">
+                <div>
+                  <h5>Recent Orders</h5>
+                  <p>Quick access to your latest orders.</p>
+                </div>
+                <a href="my-orders.html" class="btn btn-outline-custom-light"
+                  style="padding:.65rem 1.1rem;font-size:.85rem;">View All Orders</a>
+              </div>
+
+              <div class="order-list" id="recentOrdersList">
+                <article class="order-card">
+                  <div class="order-card-top">
+                    <div>
+                      <div class="order-card-title">Order #A1B2C3D4</div>
+                      <div class="order-card-sub">Placed on Nov 15, 2024</div>
+                    </div>
+                    <span class="status-badge status-shipped">Shipped</span>
+                  </div>
+                  <div class="order-card-grid">
+                    <div class="order-data"><span>Total</span><strong>PHP 600.00</strong></div>
+                    <div class="order-data"><span>Delivery</span><strong style="font-size:.78rem;">Polangui,
+                        Albay…</strong></div>
+                  </div>
+                  <div class="order-card-actions">
+                    <a href="my-orders.html" class="btn-green" style="padding:.65rem 1rem;font-size:.82rem;">View
+                      Order</a>
+                  </div>
+                </article>
+              </div>
+            </section>
+          </div>
+
+          <aside class="profile-side">
+            <section class="surface-card section-card profile-side-note">
+              <div class="section-card-header">
+                <div>
+                  <h6>Account Status</h6>
+                  <p>Everything looks ready for buying and selling.</p>
+                </div>
+              </div>
+              <ul>
+                <li><i class="bi bi-check-circle-fill"></i><span>Email address is verified.</span></li>
+                <li><i class="bi bi-check-circle-fill"></i><span>Account is active and in good standing.</span></li>
+                <li><i class="bi bi-check-circle-fill"></i><span>Your listings are visible to buyers right now.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="surface-card section-card">
+              <div class="section-card-header">
+                <div>
+                  <h6>Seller Snapshot</h6>
+                  <p>Performance from your recent marketplace activity.</p>
+                </div>
+              </div>
+              <div class="detail-list" style="grid-template-columns:1fr;">
+                <div class="profile-detail-card">
+                  <span>Active Listings</span>
+                  <strong>3 active</strong>
+                </div>
+                <div class="profile-detail-card">
+                  <span>Orders Received</span>
+                  <strong>2 received</strong>
+                </div>
+                <div class="profile-detail-card">
+                  <span>Total Earned</span>
+                  <strong>PHP 850.00</strong>
+                </div>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="editProfileForm" action="#" method="POST">
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label" for="profileNameInput">Full Name</label>
+              <input id="profileNameInput" type="text" class="form-control" name="name" value="Juan Dela Cruz"
+                required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="profileEmailInput">Email Address</label>
+              <input id="profileEmailInput" type="email" class="form-control" name="email" value="juan@bicol-u.edu.ph"
+                required />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-green">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="userPopup" class="user-popup">
+    <div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;">
+      <div class="user-avatar"
+        style="background:var(--primary);color:#fff;width:36px;height:36px;font-size:.85rem;flex-shrink:0;">J</div>
+      <div style="min-width:0;">
+        <div style="font-weight:700;font-size:.88rem;color:var(--text);">Juan Dela Cruz</div>
+      </div>
+    </div>
+    <a href="profile.html"
+      style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.88rem;font-weight:500;color:var(--text);text-decoration:none;"
+      onmouseover="this.style.background='var(--bg-soft)'" onmouseout="this.style.background='transparent'"><i
+        class="bi bi-person-fill" style="color:var(--text-muted);"></i> My Profile</a>
+    <a href="my-orders.html"
+      style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.88rem;font-weight:500;color:var(--text);text-decoration:none;"
+      onmouseover="this.style.background='var(--bg-soft)'" onmouseout="this.style.background='transparent'"><i
+        class="bi bi-bag-fill" style="color:var(--text-muted);"></i> My Orders</a>
+    <div style="border-top:1px solid var(--border);"></div>
+    <a href="#" class="logout-link"
+      style="display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;font-size:.88rem;font-weight:500;color:#E11D48;text-decoration:none;"
+      onmouseover="this.style.background='#FFF1F2'" onmouseout="this.style.background='transparent'"><i
+        class="bi bi-box-arrow-left"></i> Log Out</a>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

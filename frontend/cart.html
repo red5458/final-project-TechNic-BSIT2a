@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Cart – Uniformity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><img src="img/logo.png" alt="Logo"
+          style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />Uniformity
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-label">Buyer</div>
+        <a href="dashboard.html" class="sidebar-link"><i class="bi bi-grid-fill"></i> Browse Uniforms</a>
+        <a href="cart.html" class="sidebar-link active"><i class="bi bi-cart-fill"></i> My Cart
+          <span class="badge bg-warning text-dark ms-auto cart-count-badge" style="font-size:.65rem;">2</span></a>
+        <a href="my-orders.html" class="sidebar-link"><i class="bi bi-bag-fill"></i> My Orders</a>
+        <div class="sidebar-label">Seller</div>
+        <a href="my-listings.html" class="sidebar-link"><i class="bi bi-tags-fill"></i> My Listings</a>
+        <a href="add-listing.html" class="sidebar-link"><i class="bi bi-plus-circle-fill"></i> Add Listing</a>
+        <div class="sidebar-label">Account</div>
+        <a href="profile.html" class="sidebar-link"><i class="bi bi-person-fill"></i> My Profile</a>
+        <a href="#" class="sidebar-link logout-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">U</div>
+          <div class="user-info"><strong>Student User</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn mobile-nav-toggle"><i class="bi bi-list"></i></button>
+          <span style="font-weight:700;font-size:.95rem;">My Cart</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="profileTopBtn" title="Account"><i class="bi bi-person-fill"></i></button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="page-title">Shopping Cart</div>
+        <p class="page-sub">Select the items you want to checkout.</p>
+
+        <div class="row g-4" id="cartContent">
+
+          <div class="col-lg-8">
+
+            <div class="cart-item">
+              <input type="checkbox" class="cart-item-check form-check-input" checked
+                style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary);flex-shrink:0;margin-right:.25rem;" />
+              <div class="cart-item-img"><i class="bi bi-image" style="color:var(--text-muted);font-size:1.5rem;"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="cart-item-name">BU Polangui IT Polo (Male)</div>
+                <div class="cart-item-meta">Size: M · Seller: Juan · Polo</div>
+              </div>
+              <div class="qty-control">
+                <button class="qty-btn">−</button>
+                <span class="qty-display">1</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <div class="cart-item-price">₱350.00</div>
+              <button class="btn-sm-action btn-delete ms-2" title="Remove"><i class="bi bi-trash-fill"></i></button>
+            </div>
+
+            <div class="cart-item">
+              <input type="checkbox" class="cart-item-check form-check-input" checked
+                style="width:18px;height:18px;cursor:pointer;accent-color:var(--primary);flex-shrink:0;margin-right:.25rem;" />
+              <div class="cart-item-img"><i class="bi bi-image" style="color:var(--text-muted);font-size:1.5rem;"></i>
+              </div>
+              <div class="flex-grow-1">
+                <div class="cart-item-name">BU Polangui PE Jogging Pants</div>
+                <div class="cart-item-meta">Size: L · Seller: Maria · PE Uniform</div>
+              </div>
+              <div class="qty-control">
+                <button class="qty-btn">−</button>
+                <span class="qty-display">1</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <div class="cart-item-price">₱250.00</div>
+              <button class="btn-sm-action btn-delete ms-2" title="Remove"><i class="bi bi-trash-fill"></i></button>
+            </div>
+
+            <div class="alert d-flex align-items-center gap-2 mt-3"
+              style="background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:.82rem;color:var(--text-muted);padding:.75rem 1rem;">
+              <i class="bi bi-info-circle-fill" style="color:var(--primary-light);"></i>
+              Only checked items will be included in checkout.
+            </div>
+            <a href="dashboard.html"
+              style="display:inline-flex;align-items:center;gap:.5rem;color:var(--primary);font-weight:600;font-size:.88rem;margin-top:1rem;">
+              <i class="bi bi-arrow-left"></i> Continue Shopping
+            </a>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="order-summary">
+              <h5>Order Summary</h5>
+              <div class="summary-row"><span>Delivery Fee</span><span>Free</span></div>
+              <div class="summary-row summary-total">
+                <span>Total</span>
+                <span>₱600.00</span>
+              </div>
+              <a href="checkout.html" class="btn-checkout d-block text-center text-decoration-none">
+                <i class="bi bi-credit-card-fill me-2"></i>Checkout Selected · ₱600.00
+              </a>
+              <p style="font-size:.75rem;color:var(--text-muted);text-align:center;margin-top:.75rem;"><i
+                  class="bi bi-shield-lock-fill me-1"></i>Secure checkout · Mock payment</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

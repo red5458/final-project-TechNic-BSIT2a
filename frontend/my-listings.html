@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Listings - Uniformity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <aside class="sidebar">
+      <div class="sidebar-logo"><img src="img/logo.png" alt="Logo"
+          style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />Uniformity
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-label">Buyer</div>
+        <a href="dashboard.html" class="sidebar-link"><i class="bi bi-grid-fill"></i> Browse Uniforms</a>
+        <a href="cart.html" class="sidebar-link"><i class="bi bi-cart-fill"></i> My Cart</a>
+        <a href="my-orders.html" class="sidebar-link"><i class="bi bi-bag-fill"></i> My Orders</a>
+        <div class="sidebar-label">Seller</div>
+        <a href="my-listings.html" class="sidebar-link active"><i class="bi bi-tags-fill"></i> My Listings</a>
+        <a href="add-listing.html" class="sidebar-link"><i class="bi bi-plus-circle-fill"></i> Add Listing</a>
+        <div class="sidebar-label">Account</div>
+        <a href="profile.html" class="sidebar-link"><i class="bi bi-person-fill"></i> My Profile</a>
+        <a href="#" class="sidebar-link logout-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">J</div>
+          <div class="user-info"><strong>Juan Dela Cruz</strong></div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn mobile-nav-toggle" type="button"><i class="bi bi-list"></i></button>
+          <span style="font-weight:700;font-size:.95rem;">My Listings</span>
+        </div>
+        <div class="topbar-actions">
+          <a href="add-listing.html" class="btn-green" style="padding:.5rem 1.2rem;font-size:.82rem;">
+            <i class="bi bi-plus-lg"></i> New Listing
+          </a>
+          <button class="icon-btn" id="profileTopBtn" title="Account" type="button">
+            <i class="bi bi-person-fill"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <div class="page-title">My Listings</div>
+        <p class="page-sub">Manage your live inventory and keep an eye on incoming order items.</p>
+
+        <div class="stats-grid mb-4">
+          <div class="stat-card">
+            <div class="stat-icon si-green"><i class="bi bi-tags-fill"></i></div>
+            <div>
+              <div class="value">3</div>
+              <div class="label">Total Listed</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-blue"><i class="bi bi-bag-check-fill"></i></div>
+            <div>
+              <div class="value">2</div>
+              <div class="label">Orders Received</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon si-rose"><i class="bi bi-currency-dollar"></i></div>
+            <div>
+              <div class="value">₱850</div>
+              <div class="label">Total Earned</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrap mb-4">
+          <table class="data-table responsive-stack">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Size</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="listingsTableBody">
+              <tr>
+                <td data-label="Product"><span style="font-weight:600;font-size:.9rem;">BU Polangui IT Polo
+                    (Male)</span></td>
+                <td data-label="Category">Polo</td>
+                <td data-label="Size"><span class="product-size">M</span></td>
+                <td data-label="Qty">2</td>
+                <td data-label="Price"><strong>PHP 350</strong></td>
+                <td data-label="Status"><span class="status-badge status-available">Available</span></td>
+                <td data-label="Actions">
+                  <div class="d-flex gap-1 flex-wrap">
+                    <button class="btn-sm-action btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"><i
+                        class="bi bi-pencil-fill"></i></button>
+                    <button class="btn-sm-action btn-delete"><i class="bi bi-trash-fill"></i></button>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Product"><span style="font-weight:600;font-size:.9rem;">BU Polangui PE Jogging
+                    Pants</span></td>
+                <td data-label="Category">PE Uniform</td>
+                <td data-label="Size"><span class="product-size">L</span></td>
+                <td data-label="Qty">0</td>
+                <td data-label="Price"><strong>PHP 250</strong></td>
+                <td data-label="Status"><span class="status-badge status-sold">Sold Out</span></td>
+                <td data-label="Actions">
+                  <div class="d-flex gap-1 flex-wrap">
+                    <button class="btn-sm-action btn-edit" data-bs-toggle="modal" data-bs-target="#editModal"><i
+                        class="bi bi-pencil-fill"></i></button>
+                    <button class="btn-sm-action btn-delete"><i class="bi bi-trash-fill"></i></button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h5 style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">Incoming Orders</h5>
+        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
+          <i class="bi bi-info-circle me-1"></i>Each row represents an order item assigned to you as the seller.
+        </p>
+        <div class="table-wrap">
+          <table class="data-table responsive-stack">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Buyer</th>
+                <th>Qty</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <tr>
+                <td data-label="Item">BU Polangui IT Polo (Male)</td>
+                <td data-label="Buyer">Maria Santos</td>
+                <td data-label="Qty">1</td>
+                <td data-label="Total"><strong>PHP 350.00</strong></td>
+                <td data-label="Status"><span class="status-badge status-pending">Pending</span></td>
+                <td data-label="Action">
+                  <button class="btn-green"
+                    style="padding:.3rem .9rem;font-size:.78rem;border-radius:var(--radius-sm);"><i
+                      class="bi bi-check-lg me-1"></i>Mark Fulfilled</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem;">
+          <i class="bi bi-arrow-repeat me-1"></i>When every order item is fulfilled, the overall order moves to shipped.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Listing</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editForm" action="#" method="POST">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Uniform Name</label>
+                <input type="text" class="form-control" name="name" value="BU Polangui IT Polo (Male)" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <select class="form-select" name="category_id">
+                  <option value="polo" selected>Polo</option>
+                  <option value="pe">PE Uniform</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Size</label>
+                <select class="form-select" name="size">
+                  <option>XS</option>
+                  <option>S</option>
+                  <option selected>M</option>
+                  <option>L</option>
+                  <option>XL</option>
+                  <option>XXL</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Qty</label>
+                <input type="number" class="form-control" name="quantity" value="2" min="0" />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Price (PHP)</label>
+                <input type="number" class="form-control" name="price" value="350" min="1" />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" name="description"
+                  rows="3">Barely used IT Polo shirt from last semester.</textarea>
+              </div>
+            </div>
+            <div class="modal-footer px-0 pb-0 mt-4 border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn-green">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>
