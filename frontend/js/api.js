@@ -323,3 +323,109 @@ if (listingForm) {
         }
     });
 }
+
+// ════════════════════════════════════════════
+//  CHECKOUT FORM
+//  POST /api/orders
+// ════════════════════════════════════════════
+const checkoutForm = document.getElementById('checkoutForm');
+if (checkoutForm) {
+    checkoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(checkoutForm);
+
+        const token = getToken();
+        const user = getUser();
+
+        if (!token || !user) {
+            showToast('You must be logged in to place an order.', 'error');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+            return;
+        }
+
+        const firstNameInput = document.getElementById('firstName');
+        const lastNameInput = document.getElementById('lastName');
+        const streetInput = document.getElementById('street');
+        const cityInput = document.getElementById('city');
+        const provinceInput = document.getElementById('province');
+        const postalInput = document.getElementById('postal');
+        const btn = checkoutForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+
+        let hasError = false;
+
+        if (!firstNameInput.value.trim()) {
+            showFieldError(firstNameInput, 'First name is required.');
+            hasError = true;
+        }
+        if (!lastNameInput.value.trim()) {
+            showFieldError(lastNameInput, 'Last name is required.');
+            hasError = true;
+        }
+        if (!streetInput.value.trim()) {
+            showFieldError(streetInput, 'Street address is required.');
+            hasError = true;
+        }
+        if (!cityInput.value.trim()) {
+            showFieldError(cityInput, 'City is required.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        // Build full address string
+        const delivery_address = [
+            `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
+            streetInput.value.trim(),
+            cityInput.value.trim(),
+            provinceInput?.value.trim(),
+            postalInput?.value.trim(),
+        ].filter(Boolean).join(', ');
+
+        // Get cart from localStorage (Phase 5 will populate this dynamically)
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+        if (cart.length === 0) {
+            showToast('Your cart is empty. Add items before checking out.', 'error');
+            return;
+        }
+
+        const total_amount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+        const payload = {
+            buyer_id: user._id,
+            delivery_address,
+            total_amount,
+            items: cart.map(item => ({
+                product_id: item.product_id,
+                seller_id: item.seller_id,
+                quantity: item.quantity,
+                price: item.price,
+            })),
+        };
+
+        setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/orders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token,
+                },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.msg || 'Failed to place order.');
+
+            localStorage.removeItem('cart');
+
+            showToast('Order placed successfully!');
+            setTimeout(() => { window.location.href = 'my-orders.html'; }, 1500);
+
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Something went wrong. Try again.', 'error');
+        }
+    });
+}
