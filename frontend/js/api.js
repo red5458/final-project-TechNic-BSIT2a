@@ -106,3 +106,72 @@ function clearAllErrors(form) {
     form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
     form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
 }
+
+// ════════════════════════════════════════════
+//  REGISTER FORM
+//  POST /api/auth/register
+// ════════════════════════════════════════════
+const registerForm = document.getElementById('registerForm');
+if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(registerForm);
+
+        const nameInput = registerForm.querySelector('[name="name"]');
+        const emailInput = registerForm.querySelector('[name="email"]');
+        const passwordInput = registerForm.querySelector('[name="password"]');
+        const confirmInput = registerForm.querySelector('[name="confirmPassword"]');
+        const btn = document.getElementById('registerBtn');
+        const originalText = btn.innerHTML;
+
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const confirm = confirmInput.value;
+
+        let hasError = false;
+
+        if (!name) {
+            showFieldError(nameInput, 'Full name is required.');
+            hasError = true;
+        }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showFieldError(emailInput, 'Please enter a valid email address.');
+            hasError = true;
+        }
+        if (!password || password.length < 8) {
+            showFieldError(passwordInput, 'Password must be at least 8 characters.');
+            hasError = true;
+        }
+        if (password !== confirm) {
+            showFieldError(confirmInput, 'Passwords do not match.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Registration failed.');
+
+            saveToken(data.token);
+            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
+            const meData = await meRes.json();
+            saveUser(meData);
+
+            showToast('Account created successfully! Redirecting...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Something went wrong. Try again.', 'error');
+        }
+    });
+}
