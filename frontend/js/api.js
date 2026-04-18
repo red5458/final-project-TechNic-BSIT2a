@@ -232,3 +232,94 @@ if (loginForm) {
         }
     });
 }
+
+// ════════════════════════════════════════════
+//  ADD LISTING FORM
+//  POST /api/products
+// ════════════════════════════════════════════
+const listingForm = document.getElementById('listingForm');
+if (listingForm) {
+
+    // Load real categories from backend into dropdown
+    const categorySelect = document.getElementById('categorySelect');
+    if (categorySelect) {
+        fetch(`${API_BASE}/categories`)
+            .then(res => res.json())
+            .then(categories => {
+                categorySelect.innerHTML = '<option value="" disabled selected>Select a category</option>';
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat._id;
+                    opt.textContent = cat.name;
+                    categorySelect.appendChild(opt);
+                });
+            })
+            .catch(() => { });
+    }
+
+    listingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(listingForm);
+
+        const token = getToken();
+        if (!token) {
+            showToast('You must be logged in to list a uniform.', 'error');
+            setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+            return;
+        }
+
+        const nameInput = listingForm.querySelector('[name="name"]');
+        const categoryInput = listingForm.querySelector('[name="category_id"]');
+        const sizeInput = listingForm.querySelector('[name="size"]');
+        const priceInput = listingForm.querySelector('[name="price"]');
+        const quantityInput = listingForm.querySelector('[name="quantity"]');
+        const btn = document.getElementById('submitListingBtn');
+        const originalText = btn.innerHTML;
+
+        let hasError = false;
+
+        if (!nameInput.value.trim()) {
+            showFieldError(nameInput, 'Listing name is required.');
+            hasError = true;
+        }
+        if (!categoryInput.value) {
+            showFieldError(categoryInput, 'Please select a category.');
+            hasError = true;
+        }
+        if (!sizeInput.value) {
+            showFieldError(sizeInput, 'Please select a size.');
+            hasError = true;
+        }
+        if (!priceInput.value || Number(priceInput.value) < 1) {
+            showFieldError(priceInput, 'Please enter a valid price (minimum ₱1).');
+            hasError = true;
+        }
+        if (!quantityInput.value || Number(quantityInput.value) < 1) {
+            showFieldError(quantityInput, 'Quantity must be at least 1.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        setLoading(btn, true);
+
+        try {
+            const formData = new FormData(listingForm);
+
+            const res = await fetch(`${API_BASE}/products`, {
+                method: 'POST',
+                headers: { 'x-auth-token': token },
+                body: formData,
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.msg || 'Failed to create listing.');
+
+            showToast('Uniform listed successfully!');
+            setTimeout(() => { window.location.href = 'my-listings.html'; }, 1500);
+
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Something went wrong. Try again.', 'error');
+        }
+    });
+}
