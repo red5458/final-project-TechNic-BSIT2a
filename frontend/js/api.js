@@ -175,3 +175,60 @@ if (registerForm) {
         }
     });
 }
+
+// ════════════════════════════════════════════
+//  LOGIN FORM
+//  POST /api/auth/login
+// ════════════════════════════════════════════
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(loginForm);
+
+        const emailInput = loginForm.querySelector('[name="email"]');
+        const passwordInput = loginForm.querySelector('[name="password"]');
+        const btn = document.getElementById('loginBtn');
+        const originalText = btn.innerHTML;
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        let hasError = false;
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showFieldError(emailInput, 'Please enter a valid email address.');
+            hasError = true;
+        }
+        if (!password) {
+            showFieldError(passwordInput, 'Password is required.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Invalid email or password.');
+
+            saveToken(data.token);
+            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
+            const meData = await meRes.json();
+            saveUser(meData);
+
+            showToast('Logged in successfully! Redirecting...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Login failed. Check your credentials.', 'error');
+        }
+    });
+}
