@@ -429,3 +429,59 @@ if (checkoutForm) {
         }
     });
 }
+
+// ════════════════════════════════════════════
+//  ADD TO CART
+//  POST /api/cart/add
+//  Phase 5 will call this once products display.
+//  Function is ready and exported for use.
+// ════════════════════════════════════════════
+async function addToCart(productId, sellerId, price, quantity = 1) {
+    const token = getToken();
+    const user = getUser();
+
+    if (!token || !user) {
+        showToast('You must be logged in to add items to cart.', 'error');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+        return;
+    }
+
+    try {
+        // Get or create user cart first
+        const cartRes = await fetch(`${API_BASE}/cart/${user._id}`, {
+            headers: { 'x-auth-token': token },
+        });
+        const cartData = await cartRes.json();
+
+        // Add item
+        const res = await fetch(`${API_BASE}/cart/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-auth-token': token,
+            },
+            body: JSON.stringify({
+                cart_id: cartData._id,
+                product_id: productId,
+                quantity,
+            }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Failed to add to cart.');
+
+        // Also mirror to localStorage so checkout can read it
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const existing = cart.find(i => i.product_id === productId);
+        if (existing) {
+            existing.quantity += quantity;
+        } else {
+            cart.push({ product_id: productId, seller_id: sellerId, price, quantity });
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        showToast('Item added to cart!');
+
+    } catch (err) {
+        showToast(err.message || 'Could not add to cart.', 'error');
+    }
+}
