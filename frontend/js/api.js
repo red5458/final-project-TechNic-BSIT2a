@@ -485,3 +485,72 @@ async function addToCart(productId, sellerId, price, quantity = 1) {
         showToast(err.message || 'Could not add to cart.', 'error');
     }
 }
+
+// ════════════════════════════════════════════
+//  EDIT PROFILE FORM
+//  PUT /api/users/:id
+// ════════════════════════════════════════════
+const editProfileForm = document.getElementById('editProfileForm');
+if (editProfileForm) {
+    editProfileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(editProfileForm);
+
+        const token = getToken();
+        const user = getUser();
+
+        if (!token || !user) {
+            showToast('You must be logged in.', 'error');
+            return;
+        }
+
+        const nameInput = editProfileForm.querySelector('[name="name"]');
+        const emailInput = editProfileForm.querySelector('[name="email"]');
+        const btn = editProfileForm.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+
+        let hasError = false;
+
+        if (!nameInput.value.trim()) {
+            showFieldError(nameInput, 'Name is required.');
+            hasError = true;
+        }
+        if (!emailInput.value.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+            showFieldError(emailInput, 'Please enter a valid email address.');
+            hasError = true;
+        }
+
+        if (hasError) return;
+
+        setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/users/${user._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-auth-token': token,
+                },
+                body: JSON.stringify({
+                    name: nameInput.value.trim(),
+                    email: emailInput.value.trim(),
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || data.msg || 'Failed to update profile.');
+
+            // Update stored user with new values
+            saveUser({ ...user, name: nameInput.value.trim(), email: emailInput.value.trim() });
+
+            showToast('Profile updated successfully!');
+
+            // Close Bootstrap modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+            if (modal) modal.hide();
+
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Could not update profile.', 'error');
+        }
+    });
+}
