@@ -14,6 +14,20 @@ Uniformity is a web-based marketplace designed to help users buy and sell pre-lo
 
 ---
 
+## 📅 Development Timeline
+
+| Week | Phase | Focus Area | Responsible Roles |
+|---|---|---|---|
+| **Week 10** | **Phase 1 – Project Planning** | Proposal drafting, system architecture, feature list, database schema (ERD), GitHub repo setup, initial group coordination | All roles, especially Project Leader, DB Manager, GitHub Manager |
+| **Week 12** | **Phase 2 – Backend Setup** | Server setup using Node.js and Express; API scaffolding; MongoDB/Mongoose schema creation based on Phase 1 planning | Backend Developer, DB Manager |
+| **Week 12** | **Phase 3 – Frontend Design** | Development of interface layouts using HTML, CSS, and Bootstrap; home, about, and navigation setup | Frontend Developer |
+| **Week 13** | **Phase 4 – Form Submission & Data Insertion** | Creating frontend forms and integrating them with backend APIs; validating and storing data in MongoDB | Frontend Developer, Backend Developer, DB Manager |
+| **Week 14** | **Phase 5 – Data Retrieval & Display** | Fetching and displaying MongoDB data using JavaScript and Bootstrap UI; dashboards and listings | Frontend Developer, Backend Developer |
+| **Week 15** | **Phase 6 – Update & Delete Functionality** | Implementing PUT and DELETE operations; editing and removing data; full CRUD completion | Frontend Developer, Backend Developer |
+| **Week 16** | **Phase 7 – Project Polishing & Documentation** | Testing, debugging, UI/UX improvements, deployment (Render), README finalization, and defense preparation | All roles |
+
+---
+
 ## 👥 Group Information
 
 **Group Name:** TechNic  
