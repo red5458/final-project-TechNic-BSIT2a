@@ -55,5 +55,37 @@ Uniformity is a web-based marketplace designed to help users buy and sell pre-lo
 - **Order Management** — Tools for users to track order status in their profile and for sellers to manage or fulfill orders.
 
 ---
+---
+
+## 🧩 System Design & Diagrams
+
+To ensure a well-structured and scalable system, the following diagrams were created during the planning and design phases:
+
+### 📊 Data Flow Diagram (DFD)
+Illustrates how data moves through the system, including user interactions, processes, and data storage.
+
+<p align="center">
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/DFD_apfxk4.png" alt="DFD Diagram" width="700"/>
+</p>
+
+---
+
+### 🗄️ Entity Relationship Diagram (ERD)
+Represents the database structure, including entities, attributes, and relationships used in the system.
+
+<p align="center">
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955476/ERD_yib3lb.png" alt="ERD Diagram" width="700"/>
+</p>
+
+---
+
+### 🧱 Unified Modeling Language (UML)
+Shows the system architecture and behavior through diagrams such as use case, class, or sequence diagrams.
+
+<p align="center">
+  <img src="Yhttps://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/UML_kcun7a.png" alt="UML Diagram" width="700"/>
+</p>
+
+---
 
 > *Note: This document is subject to change. Additional information will be added as development progresses.*
