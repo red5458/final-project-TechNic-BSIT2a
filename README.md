@@ -83,7 +83,7 @@ Represents the database structure, including entities, attributes, and relations
 Shows the system architecture and behavior through diagrams such as use case, class, or sequence diagrams.
 
 <p align="center">
-  <img src="Yhttps://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/UML_kcun7a.png" alt="UML Diagram" width="700"/>
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/UML_kcun7a.png" alt="UML Diagram" width="700"/>
 </p>
 
 ---
