@@ -239,6 +239,28 @@ if (loginForm) {
 // ════════════════════════════════════════════
 const listingForm = document.getElementById('listingForm');
 if (listingForm) {
+    const imageInput = document.getElementById('productImage');
+    const uploadArea = document.getElementById('uploadArea');
+    const imagePreview = document.getElementById('imagePreview');
+
+    if (imageInput && uploadArea && imagePreview) {
+        imageInput.addEventListener('change', () => {
+            const [file] = imageInput.files || [];
+
+            if (!file) {
+                imagePreview.removeAttribute('src');
+                imagePreview.style.display = 'none';
+                uploadArea.classList.remove('has-preview');
+                return;
+            }
+
+            const previewUrl = URL.createObjectURL(file);
+            imagePreview.src = previewUrl;
+            imagePreview.style.display = 'block';
+            uploadArea.classList.add('has-preview');
+            imagePreview.onload = () => URL.revokeObjectURL(previewUrl);
+        });
+    }
 
     // Load real categories from backend into dropdown
     const categorySelect = document.getElementById('categorySelect');
@@ -452,6 +474,11 @@ async function addToCart(productId, sellerId, price, quantity = 1) {
             headers: { 'x-auth-token': token },
         });
         const cartData = await cartRes.json();
+        const cart = cartData?.cart;
+
+        if (!cart?._id) {
+            throw new Error('Could not open your cart.');
+        }
 
         // Add item
         const res = await fetch(`${API_BASE}/cart/add`, {
@@ -461,7 +488,7 @@ async function addToCart(productId, sellerId, price, quantity = 1) {
                 'x-auth-token': token,
             },
             body: JSON.stringify({
-                cart_id: cartData._id,
+                cart_id: cart._id,
                 product_id: productId,
                 quantity,
             }),
@@ -470,14 +497,15 @@ async function addToCart(productId, sellerId, price, quantity = 1) {
         if (!res.ok) throw new Error(data.error || data.msg || 'Failed to add to cart.');
 
         // Also mirror to localStorage so checkout can read it
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const existing = cart.find(i => i.product_id === productId);
+        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const existing = localCart.find(i => i.product_id === productId);
         if (existing) {
             existing.quantity += quantity;
         } else {
-            cart.push({ product_id: productId, seller_id: sellerId, price, quantity });
+            localCart.push({ product_id: productId, seller_id: sellerId, price, quantity });
         }
-        localStorage.setItem('cart', JSON.stringify(cart));
+        localStorage.setItem('cart', JSON.stringify(localCart));
+        window.dispatchEvent(new Event('cart-updated'));
 
         showToast('Item added to cart!');
 
