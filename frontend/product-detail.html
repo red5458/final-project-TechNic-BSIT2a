@@ -14,29 +14,7 @@
 
 <body>
   <div class="page-wrapper">
-    <aside class="sidebar">
-      <div class="sidebar-logo"><img src="img/logo.png" alt="Logo"
-          style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />Uniformity
-      </div>
-      <nav class="sidebar-nav">
-        <div class="sidebar-label">Buyer</div>
-        <a href="dashboard.html" class="sidebar-link active"><i class="bi bi-grid-fill"></i> Browse Uniforms</a>
-        <a href="cart.html" class="sidebar-link"><i class="bi bi-cart-fill"></i> My Cart</a>
-        <a href="my-orders.html" class="sidebar-link"><i class="bi bi-bag-fill"></i> My Orders</a>
-        <div class="sidebar-label">Seller</div>
-        <a href="my-listings.html" class="sidebar-link"><i class="bi bi-tags-fill"></i> My Listings</a>
-        <a href="add-listing.html" class="sidebar-link"><i class="bi bi-plus-circle-fill"></i> Add Listing</a>
-        <div class="sidebar-label">Account</div>
-        <a href="profile.html" class="sidebar-link"><i class="bi bi-person-fill"></i> My Profile</a>
-        <a href="index.html" class="sidebar-link logout-link"><i class="bi bi-box-arrow-left"></i> Log Out</a>
-      </nav>
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <div class="user-avatar">U</div>
-          <div class="user-info"><strong>Student User</strong></div>
-        </div>
-      </div>
-    </aside>
+    <div id="sidebar-placeholder"></div>
 
     <div class="main-content">
       <div class="topbar">
@@ -53,62 +31,84 @@
         </div>
       </div>
 
+      <!-- FIX: removed all hardcoded product data (name, price, size, seller, etc.)
+           Phase 5 will read ?id= from the URL and inject real data here.
+           A loading state is shown until the fetch resolves. -->
       <div class="content-area" id="detailContent">
-        <div class="row g-5">
+
+        <!-- Loading state — Phase 5 JS will replace this with real content -->
+        <div id="detailLoading" class="text-center py-5">
+          <div class="spinner-border text-success" role="status"></div>
+          <p class="mt-3 text-muted" style="font-size:.9rem;">Loading product details...</p>
+        </div>
+
+        <!-- Error state — shown if product ID is missing or fetch fails -->
+        <div id="detailError" style="display:none;" class="text-center py-5">
+          <i class="bi bi-exclamation-circle fs-1 text-muted"></i>
+          <p class="mt-3 text-muted">Product not found. <a href="dashboard.html">Go back to Browse</a>.</p>
+        </div>
+
+        <!-- Real product content — hidden until Phase 5 JS populates it -->
+        <div id="detailBody" style="display:none;" class="row g-5">
           <div class="col-lg-5">
-            <div class="product-detail-img"><i class="bi bi-image" style="color:var(--text-muted);"></i></div>
+            <!-- Image injected by Phase 5 -->
+            <div class="product-detail-img" id="detailImage">
+              <i class="bi bi-image" style="color:var(--text-muted);"></i>
+            </div>
           </div>
           <div class="col-lg-7">
-            <h1 style="font-size:2rem;font-weight:900;margin-bottom:.75rem;">BU Polangui IT Polo (Male)</h1>
+            <h1 id="detailName" style="font-size:2rem;font-weight:900;margin-bottom:.75rem;"></h1>
             <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
-              <div class="product-price" style="font-size:2.2rem;margin:0;">₱350.00</div>
+              <div class="product-price" id="detailPrice" style="font-size:2.2rem;margin:0;"></div>
               <span class="status-badge status-available">Available</span>
             </div>
             <div class="d-flex gap-3 mb-4 flex-wrap">
               <div style="background:var(--bg-soft);border-radius:var(--radius-sm);padding:.5rem 1rem;font-size:.9rem;">
-                <span style="color:var(--text-muted);">Size:</span> <strong>M</strong>
+                <span style="color:var(--text-muted);">Size:</span> <strong id="detailSize"></strong>
               </div>
               <div style="background:var(--bg-soft);border-radius:var(--radius-sm);padding:.5rem 1rem;font-size:.9rem;">
-                <span style="color:var(--text-muted);">Qty left:</span> <strong>2</strong>
+                <span style="color:var(--text-muted);">Qty left:</span> <strong id="detailQty"></strong>
               </div>
               <div style="background:var(--bg-soft);border-radius:var(--radius-sm);padding:.5rem 1rem;font-size:.9rem;">
-                <span style="color:var(--text-muted);">Category:</span> <strong>Polo</strong>
+                <span style="color:var(--text-muted);">Category:</span> <strong id="detailCategory"></strong>
               </div>
             </div>
             <div style="background:var(--bg-soft);border-radius:var(--radius);padding:1.5rem;margin-bottom:1.5rem;">
               <h6
                 style="margin-bottom:.75rem;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">
                 Description</h6>
-              <p style="margin:0;line-height:1.7;color:var(--text);">Barely used IT Polo shirt from last semester. No
-                stains or tears, washed and ironed. Good as new!</p>
+              <p id="detailDescription" style="margin:0;line-height:1.7;color:var(--text);"></p>
             </div>
             <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
               <div class="qty-control">
-                <button class="qty-btn">−</button>
-                <span class="qty-display" style="padding:0 .75rem;font-weight:700;font-size:1rem;">1</span>
-                <button class="qty-btn">+</button>
+                <button class="qty-btn" id="qtyMinus">−</button>
+                <span class="qty-display" id="qtyDisplay"
+                  style="padding:0 .75rem;font-weight:700;font-size:1rem;">1</span>
+                <button class="qty-btn" id="qtyPlus">+</button>
               </div>
-              <button class="btn-green flex-grow-1" style="max-width:240px;">
+              <!-- FIX: onclick calls addToCart() with real data — populated by Phase 5 JS -->
+              <button class="btn-green flex-grow-1" id="addToCartBtn" style="max-width:240px;">
                 <i class="bi bi-cart-plus me-2"></i>Add to Cart
               </button>
             </div>
             <div class="seller-card">
               <h6>About the Seller</h6>
               <div class="d-flex align-items-center gap-3">
-                <div class="user-avatar"
-                  style="background:var(--primary);color:#fff;width:46px;height:46px;font-size:1rem;">JD</div>
+                <div class="user-avatar" id="sellerAvatar"
+                  style="background:var(--primary);color:#fff;width:46px;height:46px;font-size:1rem;"></div>
                 <div>
-                  <strong>Juan Dela Cruz</strong>
-                  <div style="font-size:.85rem;color:var(--text-muted);">juan@bicol-u.edu.ph</div>
+                  <strong id="sellerName"></strong>
+                  <div id="sellerEmail" style="font-size:.85rem;color:var(--text-muted);"></div>
                 </div>
               </div>
             </div>
             <p style="font-size:.8rem;color:var(--text-muted);margin-top:1rem;">
               <i class="bi bi-shield-check-fill me-1" style="color:var(--primary-light);"></i>
-              Listed on Oct 12, 2024 · Payments protected by Uniformity
+              <span id="detailListedDate"></span> · Payments protected by Uniformity
             </p>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -116,6 +116,71 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/main.js"></script>
   <script src="js/api.js"></script>
+
+  <script>
+    /* ── Product Detail Page Bootstrap ──────────────────────────────────
+       Reads ?id= from the URL and stores it so Phase 5 fetch logic
+       (which lives in api.js or a dedicated page script) can use it.
+
+       Phase 5 task: call GET /api/products/:id using this productId,
+       then populate all the #detail* elements above and show #detailBody.
+    ─────────────────────────────────────────────────────────────────── */
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+
+    if (!productId) {
+      // No ID in URL — show error state immediately
+      document.getElementById('detailLoading').style.display = 'none';
+      document.getElementById('detailError').style.display = 'block';
+    }
+
+    // Phase 5 will use `productId` to fetch and render the product.
+    // Example starter (uncomment and complete in Phase 5):
+    //
+    // const API_BASE = 'http://localhost:5000/api';
+    // fetch(`${API_BASE}/products/${productId}`, {
+    //   headers: { 'x-auth-token': getToken() }
+    // })
+    // .then(r => r.json())
+    // .then(product => {
+    //   document.getElementById('detailLoading').style.display = 'none';
+    //   document.getElementById('detailBody').style.display = 'block';
+    //   document.getElementById('detailName').textContent = product.name;
+    //   document.getElementById('detailPrice').textContent = `₱${product.price.toFixed(2)}`;
+    //   document.getElementById('detailSize').textContent = product.size;
+    //   document.getElementById('detailQty').textContent = product.quantity;
+    //   document.getElementById('detailCategory').textContent = product.category_id?.name || '';
+    //   document.getElementById('detailDescription').textContent = product.description || 'No description.';
+    //   document.getElementById('sellerName').textContent = product.seller_id?.name || '';
+    //   document.getElementById('sellerEmail').textContent = product.seller_id?.email || '';
+    //   document.getElementById('sellerAvatar').textContent = (product.seller_id?.name || 'S').charAt(0);
+    //   if (product.image_url) {
+    //     document.getElementById('detailImage').innerHTML =
+    //       `<img src="${product.image_url}" style="width:100%;border-radius:var(--radius);" />`;
+    //   }
+    //   const listed = new Date(product.createdAt).toLocaleDateString('en-PH', { dateStyle:'medium' });
+    //   document.getElementById('detailListedDate').textContent = `Listed on ${listed}`;
+    //
+    //   // Wire Add to Cart button
+    //   document.getElementById('addToCartBtn').onclick = () => {
+    //     const qty = parseInt(document.getElementById('qtyDisplay').textContent);
+    //     addToCart(product._id, product.seller_id?._id, product.price, qty);
+    //   };
+    // })
+    // .catch(() => {
+    //   document.getElementById('detailLoading').style.display = 'none';
+    //   document.getElementById('detailError').style.display = 'block';
+    // });
+
+    // ── Quantity controls ──────────────────────────────────────────────
+    let qty = 1;
+    document.getElementById('qtyMinus')?.addEventListener('click', () => {
+      if (qty > 1) { qty--; document.getElementById('qtyDisplay').textContent = qty; }
+    });
+    document.getElementById('qtyPlus')?.addEventListener('click', () => {
+      qty++; document.getElementById('qtyDisplay').textContent = qty;
+    });
+  </script>
 </body>
 
 </html>
