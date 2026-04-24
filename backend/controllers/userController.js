@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Product = require('../models/Product');
+const Order = require('../models/Order');
+const OrderItem = require('../models/OrderItem');
 
 exports.createUser = async (req, res) => {
     try {
@@ -42,6 +45,37 @@ exports.deleteUser = async (req, res) => {
     try {
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'User deleted' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getUserStats = async (req, res) => {
+    try {
+        if (String(req.user.id) !== String(req.params.id)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const [orders, activeListings, sellerItems] = await Promise.all([
+            Order.find({ buyer_id: req.user.id, status: { $ne: 'cancelled' } }),
+            Product.countDocuments({ seller_id: req.user.id, quantity: { $gt: 0 } }),
+            OrderItem.find({ seller_id: req.user.id, status: { $ne: 'cancelled' } }).select('order_id price quantity status'),
+        ]);
+
+        const ordersPlaced = orders.length;
+        const totalSpent = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+        const totalEarned = sellerItems
+            .filter((item) => item.status === 'fulfilled')
+            .reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+        const ordersReceived = new Set(sellerItems.map((item) => String(item.order_id))).size;
+
+        res.json({
+            ordersPlaced,
+            activeListings,
+            totalSpent,
+            totalEarned,
+            ordersReceived,
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
