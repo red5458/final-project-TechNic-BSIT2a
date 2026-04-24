@@ -1,173 +1,188 @@
-# Uniformity - Backend
+# Uniformity Backend
 
-A RESTful API for **Uniformity**, an e-commerce platform for pre-loved school and professional uniforms.
+Express and MongoDB backend for the Uniformity marketplace.
 
----
-
-## ⚙️ Tech Stack
+## Tech Stack
 
 - Node.js
 - Express
-- MongoDB + Mongoose
-- bcryptjs, jsonwebtoken (auth)
-- multer, cloudinary (media uploads)
-- dotenv, cors, nodemon
+- MongoDB with Mongoose
+- JWT authentication
+- bcryptjs for password hashing
+- multer + Cloudinary for image uploads
 
----
+## Folder Structure
 
-## 📁 Folder Structure
-
-```
-/backend
-├── server.js
-├── seed.js
-├── .env
-├── /config
-│   ├── db.js
-│   └── cloudinary.js
-├── /middleware
+```text
+backend/
+├── config/
+│   ├── cloudinary.js
+│   └── db.js
+├── controllers/
+│   ├── authController.js
+│   ├── cartController.js
+│   ├── categoryController.js
+│   ├── orderController.js
+│   ├── productController.js
+│   └── userController.js
+├── middleware/
 │   └── auth.js
-├── /models
-│   ├── User.js
-│   ├── Category.js
-│   ├── Product.js
+├── models/
 │   ├── Cart.js
 │   ├── CartItem.js
+│   ├── Category.js
 │   ├── Order.js
-│   └── OrderItem.js
-├── /controllers
-│   ├── authController.js
-│   ├── userController.js
-│   ├── categoryController.js
-│   ├── productController.js
-│   ├── cartController.js
-│   └── orderController.js
-└── /routes
-    ├── authRoutes.js
-    ├── userRoutes.js
-    ├── categoryRoutes.js
-    ├── productRoutes.js
-    ├── cartRoutes.js
-    └── orderRoutes.js
+│   ├── OrderItem.js
+│   ├── Product.js
+│   └── User.js
+├── routes/
+│   ├── authRoutes.js
+│   ├── cartRoutes.js
+│   ├── categoryRoutes.js
+│   ├── orderRoutes.js
+│   ├── productRoutes.js
+│   └── userRoutes.js
+├── seed.js
+├── server.js
+└── package.json
 ```
 
----
+## Setup
 
-## 🗄️ Models
-
-| Model | Description |
-|---|---|
-| User | Stores buyer/seller accounts with hashed passwords |
-| Category | Uniform categories (School, Professional) |
-| Product | Uniform listings by sellers, with Cloudinary image URL |
-| Cart | Shopping cart per user |
-| CartItem | Individual items inside a cart |
-| Order | Orders placed by buyers |
-| OrderItem | Individual items per order with seller reference |
-
----
-
-## 🔌 Connection Setup
-
-1. Create a `.env` file inside `/backend`:
-
-```
-MONGO_URI=your_mongodb_connection_string_here
-PORT=5000
-JWT_SECRET=your_jwt_secret_here
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-```
-
-2. Install dependencies:
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-3. Seed categories (run once only):
+### 2. Create `.env`
+
+```env
+MONGO_URI=your_mongodb_connection_string
+PORT=5000
+JWT_SECRET=your_jwt_secret
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+```
+
+### 3. Seed categories if needed
 
 ```bash
 node seed.js
 ```
 
-4. Start the server:
+### 4. Start the server
 
 ```bash
 npm start
 ```
 
----
+Default port:
 
-## 🔐 Authentication
+```text
+http://localhost:5000
+```
 
-Authentication uses **JWT (JSON Web Tokens)**. Passwords are hashed with **bcryptjs** before storage.
+## Authentication
 
-- Tokens are issued on login and must be sent in the `x-auth-token` request header to access protected routes.
-- The `auth` middleware in `/middleware/auth.js` verifies the token before allowing access to private endpoints.
-- Protected routes: creating, updating, and deleting products require a valid token. The `seller_id` is automatically set from the token.
+Protected routes use the `x-auth-token` header.
+
+Example:
+
+```http
+x-auth-token: your_jwt_here
+```
+
+`auth.js` verifies the token and exposes the authenticated user as `req.user`.
+
+## Models
+
+| Model | Purpose |
+|---|---|
+| User | Stores account info and hashed password |
+| Category | Product category records |
+| Product | Uniform listings with seller, category, price, quantity, and image URL |
+| Cart | One cart per user |
+| CartItem | Product entries inside a cart |
+| Order | Top-level order record for a buyer |
+| OrderItem | Per-product order line tied to seller and order |
+
+## API Routes
 
 ### Auth `/api/auth`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/register` | Register a new user (password is hashed) |
-| POST | `/api/auth/login` | Login and receive a JWT |
-| GET | `/api/auth/me` | Get logged-in user's data (requires token) |
-
----
-
-## 📡 API Routes
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/register` | Register user | No |
+| POST | `/login` | Login and get JWT | No |
+| GET | `/me` | Get current logged-in user | Yes |
 
 ### Users `/api/users`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/users` | Register a new user |
-| GET | `/api/users` | Get all users |
-| GET | `/api/users/:id` | Get user by ID |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/` | Create user | No |
+| GET | `/` | Get all users | No |
+| GET | `/:id` | Get user by ID | No |
+| GET | `/:id/stats` | Get profile stats for current user | Yes |
+| PUT | `/:id` | Update user | No |
+| DELETE | `/:id` | Delete user | No |
 
 ### Categories `/api/categories`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/categories` | Create a category |
-| GET | `/api/categories` | Get all categories |
-| DELETE | `/api/categories/:id` | Delete a category |
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/` | Create category | No |
+| GET | `/` | Get categories | No |
+| DELETE | `/:id` | Delete category | No |
 
 ### Products `/api/products`
 
-| Method | Endpoint | Description | Auth Required |
+| Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/api/products` | List a uniform (image uploaded to Cloudinary) | ✅ |
-| GET | `/api/products` | Browse all uniforms | ❌ |
-| GET | `/api/products/:id` | Get uniform details | ❌ |
-| PUT | `/api/products/:id` | Update a listing | ✅ |
-| DELETE | `/api/products/:id` | Delete a listing | ✅ |
+| POST | `/` | Create listing with optional image upload | Yes |
+| GET | `/` | Get all products, supports seller/category query | No |
+| GET | `/:id` | Get single product | No |
+| PUT | `/:id` | Update product | Yes |
+| DELETE | `/:id` | Delete product | Yes |
 
 ### Cart `/api/cart`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/cart/:userId` | Get or create user cart |
-| POST | `/api/cart/add` | Add item to cart |
-| DELETE | `/api/cart/item/:itemId` | Remove item from cart |
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| GET | `/:userId` | Get or create cart for user | No |
+| POST | `/add` | Add item to cart with stock validation | No |
+| DELETE | `/item/:itemId` | Remove cart item | No |
 
 ### Orders `/api/orders`
 
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/orders` | Place an order |
-| GET | `/api/orders/buyer/:userId` | Get buyer's orders |
-| GET | `/api/orders/seller/:sellerId` | Get seller's order items |
-| PATCH | `/api/orders/item/:itemId/fulfill` | Seller fulfills an item |
-| PATCH | `/api/orders/:orderId/deliver` | Buyer marks as delivered |
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/` | Create order and deduct stock | Yes |
+| GET | `/` | Get current buyer orders | Yes |
+| GET | `/buyer/:userId` | Get buyer orders by user ID | Yes |
+| GET | `/seller/:sellerId` | Get seller grouped incoming orders | Yes |
+| GET | `/:orderId` | Get full order details | Yes |
+| PATCH | `/item/:itemId/fulfill` | Mark order item fulfilled | Yes |
+| PATCH | `/:orderId/deliver` | Mark order delivered | Yes |
 
----
+## Behavior Notes
 
-## 👥 Group
+- Listing creation sets `seller_id` from the logged-in user token
+- Cart add requests validate requested quantity against product stock
+- Checkout validates stock again on the server before creating the order
+- Successful orders reduce `Product.quantity`
+- Profile stats are computed from `Order`, `OrderItem`, and `Product`
 
-**TechNic** — BSIT-2A | Bicol University Polangui
+## Available Script
+
+```bash
+npm start
+```
+
+This runs:
+
+```bash
+nodemon server.js
+```
