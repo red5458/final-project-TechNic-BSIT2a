@@ -1,22 +1,122 @@
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
+const Product = require('../models/Product');
+
+async function attachItems(orderDocs) {
+    const orders = Array.isArray(orderDocs) ? orderDocs : [orderDocs];
+    const orderIds = orders.map((order) => order._id);
+
+    const items = await OrderItem.find({ order_id: { $in: orderIds } })
+        .populate({
+            path: 'product_id',
+            select: 'name price image_url size category_id seller_id',
+            populate: [
+                { path: 'category_id', select: 'name' },
+                { path: 'seller_id', select: 'name email' },
+            ],
+        })
+        .populate('seller_id', 'name email');
+
+    return orders.map((order) => {
+        const plainOrder = order.toObject ? order.toObject() : order;
+        return {
+            ...plainOrder,
+            items: items.filter((item) => String(item.order_id) === String(order._id)),
+        };
+    });
+}
 
 exports.createOrder = async (req, res) => {
+    const reservedProducts = [];
+
     try {
-        const { buyer_id, delivery_address, total_amount, items } = req.body;
-        const order = await Order.create({ buyer_id, delivery_address, total_amount });
-        const orderItemsPayload = items.map(item => ({ ...item, order_id: order._id }));
-        const orderItems = await OrderItem.insertMany(orderItemsPayload);
-        res.status(201).json({ order, orderItems });
+        const { delivery_address, total_amount, items } = req.body;
+
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Your order is empty.' });
+        }
+
+        for (const item of items) {
+            const qty = Number(item.quantity);
+
+            if (!item.product_id || !Number.isInteger(qty) || qty < 1) {
+                throw new Error('Invalid order quantity.');
+            }
+
+            const updatedProduct = await Product.findOneAndUpdate(
+                { _id: item.product_id, quantity: { $gte: qty } },
+                { $inc: { quantity: -qty } },
+                { new: true }
+            ).select('name quantity');
+
+            if (!updatedProduct) {
+                throw new Error('One or more items do not have enough stock.');
+            }
+
+            reservedProducts.push({ product_id: item.product_id, quantity: qty });
+        }
+
+        const order = await Order.create({ buyer_id: req.user.id, delivery_address, total_amount });
+        const orderItemsPayload = items.map((item) => ({ ...item, order_id: order._id }));
+        await OrderItem.insertMany(orderItemsPayload);
+
+        const [fullOrder] = await attachItems(order);
+        res.status(201).json(fullOrder);
     } catch (err) {
+        if (reservedProducts.length) {
+            for (const item of reservedProducts) {
+                await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: item.quantity } }).catch(() => null);
+            }
+        }
         res.status(400).json({ error: err.message });
+    }
+};
+
+exports.getCurrentBuyerOrders = async (req, res) => {
+    try {
+        const orders = await Order.find({ buyer_id: req.user.id })
+            .sort({ created_at: -1 })
+            .populate('buyer_id', 'name email');
+
+        const hydratedOrders = await attachItems(orders);
+        res.json(hydratedOrders);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
 exports.getBuyerOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ buyer_id: req.params.userId });
-        res.json(orders);
+        const orders = await Order.find({ buyer_id: req.params.userId })
+            .sort({ created_at: -1 })
+            .populate('buyer_id', 'name email');
+
+        const hydratedOrders = await attachItems(orders);
+        res.json(hydratedOrders);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getOrderById = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.orderId).populate('buyer_id', 'name email');
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const isOwner = String(order.buyer_id?._id || order.buyer_id) === String(req.user.id);
+        const isSeller = await OrderItem.exists({
+            order_id: order._id,
+            seller_id: req.user.id,
+        });
+
+        if (!isOwner && !isSeller) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const [fullOrder] = await attachItems(order);
+        res.json(fullOrder);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -24,10 +124,34 @@ exports.getBuyerOrders = async (req, res) => {
 
 exports.getSellerOrders = async (req, res) => {
     try {
-        const items = await OrderItem.find({ seller_id: req.params.sellerId })
-            .populate('order_id')
-            .populate('product_id', 'name price image_url');
-        res.json(items);
+        if (String(req.user.id) !== String(req.params.sellerId)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const sellerItems = await OrderItem.find({ seller_id: req.params.sellerId })
+            .populate({
+                path: 'product_id',
+                select: 'name price image_url size category_id seller_id',
+                populate: [
+                    { path: 'category_id', select: 'name' },
+                    { path: 'seller_id', select: 'name email' },
+                ],
+            });
+
+        const orderIds = [...new Set(sellerItems.map((item) => String(item.order_id)))];
+        const orders = await Order.find({ _id: { $in: orderIds } })
+            .sort({ created_at: -1 })
+            .populate('buyer_id', 'name email');
+
+        const grouped = orders.map((order) => {
+            const orderId = String(order._id);
+            return {
+                ...(order.toObject ? order.toObject() : order),
+                items: sellerItems.filter((item) => String(item.order_id) === orderId),
+            };
+        });
+
+        res.json(grouped);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -38,8 +162,12 @@ exports.fulfillOrderItem = async (req, res) => {
         await OrderItem.findByIdAndUpdate(req.params.itemId, { status: 'fulfilled' });
         const item = await OrderItem.findById(req.params.itemId);
         const allItems = await OrderItem.find({ order_id: item.order_id });
-        const allFulfilled = allItems.every(i => i.status === 'fulfilled');
-        if (allFulfilled) await Order.findByIdAndUpdate(item.order_id, { status: 'shipped' });
+        const allFulfilled = allItems.every((orderItem) => orderItem.status === 'fulfilled');
+
+        if (allFulfilled) {
+            await Order.findByIdAndUpdate(item.order_id, { status: 'shipped' });
+        }
+
         res.json({ message: 'Item fulfilled' });
     } catch (err) {
         res.status(500).json({ error: err.message });

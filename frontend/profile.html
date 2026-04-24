@@ -35,14 +35,15 @@
         <div class="profile-header">
           <div class="profile-header-inner">
             <div class="profile-identity">
-              <div class="profile-avatar-lg">J</div>
+              <div class="profile-avatar-lg" id="profileAvatarLg">U</div>
               <div class="profile-copy">
-                <div class="profile-name">Juan Dela Cruz</div>
+                <div class="profile-name" id="profileName"></div>
                 <div class="profile-email">
-                  <i class="bi bi-envelope me-1"></i><span>juan@bicol-u.edu.ph</span>
+                  <i class="bi bi-envelope me-1"></i><span id="profileEmail"></span>
                 </div>
                 <div class="profile-meta-list">
-                  <div class="profile-meta-pill"><i class="bi bi-calendar3"></i><span>Member since Oct 12, 2024</span>
+                  <div class="profile-meta-pill">
+                    <i class="bi bi-calendar3"></i><span id="profileMemberDate"></span>
                   </div>
                 </div>
               </div>
@@ -57,19 +58,19 @@
 
             <div class="profile-stat-grid">
               <div class="profile-highlight-card">
-                <strong>4</strong>
+                <strong id="profileStatOrders">-</strong>
                 <span>Orders placed</span>
               </div>
               <div class="profile-highlight-card">
-                <strong>3</strong>
+                <strong id="profileStatListings">-</strong>
                 <span>Active listings</span>
               </div>
               <div class="profile-highlight-card">
-                <strong>₱1200</strong>
+                <strong id="profileStatSpent">PHP 0.00</strong>
                 <span>Total spent</span>
               </div>
               <div class="profile-highlight-card">
-                <strong>₱850</strong>
+                <strong id="profileStatEarned">PHP 0.00</strong>
                 <span>Total earned</span>
               </div>
             </div>
@@ -88,15 +89,15 @@
               <div class="detail-list">
                 <div class="profile-detail-card">
                   <span>Full Name</span>
-                  <strong>Juan Dela Cruz</strong>
+                  <strong id="profileDetailName"></strong>
                 </div>
                 <div class="profile-detail-card">
                   <span>Email Address</span>
-                  <p>juan@bicol-u.edu.ph</p>
+                  <p id="profileDetailEmail"></p>
                 </div>
                 <div class="profile-detail-card">
                   <span>Member Since</span>
-                  <p>Oct 12, 2024</p>
+                  <p id="profileDetailSince"></p>
                 </div>
                 <div class="profile-detail-card">
                   <span>Primary Role</span>
@@ -116,24 +117,7 @@
               </div>
 
               <div class="order-list" id="recentOrdersList">
-                <article class="order-card">
-                  <div class="order-card-top">
-                    <div>
-                      <div class="order-card-title">Order #A1B2C3D4</div>
-                      <div class="order-card-sub">Placed on Nov 15, 2024</div>
-                    </div>
-                    <span class="status-badge status-shipped">Shipped</span>
-                  </div>
-                  <div class="order-card-grid">
-                    <div class="order-data"><span>Total</span><strong>PHP 600.00</strong></div>
-                    <div class="order-data"><span>Delivery</span><strong style="font-size:.78rem;">Polangui,
-                        Albay…</strong></div>
-                  </div>
-                  <div class="order-card-actions">
-                    <a href="my-orders.html" class="btn-green" style="padding:.65rem 1rem;font-size:.82rem;">View
-                      Order</a>
-                  </div>
-                </article>
+                <p class="text-muted" style="font-size:.85rem;">Loading recent orders...</p>
               </div>
             </section>
           </div>
@@ -149,8 +133,7 @@
               <ul>
                 <li><i class="bi bi-check-circle-fill"></i><span>Email address is verified.</span></li>
                 <li><i class="bi bi-check-circle-fill"></i><span>Account is active and in good standing.</span></li>
-                <li><i class="bi bi-check-circle-fill"></i><span>Your listings are visible to buyers right now.</span>
-                </li>
+                <li><i class="bi bi-check-circle-fill"></i><span>Your listings are visible to buyers right now.</span></li>
               </ul>
             </section>
 
@@ -164,15 +147,15 @@
               <div class="detail-list" style="grid-template-columns:1fr;">
                 <div class="profile-detail-card">
                   <span>Active Listings</span>
-                  <strong>3 active</strong>
+                  <strong id="sellerSnapshotListings">0 active</strong>
                 </div>
                 <div class="profile-detail-card">
                   <span>Orders Received</span>
-                  <strong>2 received</strong>
+                  <strong id="sellerSnapshotOrders">0 received</strong>
                 </div>
                 <div class="profile-detail-card">
                   <span>Total Earned</span>
-                  <strong>PHP 850.00</strong>
+                  <strong id="sellerSnapshotEarned">PHP 0.00</strong>
                 </div>
               </div>
             </section>
@@ -194,13 +177,11 @@
           <div class="modal-body">
             <div class="mb-3">
               <label class="form-label" for="profileNameInput">Full Name</label>
-              <input id="profileNameInput" type="text" class="form-control" name="name" value="Juan Dela Cruz"
-                required />
+              <input id="profileNameInput" type="text" class="form-control" name="name" required />
             </div>
             <div class="mb-3">
               <label class="form-label" for="profileEmailInput">Email Address</label>
-              <input id="profileEmailInput" type="email" class="form-control" name="email" value="juan@bicol-u.edu.ph"
-                required />
+              <input id="profileEmailInput" type="email" class="form-control" name="email" required />
             </div>
           </div>
           <div class="modal-footer">
@@ -212,13 +193,12 @@
     </div>
   </div>
 
-
   <div id="userPopup" class="user-popup">
     <div style="padding:1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;">
       <div class="user-avatar"
-        style="background:var(--primary);color:#fff;width:36px;height:36px;font-size:.85rem;flex-shrink:0;">J</div>
+        style="background:var(--primary);color:#fff;width:36px;height:36px;font-size:.85rem;flex-shrink:0;">U</div>
       <div style="min-width:0;">
-        <div style="font-weight:700;font-size:.88rem;color:var(--text);">Juan Dela Cruz</div>
+        <div style="font-weight:700;font-size:.88rem;color:var(--text);">User</div>
       </div>
     </div>
     <a href="profile.html"
@@ -236,10 +216,10 @@
         class="bi bi-box-arrow-left"></i> Log Out</a>
   </div>
 
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/main.js"></script>
   <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/profile.js"></script>
 </body>
 
 </html>
