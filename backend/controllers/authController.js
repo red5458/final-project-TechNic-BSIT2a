@@ -2,6 +2,22 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+function signToken(userId, res) {
+    const payload = {
+        user: { id: userId }
+    };
+
+    jwt.sign(
+        payload,
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' },
+        (err, token) => {
+            if (err) throw err;
+            res.json({ token });
+        }
+    );
+}
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
@@ -28,20 +44,7 @@ exports.register = async (req, res) => {
 
         await user.save();
 
-        // 4. Return JWT token
-        const payload = {
-            user: { id: user.id }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            }
-        );
+        signToken(user.id, res);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -66,20 +69,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        // 3. Return JWT token
-        const payload = {
-            user: { id: user.id }
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token });
-            }
-        );
+        signToken(user.id, res);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
