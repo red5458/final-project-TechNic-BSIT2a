@@ -1,3 +1,5 @@
+//Update allowed file types in image upload: include WEBP format
+
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
 
@@ -10,13 +12,13 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
 
     if (allowedMimeTypes.includes(file.mimetype)) {
         return cb(null, true);
     }
 
-    cb(new Error('Only JPG, JPEG, and PNG files are allowed.'));
+    cb(new Error('Only JPG, JPEG, PNG, and WEBP files are allowed.'));
 };
 
 const upload = multer({
