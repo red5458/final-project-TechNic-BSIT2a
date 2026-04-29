@@ -1,3 +1,4 @@
+//Refactor cart controller: improve error handling and optimize cart item retrieval logic
 const Cart = require('../models/Cart');
 const CartItem = require('../models/CartItem');
 const Product = require('../models/Product');
