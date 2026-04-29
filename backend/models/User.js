@@ -1,3 +1,4 @@
+//Refine User model schema for clarity and structure
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
