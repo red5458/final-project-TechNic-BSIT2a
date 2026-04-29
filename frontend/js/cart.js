@@ -9,6 +9,9 @@ let cartData = null; // full { cart, items } payload from backend
 async function loadCart() {
     const user = getUser();
     const token = localStorage.getItem('token');
+    const rightCol = document.getElementById('cartSummaryCol');
+
+    if (rightCol) rightCol.style.display = 'none';
 
     if (!user || !token) {
         renderEmptyCart('Please log in to view your cart.');
@@ -31,7 +34,11 @@ async function loadCart() {
 
 function renderCartItems(items) {
     const leftCol = document.getElementById('cartItemsCol');
+    const rightCol = document.getElementById('cartSummaryCol');
     if (!leftCol) return;
+
+    leftCol.className = 'col-lg-8';
+    if (rightCol) rightCol.style.display = '';
 
     leftCol.innerHTML = items.map((item) => buildCartItem(item)).join('');
 
@@ -188,8 +195,9 @@ function renderEmptyCart(message = 'Your cart is empty.') {
     const rightCol = document.getElementById('cartSummaryCol');
 
     if (leftCol) {
+        leftCol.className = 'col-12';
         leftCol.innerHTML = `
-            <div class="text-center py-5">
+            <div class="state-center">
                 <i class="bi bi-cart-x fs-1 text-muted"></i>
                 <p class="mt-3 text-muted">${message}</p>
                 <a href="dashboard.html" class="btn-green mt-2" style="padding:.5rem 1.5rem;">Browse Uniforms</a>
