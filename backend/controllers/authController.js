@@ -1,3 +1,4 @@
+//Refactor auth controller for clarity and reuse
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
