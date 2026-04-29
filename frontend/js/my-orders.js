@@ -11,7 +11,7 @@ async function loadMyOrders() {
     if (!container || !token || !user?._id) return;
 
     container.innerHTML = `
-        <div class="text-center py-5">
+        <div class="state-center">
             <div class="spinner-border text-success" role="status"></div>
             <p class="mt-3 text-muted" style="font-size:.9rem;">Loading your orders...</p>
         </div>`;
@@ -25,7 +25,7 @@ async function loadMyOrders() {
         orders.length === 0 ? renderEmptyOrders() : renderOrders(orders);
     } catch {
         container.innerHTML = `
-            <div class="text-center py-5">
+            <div class="state-center">
                 <i class="bi bi-wifi-off fs-1 text-muted"></i>
                 <p class="mt-3 text-muted">Could not load orders. Please try again.</p>
             </div>`;
@@ -41,6 +41,7 @@ function renderOrders(orders) {
 
 function buildOrderCard(order) {
     const firstItem = order.items?.[0];
+    const imageItem = order.items?.find((item) => item.product_id?.image_url) || firstItem;
     const firstName = firstItem?.product_id?.name || 'Order Item';
     const extraCount = (order.items?.length || 1) - 1;
     const extraText = extraCount > 0
@@ -75,8 +76,9 @@ function buildOrderCard(order) {
            </span>`
             : '';
 
-    const imgHTML = firstItem?.product_id?.image_url
-        ? `<img src="${firstItem.product_id.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`
+    const imageUrl = imageItem?.product_id?.image_url || '';
+    const imgHTML = imageUrl
+        ? `<img src="${imageUrl}" alt="${imageItem?.product_id?.name || 'Order item'}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=&quot;bi bi-image&quot;></i>';" />`
         : `<i class="bi bi-image"></i>`;
 
     return `
@@ -113,8 +115,63 @@ function buildOrderCard(order) {
         </div>`;
 }
 
-function confirmReceipt(orderId) {
-    showToast('Confirm receipt will be fully implemented in Phase 6.', 'error');
+let pendingReceiptConfirmation = null;
+
+function confirmReceipt(orderId, btn) {
+    pendingReceiptConfirmation = { orderId, btn };
+
+    const modalEl = document.getElementById('confirmReceiptModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function submitReceiptConfirmation() {
+    const token = localStorage.getItem('token');
+    if (!token || !pendingReceiptConfirmation) return;
+
+    const { orderId, btn } = pendingReceiptConfirmation;
+    const confirmBtn = document.getElementById('confirmReceiptBtn');
+    const originalText = btn?.innerHTML;
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+    }
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}/deliver`, {
+            method: 'PATCH',
+            headers: { 'x-auth-token': token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not confirm receipt.');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmReceiptModal'));
+        if (modal) modal.hide();
+
+        pendingReceiptConfirmation = null;
+        showToast('Order marked as received.');
+        await loadMyOrders();
+        window.dispatchEvent(new Event('orders-updated'));
+    } catch (err) {
+        showToast(err.message || 'Could not confirm receipt.', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalConfirmText;
+        }
+    }
 }
 
 function renderEmptyOrders() {
@@ -122,11 +179,14 @@ function renderEmptyOrders() {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="text-center py-5">
+        <div class="state-center">
             <i class="bi bi-bag-x fs-1 text-muted"></i>
             <p class="mt-3 text-muted">You haven't placed any orders yet.</p>
             <a href="dashboard.html" class="btn-green mt-2" style="padding:.5rem 1.5rem;">Browse Uniforms</a>
         </div>`;
 }
 
-document.addEventListener('DOMContentLoaded', loadMyOrders);
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirmReceiptBtn')?.addEventListener('click', submitReceiptConfirmation);
+    loadMyOrders();
+});
