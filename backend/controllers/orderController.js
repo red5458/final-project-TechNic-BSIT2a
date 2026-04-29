@@ -31,7 +31,7 @@ async function attachItems(orderDocs) {
 
 exports.createOrder = async (req, res) => {
     const reservedProducts = [];
-    let createdOrder = null;
+    const createdOrders = [];
 
     try {
         const { delivery_address, items } = req.body;
@@ -44,7 +44,6 @@ exports.createOrder = async (req, res) => {
             return res.status(400).json({ error: 'Your order is empty.' });
         }
 
-        let totalAmount = 0;
         const normalizedItems = [];
 
         for (const item of items) {
@@ -74,7 +73,6 @@ exports.createOrder = async (req, res) => {
             }
 
             reservedProducts.push({ product_id: item.product_id, quantity: qty });
-            totalAmount += Number(product.price || 0) * qty;
             normalizedItems.push({
                 product_id: item.product_id,
                 seller_id: product.seller_id,
@@ -83,15 +81,39 @@ exports.createOrder = async (req, res) => {
             });
         }
 
-        const order = await Order.create({ buyer_id: req.user.id, delivery_address, total_amount: totalAmount });
-        createdOrder = order;
-        const orderItemsPayload = normalizedItems.map((item) => ({
-            order_id: order._id,
-            product_id: item.product_id,
-            seller_id: item.seller_id,
-            quantity: Number(item.quantity),
-            price: Number(item.price),
-        }));
+        const itemsBySeller = normalizedItems.reduce((groups, item) => {
+            const sellerId = String(item.seller_id);
+            if (!groups[sellerId]) groups[sellerId] = [];
+            groups[sellerId].push(item);
+            return groups;
+        }, {});
+
+        const orderItemsPayload = [];
+
+        for (const sellerItems of Object.values(itemsBySeller)) {
+            const totalAmount = sellerItems.reduce(
+                (sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 0)),
+                0
+            );
+
+            const order = await Order.create({
+                buyer_id: req.user.id,
+                delivery_address,
+                total_amount: totalAmount,
+            });
+            createdOrders.push(order);
+
+            sellerItems.forEach((item) => {
+                orderItemsPayload.push({
+                    order_id: order._id,
+                    product_id: item.product_id,
+                    seller_id: item.seller_id,
+                    quantity: Number(item.quantity),
+                    price: Number(item.price),
+                });
+            });
+        }
+
         await OrderItem.insertMany(orderItemsPayload);
 
         const cart = await Cart.findOne({ user_id: req.user.id });
@@ -99,17 +121,18 @@ exports.createOrder = async (req, res) => {
             await CartItem.deleteMany({ cart_id: cart._id });
         }
 
-        const [fullOrder] = await attachItems(order);
-        res.status(201).json(fullOrder);
+        const fullOrders = await attachItems(createdOrders);
+        res.status(201).json(fullOrders.length === 1 ? fullOrders[0] : fullOrders);
     } catch (err) {
         if (reservedProducts.length) {
             for (const item of reservedProducts) {
                 await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: item.quantity } }).catch(() => null);
             }
         }
-        if (createdOrder?._id) {
-            await OrderItem.deleteMany({ order_id: createdOrder._id }).catch(() => null);
-            await Order.findByIdAndDelete(createdOrder._id).catch(() => null);
+        if (createdOrders.length) {
+            const createdOrderIds = createdOrders.map((order) => order._id);
+            await OrderItem.deleteMany({ order_id: { $in: createdOrderIds } }).catch(() => null);
+            await Order.deleteMany({ _id: { $in: createdOrderIds } }).catch(() => null);
         }
         res.status(400).json({ error: err.message });
     }

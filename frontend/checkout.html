@@ -35,23 +35,6 @@
         <div class="page-title">Checkout</div>
         <p class="page-sub">Confirm your delivery details and place your order.</p>
 
-        <div class="d-flex gap-4 mb-4 flex-wrap">
-          <div class="checkout-step">
-            <div class="step-num">1</div>
-            <div class="step-info"><strong>Delivery</strong><span>Address details</span></div>
-          </div>
-          <div style="display:flex;align-items:center;color:var(--border)"><i class="bi bi-chevron-right"></i></div>
-          <div class="checkout-step">
-            <div class="step-num inactive">2</div>
-            <div class="step-info"><strong>Payment</strong><span>Mock payment</span></div>
-          </div>
-          <div style="display:flex;align-items:center;color:var(--border)"><i class="bi bi-chevron-right"></i></div>
-          <div class="checkout-step">
-            <div class="step-num inactive">3</div>
-            <div class="step-info"><strong>Confirm</strong><span>Review & place</span></div>
-          </div>
-        </div>
-
         <div class="row g-4">
           <div class="col-lg-7">
             <div class="table-wrap p-4 mb-4">
@@ -119,7 +102,7 @@
                     Each item will be tracked separately per seller. Order status starts as <strong>Pending</strong> →
                     <strong>Confirmed</strong> → <strong>Shipped</strong> → <strong>Delivered</strong>.
                   </div>
-                  <button type="submit" class="btn-checkout mt-4">
+                  <button type="submit" class="btn-checkout mt-4" id="placeOrderBtn">
                     <i class="bi bi-bag-check-fill me-2"></i>Place Order · ₱600.00
                   </button>
                 </div>
@@ -130,7 +113,7 @@
           <div class="col-lg-5">
             <div class="order-summary">
               <h5>Your Order</h5>
-              <div class="d-flex flex-column gap-3 mb-3">
+              <div class="d-flex flex-column gap-3 mb-3" id="checkoutSummaryItems">
                 <div style="display:flex;align-items:center;gap:.75rem;">
                   <div style="flex:1">
                     <div style="font-weight:600;font-size:.9rem;">BU Polangui IT Polo (Male)</div>

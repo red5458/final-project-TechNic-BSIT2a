@@ -352,6 +352,8 @@ if (listingForm) {
 // ════════════════════════════════════════════
 const checkoutForm = document.getElementById('checkoutForm');
 if (checkoutForm) {
+    renderCheckoutSummary();
+
     checkoutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         clearAllErrors(checkoutForm);
@@ -405,14 +407,14 @@ if (checkoutForm) {
         ].filter(Boolean).join(', ');
 
         // Get cart from localStorage (Phase 5 will populate this dynamically)
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const cart = getCheckoutCart();
 
         if (cart.length === 0) {
             showToast('Your cart is empty. Add items before checking out.', 'error');
             return;
         }
 
-        const total_amount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const total_amount = getCartTotal(cart);
 
         const payload = {
             buyer_id: user._id,
@@ -452,13 +454,88 @@ if (checkoutForm) {
     });
 }
 
+function getCheckoutCart() {
+    try {
+        return JSON.parse(localStorage.getItem('cart') || '[]');
+    } catch {
+        return [];
+    }
+}
+
+function getCartTotal(cart) {
+    return cart.reduce((sum, item) => {
+        const price = Number(item.price || 0);
+        const quantity = Number(item.quantity || 0);
+        return sum + (price * quantity);
+    }, 0);
+}
+
+function formatPeso(value) {
+    return `PHP ${Number(value || 0).toFixed(2)}`;
+}
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+    }[char]));
+}
+
+function renderCheckoutSummary() {
+    const summaryItemsEl = document.getElementById('checkoutSummaryItems');
+    const totalEl = document.getElementById('checkoutTotal')
+        || document.querySelector('.order-summary .summary-total span:last-child');
+    const placeOrderBtn = document.getElementById('placeOrderBtn');
+    let placeOrderTextEl = document.getElementById('placeOrderTotal');
+    if (!summaryItemsEl || !totalEl || !placeOrderBtn) return;
+    if (!placeOrderTextEl) {
+        placeOrderBtn.innerHTML = '<i class="bi bi-bag-check-fill me-2"></i>Place Order &middot; <span id="placeOrderTotal">PHP 0.00</span>';
+        placeOrderTextEl = document.getElementById('placeOrderTotal');
+    }
+
+    const cart = getCheckoutCart();
+    const total = getCartTotal(cart);
+
+    if (cart.length === 0) {
+        summaryItemsEl.innerHTML = `
+            <div class="state-center state-center-sm">
+                <i class="bi bi-cart-x fs-2 text-muted"></i>
+                <p class="mt-2 text-muted">No selected items yet.</p>
+                <a href="cart.html" class="btn-green mt-2" style="padding:.5rem 1.25rem;">Go to Cart</a>
+            </div>`;
+    } else {
+        summaryItemsEl.innerHTML = cart.map((item) => {
+            const name = escapeHtml(item.name || 'Selected product');
+            const size = item.size ? `<div style="font-size:.75rem;color:var(--text-muted);">Size: ${escapeHtml(item.size)}</div>` : '';
+            const quantity = Number(item.quantity || 1);
+            const lineTotal = Number(item.price || 0) * quantity;
+
+            return `
+                <div style="display:flex;align-items:center;gap:.75rem;">
+                    <div style="flex:1">
+                        <div style="font-weight:600;font-size:.9rem;">${name}</div>
+                        ${size}
+                        <div style="font-size:.8rem;color:var(--text-muted);">x${quantity}</div>
+                    </div>
+                    <span style="font-weight:700;">${formatPeso(lineTotal)}</span>
+                </div>`;
+        }).join('');
+    }
+
+    totalEl.textContent = formatPeso(total);
+    placeOrderTextEl.textContent = formatPeso(total);
+}
+
 // ════════════════════════════════════════════
 //  ADD TO CART
 //  POST /api/cart/add
 //  Phase 5 will call this once products display.
 //  Function is ready and exported for use.
 // ════════════════════════════════════════════
-async function addToCart(productId, sellerId, price, quantity = 1) {
+async function addToCart(productId, sellerId, price, quantity = 1, details = {}) {
     const token = getToken();
     const user = getUser();
 
@@ -501,8 +578,19 @@ async function addToCart(productId, sellerId, price, quantity = 1) {
         const existing = localCart.find(i => i.product_id === productId);
         if (existing) {
             existing.quantity += quantity;
+            existing.name = existing.name || details.name || 'Selected product';
+            existing.size = existing.size || details.size || '';
+            existing.image_url = existing.image_url || details.image_url || '';
         } else {
-            localCart.push({ product_id: productId, seller_id: sellerId, price, quantity });
+            localCart.push({
+                product_id: productId,
+                seller_id: sellerId,
+                name: details.name || 'Selected product',
+                size: details.size || '',
+                image_url: details.image_url || '',
+                price,
+                quantity,
+            });
         }
         localStorage.setItem('cart', JSON.stringify(localCart));
         window.dispatchEvent(new Event('cart-updated'));

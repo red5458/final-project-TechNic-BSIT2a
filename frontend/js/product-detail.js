@@ -85,7 +85,11 @@ function renderProduct(product) {
                 return;
             }
 
-            addToCart(product._id, product.seller_id?._id || '', product.price, selectedQty);
+            addToCart(product._id, product.seller_id?._id || '', product.price, selectedQty, {
+                name: product.name,
+                size: product.size || '',
+                image_url: product.image_url || '',
+            });
         };
     }
 

@@ -151,9 +151,13 @@ function updateTotal() {
         const found = cartData?.items?.find((item) => item._id === itemId);
 
         if (found) {
+            const product = found.product_id || {};
             cartItems.push({
-                product_id: found.product_id?._id || found.product_id,
-                seller_id: found.product_id?.seller_id?._id || '',
+                product_id: product?._id || found.product_id,
+                seller_id: product?.seller_id?._id || '',
+                name: product?.name || 'Unknown Item',
+                size: product?.size || '',
+                image_url: product?.image_url || '',
                 price: unitPrice,
                 quantity: qty,
             });
