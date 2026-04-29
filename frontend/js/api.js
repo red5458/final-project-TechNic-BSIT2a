@@ -534,6 +534,7 @@ if (editProfileForm) {
 
         const nameInput = editProfileForm.querySelector('[name="name"]');
         const emailInput = editProfileForm.querySelector('[name="email"]');
+        const phoneInput = editProfileForm.querySelector('[name="phone"]');
         const btn = editProfileForm.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
 
@@ -562,13 +563,17 @@ if (editProfileForm) {
                 body: JSON.stringify({
                     name: nameInput.value.trim(),
                     email: emailInput.value.trim(),
+                    phone: phoneInput?.value.trim() || '',
                 }),
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || data.msg || 'Failed to update profile.');
 
-            // Update stored user with new values
-            saveUser({ ...user, name: nameInput.value.trim(), email: emailInput.value.trim() });
+            saveUser({ ...user, ...data });
+
+            if (typeof populateProfile === 'function') {
+                populateProfile({ ...user, ...data });
+            }
 
             showToast('Profile updated successfully!');
 
