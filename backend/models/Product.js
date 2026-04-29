@@ -1,3 +1,4 @@
+//Refine Product model schema for clarity and structure
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
