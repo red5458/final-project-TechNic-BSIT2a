@@ -106,6 +106,70 @@ function renderOrderDetails(order) {
     const actionCard = document.getElementById('orderActionCard');
     if (actionCard) {
         actionCard.style.display = order.status === 'shipped' ? '' : 'none';
+
+        const actionBtn = actionCard.querySelector('button');
+        if (actionBtn) {
+            actionBtn.onclick = () => confirmReceipt(order._id, actionBtn);
+        }
+    }
+}
+
+let pendingReceiptConfirmation = null;
+
+function confirmReceipt(orderId, btn) {
+    pendingReceiptConfirmation = { orderId, btn };
+
+    const modalEl = document.getElementById('confirmReceiptModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function submitReceiptConfirmation() {
+    const token = localStorage.getItem('token');
+    if (!token || !pendingReceiptConfirmation) return;
+
+    const { orderId, btn } = pendingReceiptConfirmation;
+    const confirmBtn = document.getElementById('confirmReceiptBtn');
+    const originalText = btn?.innerHTML;
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}/deliver`, {
+            method: 'PATCH',
+            headers: { 'x-auth-token': token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not confirm receipt.');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('confirmReceiptModal'));
+        if (modal) modal.hide();
+
+        pendingReceiptConfirmation = null;
+        showToast('Order marked as received.');
+        await loadOrderDetails();
+        window.dispatchEvent(new Event('orders-updated'));
+    } catch (err) {
+        showToast(err.message || 'Could not confirm receipt.', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalConfirmText;
+        }
     }
 }
 
@@ -113,11 +177,14 @@ function showOrderError() {
     const content = document.getElementById('orderContent');
     if (content) {
         content.innerHTML = `
-            <div class="col-12 text-center py-5">
+            <div class="col-12 state-center">
                 <i class="bi bi-exclamation-circle fs-1 text-muted"></i>
                 <p class="mt-3 text-muted">Order not found. <a href="my-orders.html">Back to Orders</a></p>
             </div>`;
     }
 }
 
-document.addEventListener('DOMContentLoaded', loadOrderDetails);
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirmReceiptBtn')?.addEventListener('click', submitReceiptConfirmation);
+    loadOrderDetails();
+});
