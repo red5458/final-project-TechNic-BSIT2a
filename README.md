@@ -1,7 +1,5 @@
 # Uniformity
 
-
-
 <p align="center">
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="200"/>
 </p>
