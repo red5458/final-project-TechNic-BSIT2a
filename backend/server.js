@@ -1,3 +1,4 @@
+//Refactor Express server setup for cleaner structure and initialization
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
