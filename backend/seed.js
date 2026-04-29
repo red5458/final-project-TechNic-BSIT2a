@@ -1,3 +1,4 @@
+//Refine category seeding script for cleaner execution flow
 require('dotenv').config();
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
