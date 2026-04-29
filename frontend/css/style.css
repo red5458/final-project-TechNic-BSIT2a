@@ -737,6 +737,7 @@ img {
   position: absolute;
   inset: 0;
   background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
 }
 
 .auth-card {
@@ -3243,4 +3244,154 @@ h4,
 h5,
 h6 {
   font-weight: 600 !important;
+}
+
+/* ============================================
+   MOTION POLISH
+   ============================================ */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@keyframes pageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(.98) translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.content-area,
+.auth-card,
+.hero-content {
+  animation: pageFadeUp .42s var(--ease-out) both;
+}
+
+.product-card,
+.stat-card,
+.table-wrap,
+.order-summary,
+.cart-item,
+.profile-detail-card,
+.order-card,
+.modal-content {
+  transition:
+    transform .22s var(--ease-out),
+    box-shadow .22s var(--ease-out),
+    border-color .22s var(--ease-out),
+    background-color .22s var(--ease-out),
+    opacity .22s var(--ease-out);
+}
+
+.product-card:hover,
+.stat-card:hover,
+.cart-item:hover,
+.order-card:hover,
+.profile-detail-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(45, 106, 79, .12);
+}
+
+.btn,
+button,
+.btn-green,
+.btn-auth,
+.btn-checkout,
+.btn-add-cart,
+.btn-sm-action,
+.icon-btn,
+.qty-btn {
+  transition:
+    transform .18s var(--ease-soft),
+    box-shadow .18s var(--ease-soft),
+    background-color .18s var(--ease-soft),
+    border-color .18s var(--ease-soft),
+    color .18s var(--ease-soft),
+    opacity .18s var(--ease-soft);
+}
+
+.btn:hover,
+button:hover,
+.btn-green:hover,
+.btn-auth:hover,
+.btn-checkout:hover,
+.btn-add-cart:hover,
+.btn-sm-action:hover,
+.icon-btn:hover,
+.qty-btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active,
+button:active,
+.btn-green:active,
+.btn-auth:active,
+.btn-checkout:active,
+.btn-add-cart:active,
+.btn-sm-action:active,
+.icon-btn:active,
+.qty-btn:active {
+  transform: translateY(0) scale(.98);
+}
+
+.modal.fade .modal-dialog {
+  transition: transform .28s var(--ease-out), opacity .28s var(--ease-out);
+  transform: translateY(12px) scale(.98);
+}
+
+.modal.show .modal-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.modal-content {
+  animation: softScaleIn .28s var(--ease-out) both;
+}
+
+.data-table tbody tr {
+  transition: background-color .18s var(--ease-out), transform .18s var(--ease-out);
+}
+
+.data-table tbody tr:hover {
+  background: rgba(45, 106, 79, .035);
+}
+
+.status-badge,
+.cart-item-img,
+.product-img,
+.stat-icon {
+  transition: transform .2s var(--ease-out), opacity .2s var(--ease-out);
+}
+
+.product-card:hover .product-img,
+.cart-item:hover .cart-item-img,
+.stat-card:hover .stat-icon {
+  transform: scale(1.025);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .001ms !important;
+  }
 }

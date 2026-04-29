@@ -67,6 +67,7 @@ function renderOrderDetails(order) {
             const imgHTML = item.product_id?.image_url
                 ? `<img src="${item.product_id.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`
                 : `<i class="bi bi-image" style="font-size:1.5rem;"></i>`;
+            const cancelled = order.status === 'cancelled' || item.status === 'cancelled';
             const fulfilled = item.status === 'fulfilled';
 
             return `
@@ -78,7 +79,9 @@ function renderOrderDetails(order) {
                         <div class="cart-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
                         <div class="cart-item-meta" style="margin-top:.25rem;">PHP ${price} x ${qty}</div>
                         <div style="margin-top:.65rem;">
-                            ${fulfilled
+                            ${cancelled
+                                ? `<span style="color:var(--danger);font-size:.78rem;"><i class="bi bi-x-circle-fill me-1"></i>Cancelled</span>`
+                                : fulfilled
                                 ? `<span style="color:var(--success);font-size:.78rem;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i>Fulfilled by Seller</span>`
                                 : `<span style="color:var(--text-muted);font-size:.78rem;"><i class="bi bi-clock me-1"></i>Pending fulfillment</span>`
                             }
@@ -124,6 +127,9 @@ function renderOrderDetails(order) {
             if (cancelBtn) cancelBtn.onclick = () => confirmCancelOrder(order._id, cancelBtn);
         } else if (order.status === 'shipped') {
             actionCard.style.display = '';
+            actionCard.style.background = 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)';
+            actionCard.style.border = 'none';
+            actionCard.style.color = '#fff';
             actionCard.innerHTML = `
                 <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:#fff;">Order has Shipped!</h6>
                 <p style="font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:1.25rem;line-height:1.6;">
@@ -136,6 +142,16 @@ function renderOrderDetails(order) {
 
             const actionBtn = document.getElementById('confirmReceiptDetailBtn');
             if (actionBtn) actionBtn.onclick = () => confirmReceipt(order._id, actionBtn);
+        } else if (order.status === 'cancelled') {
+            actionCard.style.display = '';
+            actionCard.style.background = '#fff';
+            actionCard.style.border = '1px solid var(--border)';
+            actionCard.style.color = 'var(--text)';
+            actionCard.innerHTML = `
+                <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:var(--danger);">Order Cancelled</h6>
+                <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:0;line-height:1.6;">
+                    This order was cancelled and the item quantity has been returned to seller inventory.
+                </p>`;
         } else {
             actionCard.style.display = 'none';
         }
