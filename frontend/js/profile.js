@@ -30,11 +30,14 @@ function populateProfile() {
     setText('profileDetailName', user.name || '-');
     setText('profileDetailEmail', user.email || '-');
     setText('profileDetailSince', memberDate || '-');
+    setText('profileDetailPhone', user.phone || 'Not provided');
 
     const nameInput = document.getElementById('profileNameInput');
     const emailInput = document.getElementById('profileEmailInput');
+    const phoneInput = document.getElementById('profilePhoneInput');
     if (nameInput) nameInput.value = user.name || '';
     if (emailInput) emailInput.value = user.email || '';
+    if (phoneInput) phoneInput.value = user.phone || '';
 
     const popupAvatar = document.querySelector('#userPopup .user-avatar');
     if (popupAvatar) popupAvatar.textContent = initial;
@@ -80,7 +83,7 @@ async function loadRecentOrders() {
     const listEl = document.getElementById('recentOrdersList');
     if (!listEl) return;
 
-    listEl.innerHTML = `<div class="text-center py-3" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;">
+    listEl.innerHTML = `<div class="state-center state-center-sm">
         <div class="spinner-border spinner-border-sm text-success"></div>
         <span class="text-muted" style="font-size:.85rem;">Loading recent orders...</span>
     </div>`;
@@ -94,7 +97,7 @@ async function loadRecentOrders() {
         setText('profileStatOrders', orders.length);
 
         if (orders.length === 0) {
-            listEl.innerHTML = `<p class="text-muted" style="font-size:.85rem;">No orders placed yet.</p>`;
+            listEl.innerHTML = `<div class="state-center state-center-sm text-muted" style="font-size:.85rem;">No orders placed yet.</div>`;
             return;
         }
 
@@ -140,7 +143,7 @@ async function loadRecentOrders() {
                 </article>`;
         }).join('');
     } catch {
-        listEl.innerHTML = `<p class="text-muted" style="font-size:.85rem;">Could not load recent orders.</p>`;
+        listEl.innerHTML = `<div class="state-center state-center-sm text-muted" style="font-size:.85rem;">Could not load recent orders.</div>`;
     }
 }
 
