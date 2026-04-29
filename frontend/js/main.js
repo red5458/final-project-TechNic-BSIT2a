@@ -14,6 +14,9 @@ function currentPage() {
 function isPublicPage() {
     return PUBLIC_PAGES.includes(currentPage()) || SEMI_PUBLIC_PAGES.includes(currentPage());
 }
+function isLoggedIn() {
+    return Boolean(localStorage.getItem('token') && getUser());
+}
 
 // ─── Auth Guard ───────────────────────────────
 function enforceAuth() {

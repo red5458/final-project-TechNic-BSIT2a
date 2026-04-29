@@ -222,15 +222,26 @@ function renderIncomingOrders(orders) {
         const address = order.delivery_address || '-';
         const orderDate = formatDate(order.createdAt || order.created_at);
         const total = formatCurrency(item.price * item.quantity);
-        const statusCls = item.status === 'fulfilled' ? 'status-available' : 'status-pending';
-        const statusTxt = item.status === 'fulfilled' ? 'Fulfilled' : 'Pending';
+        const isCancelled = order.status === 'cancelled' || item.status === 'cancelled';
+        const statusCls = isCancelled
+            ? 'status-sold'
+            : item.status === 'fulfilled'
+                ? 'status-available'
+                : 'status-pending';
+        const statusTxt = isCancelled
+            ? 'Cancelled'
+            : item.status === 'fulfilled'
+                ? 'Fulfilled'
+                : 'Pending';
 
         const detailBtn = `<button class="btn-sm-action btn-edit" title="View order details"
                     onclick="openSellerOrderDetails('${order._id}')">
                     <i class="bi bi-eye-fill"></i>
                </button>`;
 
-        const actionBtn = item.status !== 'fulfilled'
+        const actionBtn = isCancelled
+            ? `<span class="status-badge status-sold" style="font-size:.75rem;">Cancelled</span>`
+            : item.status !== 'fulfilled'
             ? `<button class="btn-green"
                     style="padding:.3rem .9rem;font-size:.78rem;border-radius:var(--radius-sm);"
                     onclick="markFulfilled('${order._id}', '${item._id}', this)">
@@ -296,8 +307,17 @@ function openSellerOrderDetails(orderId) {
             const image = product.image_url
                 ? `<img src="${product.image_url}" alt="${product.name || 'Item'}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`
                 : `<i class="bi bi-image text-muted"></i>`;
-            const itemStatusCls = item.status === 'fulfilled' ? 'status-available' : 'status-pending';
-            const itemStatusTxt = item.status === 'fulfilled' ? 'Fulfilled' : 'Pending';
+            const isCancelled = order.status === 'cancelled' || item.status === 'cancelled';
+            const itemStatusCls = isCancelled
+                ? 'status-sold'
+                : item.status === 'fulfilled'
+                    ? 'status-available'
+                    : 'status-pending';
+            const itemStatusTxt = isCancelled
+                ? 'Cancelled'
+                : item.status === 'fulfilled'
+                    ? 'Fulfilled'
+                    : 'Pending';
             const lineTotal = formatCurrency(Number(item.price || 0) * Number(item.quantity || 0));
 
             return `

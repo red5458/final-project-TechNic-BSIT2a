@@ -67,6 +67,7 @@ function renderOrderDetails(order) {
             const imgHTML = item.product_id?.image_url
                 ? `<img src="${item.product_id.image_url}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`
                 : `<i class="bi bi-image" style="font-size:1.5rem;"></i>`;
+            const cancelled = order.status === 'cancelled' || item.status === 'cancelled';
             const fulfilled = item.status === 'fulfilled';
 
             return `
@@ -78,7 +79,9 @@ function renderOrderDetails(order) {
                         <div class="cart-item-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
                         <div class="cart-item-meta" style="margin-top:.25rem;">PHP ${price} x ${qty}</div>
                         <div style="margin-top:.65rem;">
-                            ${fulfilled
+                            ${cancelled
+                                ? `<span style="color:var(--danger);font-size:.78rem;"><i class="bi bi-x-circle-fill me-1"></i>Cancelled</span>`
+                                : fulfilled
                                 ? `<span style="color:var(--success);font-size:.78rem;font-weight:600;"><i class="bi bi-check-circle-fill me-1"></i>Fulfilled by Seller</span>`
                                 : `<span style="color:var(--text-muted);font-size:.78rem;"><i class="bi bi-clock me-1"></i>Pending fulfillment</span>`
                             }
@@ -105,16 +108,115 @@ function renderOrderDetails(order) {
 
     const actionCard = document.getElementById('orderActionCard');
     if (actionCard) {
-        actionCard.style.display = order.status === 'shipped' ? '' : 'none';
+        if (order.status === 'pending') {
+            actionCard.style.display = '';
+            actionCard.style.background = '#fff';
+            actionCard.style.border = '1px solid var(--border)';
+            actionCard.style.color = 'var(--text)';
+            actionCard.innerHTML = `
+                <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:var(--text);">Pending Order</h6>
+                <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:1.25rem;line-height:1.6;">
+                    The seller has not fulfilled this order yet. You can cancel it while it is still pending.
+                </p>
+                <button class="btn btn-outline-danger w-100" id="cancelOrderDetailBtn"
+                    style="padding:.8rem;border-radius:50px;transition:var(--transition);">
+                    <i class="bi bi-x-circle-fill me-2"></i>Cancel Order
+                </button>`;
 
-        const actionBtn = actionCard.querySelector('button');
-        if (actionBtn) {
-            actionBtn.onclick = () => confirmReceipt(order._id, actionBtn);
+            const cancelBtn = document.getElementById('cancelOrderDetailBtn');
+            if (cancelBtn) cancelBtn.onclick = () => confirmCancelOrder(order._id, cancelBtn);
+        } else if (order.status === 'shipped') {
+            actionCard.style.display = '';
+            actionCard.style.background = 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%)';
+            actionCard.style.border = 'none';
+            actionCard.style.color = '#fff';
+            actionCard.innerHTML = `
+                <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:#fff;">Order has Shipped!</h6>
+                <p style="font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:1.25rem;line-height:1.6;">
+                    Your items are on the way. Once you receive them, please confirm delivery to complete the order.
+                </p>
+                <button class="btn w-100" id="confirmReceiptDetailBtn"
+                    style="background:#fff;color:var(--primary-dark);font-weight:700;padding:.8rem;border-radius:50px;transition:var(--transition);">
+                    <i class="bi bi-check-circle-fill me-2"></i>Confirm Receipt
+                </button>`;
+
+            const actionBtn = document.getElementById('confirmReceiptDetailBtn');
+            if (actionBtn) actionBtn.onclick = () => confirmReceipt(order._id, actionBtn);
+        } else if (order.status === 'cancelled') {
+            actionCard.style.display = '';
+            actionCard.style.background = '#fff';
+            actionCard.style.border = '1px solid var(--border)';
+            actionCard.style.color = 'var(--text)';
+            actionCard.innerHTML = `
+                <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:var(--danger);">Order Cancelled</h6>
+                <p style="font-size:.88rem;color:var(--text-muted);margin-bottom:0;line-height:1.6;">
+                    This order was cancelled and the item quantity has been returned to seller inventory.
+                </p>`;
+        } else {
+            actionCard.style.display = 'none';
         }
     }
 }
 
+let pendingCancelConfirmation = null;
 let pendingReceiptConfirmation = null;
+
+function confirmCancelOrder(orderId, btn) {
+    pendingCancelConfirmation = { orderId, btn };
+
+    const modalEl = document.getElementById('cancelOrderModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function submitCancelConfirmation() {
+    const token = localStorage.getItem('token');
+    if (!token || !pendingCancelConfirmation) return;
+
+    const { orderId, btn } = pendingCancelConfirmation;
+    const confirmBtn = document.getElementById('confirmCancelOrderBtn');
+    const originalText = btn?.innerHTML;
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
+    }
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+            headers: { 'x-auth-token': token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not cancel order.');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+        if (modal) modal.hide();
+
+        pendingCancelConfirmation = null;
+        showToast('Order cancelled.');
+        await loadOrderDetails();
+        window.dispatchEvent(new Event('orders-updated'));
+    } catch (err) {
+        showToast(err.message || 'Could not cancel order.', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalConfirmText;
+        }
+    }
+}
 
 function confirmReceipt(orderId, btn) {
     pendingReceiptConfirmation = { orderId, btn };
@@ -185,6 +287,7 @@ function showOrderError() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirmCancelOrderBtn')?.addEventListener('click', submitCancelConfirmation);
     document.getElementById('confirmReceiptBtn')?.addEventListener('click', submitReceiptConfirmation);
     loadOrderDetails();
 });

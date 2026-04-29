@@ -103,7 +103,7 @@
                     <strong>Confirmed</strong> → <strong>Shipped</strong> → <strong>Delivered</strong>.
                   </div>
                   <button type="submit" class="btn-checkout mt-4" id="placeOrderBtn">
-                    <i class="bi bi-bag-check-fill me-2"></i>Place Order · ₱600.00
+                    <i class="bi bi-bag-check-fill me-2"></i>Place Order &middot; <span id="placeOrderTotal">PHP 0.00</span>
                   </button>
                 </div>
               </form>
@@ -113,25 +113,10 @@
           <div class="col-lg-5">
             <div class="order-summary">
               <h5>Your Order</h5>
-              <div class="d-flex flex-column gap-3 mb-3" id="checkoutSummaryItems">
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div style="flex:1">
-                    <div style="font-weight:600;font-size:.9rem;">BU Polangui IT Polo (Male)</div>
-                    <div style="font-size:.8rem;color:var(--text-muted);">×1</div>
-                  </div>
-                  <span style="font-weight:700;">₱350.00</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:.75rem;">
-                  <div style="flex:1">
-                    <div style="font-weight:600;font-size:.9rem;">BU Polangui PE Jogging Pants</div>
-                    <div style="font-size:.8rem;color:var(--text-muted);">×1</div>
-                  </div>
-                  <span style="font-weight:700;">₱250.00</span>
-                </div>
-              </div>
+              <div class="d-flex flex-column gap-3 mb-3" id="checkoutSummaryItems"></div>
               <div class="summary-row"><span>Delivery</span><span>Free</span></div>
               <div class="summary-row summary-total">
-                <span>Total</span><span>₱600.00</span>
+                <span>Total</span><span id="checkoutTotal">PHP 0.00</span>
               </div>
             </div>
           </div>
