@@ -1,3 +1,4 @@
+//Refactor category controller for cleaner structure and consistent responses
 const Category = require('../models/Category');
 
 exports.createCategory = async (req, res) => {
