@@ -12,7 +12,7 @@ let currentPageNum  = 1;
 async function loadProducts() {
     const grid = document.getElementById('productGrid');
     grid.innerHTML = `
-        <div class="col-12 text-center py-5">
+        <div class="col-12 state-center">
             <div class="spinner-border text-success" role="status"></div>
             <p class="mt-3 text-muted" style="font-size:.9rem;">Loading uniforms...</p>
         </div>`;
@@ -24,7 +24,7 @@ async function loadProducts() {
         applyFiltersAndRender();
     } catch {
         grid.innerHTML = `
-            <div class="col-12 text-center py-5">
+            <div class="col-12 state-center">
                 <i class="bi bi-wifi-off fs-1 text-muted"></i>
                 <p class="mt-3 text-muted">Could not load products. Make sure the server is running.</p>
             </div>`;
@@ -65,7 +65,7 @@ function renderPage(filtered) {
 
     if (slice.length === 0) {
         grid.innerHTML = `
-            <div class="col-12 text-center py-5">
+            <div class="col-12 state-center">
                 <i class="bi bi-search fs-1 text-muted"></i>
                 <p class="mt-3 text-muted">No uniforms match your filters.</p>
                 <button class="btn-green mt-2" onclick="clearFilters()" style="padding:.5rem 1.5rem;">Clear Filters</button>
@@ -84,13 +84,29 @@ function buildProductCard(p) {
     const size      = p.size || '—';
     const seller    = p.seller_id?.name || 'Seller';
     const category  = p.category_id?.name || '';
+    const stock     = Number(p.quantity || 0);
+    const isSoldOut = stock <= 0;
     const imgHTML   = p.image_url
         ? `<img src="${p.image_url}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" />`
         : `<div class="product-img-placeholder"><i class="bi bi-image fs-1"></i></div>`;
+    const stockBadge = isSoldOut
+        ? `<span class="product-badge product-badge-sold">Sold Out</span>`
+        : `<span class="product-badge">Available</span>`;
+    const addButton = isSoldOut
+        ? `<button class="btn-add-cart btn-add-cart-disabled" type="button" disabled>
+                <i class="bi bi-slash-circle me-1"></i>Sold Out
+           </button>`
+        : `<button class="btn-add-cart" onclick="event.stopPropagation(); handleAddToCart('${p._id}', '${p.seller_id?._id || ''}', ${p.price}, ${stock})">
+                <i class="bi bi-cart-plus me-1"></i>Add to Cart
+           </button>`;
 
     return `
-        <div class="product-card" onclick="window.location.href='product-detail.html?id=${p._id}'">
-            <div class="product-img">${imgHTML}</div>
+        <div class="product-card ${isSoldOut ? 'product-card-sold' : ''}" onclick="window.location.href='product-detail.html?id=${p._id}'">
+            <div class="product-img">
+                ${imgHTML}
+                ${stockBadge}
+                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}
+            </div>
             <div class="product-body">
                 <div class="product-name">${p.name}</div>
                 <div class="product-meta">
@@ -99,15 +115,18 @@ function buildProductCard(p) {
                 </div>
                 <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:.5rem;">${category}</div>
                 <div class="product-price">${price}</div>
-                <button class="btn-add-cart" onclick="event.stopPropagation(); handleAddToCart('${p._id}', '${p.seller_id?._id || ''}', ${p.price})">
-                    <i class="bi bi-cart-plus me-1"></i>Add to Cart
-                </button>
+                ${addButton}
             </div>
         </div>`;
 }
 
 // ─── Add to Cart Handler ──────────────────────
-function handleAddToCart(productId, sellerId, price) {
+function handleAddToCart(productId, sellerId, price, stock = 1) {
+    if (Number(stock || 0) <= 0) {
+        showToast('This product is sold out.', 'error');
+        return;
+    }
+
     const token = localStorage.getItem('token');
     if (!token) {
         showToast('Please log in to add items to cart.', 'error');

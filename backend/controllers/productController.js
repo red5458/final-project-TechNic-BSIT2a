@@ -35,7 +35,7 @@ exports.getAllProducts = async (req, res) => {
         if (req.query.seller) filter.seller_id = req.query.seller;
 
         const products = await Product.find(filter)
-            .populate('seller_id', 'name email')
+            .populate('seller_id', 'name email phone')
             .populate('category_id', 'name');
         res.json(products);
     } catch (err) {
@@ -46,7 +46,7 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id)
-            .populate('seller_id', 'name email')
+            .populate('seller_id', 'name email phone')
             .populate('category_id', 'name');
 
         if (!product) return res.status(404).json({ error: 'Product not found' });
@@ -58,13 +58,40 @@ exports.getProductById = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
-        // Ensure user is the owner before updating (Optional but recommended)
-        const product = await Product.findByIdAndUpdate(
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+
+        if (String(product.seller_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only update your own listing.' });
+        }
+
+        const updates = {
+            name: req.body.name,
+            category_id: req.body.category_id,
+            size: req.body.size,
+            price: req.body.price,
+            quantity: req.body.quantity,
+            description: req.body.description,
+        };
+
+        Object.keys(updates).forEach((key) => {
+            if (updates[key] === undefined) delete updates[key];
+        });
+
+        if (req.file) {
+            const uploadResult = await uploadImageBuffer(req.file.buffer);
+            updates.image_url = uploadResult.secure_url;
+        }
+
+        const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
-            { new: true }
-        );
-        res.json(product);
+            updates,
+            { new: true, runValidators: true }
+        )
+            .populate('seller_id', 'name email phone')
+            .populate('category_id', 'name');
+
+        res.json(updatedProduct);
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
@@ -72,6 +99,13 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
     try {
+        const product = await Product.findById(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+
+        if (String(product.seller_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only delete your own listing.' });
+        }
+
         await Product.findByIdAndDelete(req.params.id);
         res.json({ message: 'Product deleted successfully' });
     } catch (err) {

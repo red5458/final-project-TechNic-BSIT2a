@@ -1,6 +1,8 @@
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
 const Product = require('../models/Product');
+const Cart = require('../models/Cart');
+const CartItem = require('../models/CartItem');
 
 async function attachItems(orderDocs) {
     const orders = Array.isArray(orderDocs) ? orderDocs : [orderDocs];
@@ -28,19 +30,36 @@ async function attachItems(orderDocs) {
 
 exports.createOrder = async (req, res) => {
     const reservedProducts = [];
+    let createdOrder = null;
 
     try {
-        const { delivery_address, total_amount, items } = req.body;
+        const { delivery_address, items } = req.body;
+
+        if (!delivery_address || !String(delivery_address).trim()) {
+            return res.status(400).json({ error: 'Delivery address is required.' });
+        }
 
         if (!Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'Your order is empty.' });
         }
+
+        let totalAmount = 0;
+        const normalizedItems = [];
 
         for (const item of items) {
             const qty = Number(item.quantity);
 
             if (!item.product_id || !Number.isInteger(qty) || qty < 1) {
                 throw new Error('Invalid order quantity.');
+            }
+
+            const product = await Product.findById(item.product_id).select('price seller_id quantity');
+            if (!product) {
+                throw new Error('One or more products no longer exist.');
+            }
+
+            if (String(product.seller_id) !== String(item.seller_id)) {
+                throw new Error('Seller information does not match the product.');
             }
 
             const updatedProduct = await Product.findOneAndUpdate(
@@ -54,11 +73,30 @@ exports.createOrder = async (req, res) => {
             }
 
             reservedProducts.push({ product_id: item.product_id, quantity: qty });
+            totalAmount += Number(product.price || 0) * qty;
+            normalizedItems.push({
+                product_id: item.product_id,
+                seller_id: product.seller_id,
+                quantity: qty,
+                price: Number(product.price || 0),
+            });
         }
 
-        const order = await Order.create({ buyer_id: req.user.id, delivery_address, total_amount });
-        const orderItemsPayload = items.map((item) => ({ ...item, order_id: order._id }));
+        const order = await Order.create({ buyer_id: req.user.id, delivery_address, total_amount: totalAmount });
+        createdOrder = order;
+        const orderItemsPayload = normalizedItems.map((item) => ({
+            order_id: order._id,
+            product_id: item.product_id,
+            seller_id: item.seller_id,
+            quantity: Number(item.quantity),
+            price: Number(item.price),
+        }));
         await OrderItem.insertMany(orderItemsPayload);
+
+        const cart = await Cart.findOne({ user_id: req.user.id });
+        if (cart) {
+            await CartItem.deleteMany({ cart_id: cart._id });
+        }
 
         const [fullOrder] = await attachItems(order);
         res.status(201).json(fullOrder);
@@ -67,6 +105,10 @@ exports.createOrder = async (req, res) => {
             for (const item of reservedProducts) {
                 await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: item.quantity } }).catch(() => null);
             }
+        }
+        if (createdOrder?._id) {
+            await OrderItem.deleteMany({ order_id: createdOrder._id }).catch(() => null);
+            await Order.findByIdAndDelete(createdOrder._id).catch(() => null);
         }
         res.status(400).json({ error: err.message });
     }
@@ -87,6 +129,10 @@ exports.getCurrentBuyerOrders = async (req, res) => {
 
 exports.getBuyerOrders = async (req, res) => {
     try {
+        if (String(req.user.id) !== String(req.params.userId)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
         const orders = await Order.find({ buyer_id: req.params.userId })
             .sort({ created_at: -1 })
             .populate('buyer_id', 'name email');
@@ -159,8 +205,20 @@ exports.getSellerOrders = async (req, res) => {
 
 exports.fulfillOrderItem = async (req, res) => {
     try {
-        await OrderItem.findByIdAndUpdate(req.params.itemId, { status: 'fulfilled' });
         const item = await OrderItem.findById(req.params.itemId);
+        if (!item) return res.status(404).json({ error: 'Order item not found' });
+
+        if (String(item.seller_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only fulfill your own order items.' });
+        }
+
+        if (item.status === 'fulfilled') {
+            return res.json({ message: 'Item already fulfilled' });
+        }
+
+        item.status = 'fulfilled';
+        await item.save();
+
         const allItems = await OrderItem.find({ order_id: item.order_id });
         const allFulfilled = allItems.every((orderItem) => orderItem.status === 'fulfilled');
 
@@ -176,7 +234,20 @@ exports.fulfillOrderItem = async (req, res) => {
 
 exports.markAsDelivered = async (req, res) => {
     try {
-        await Order.findByIdAndUpdate(req.params.orderId, { status: 'delivered' });
+        const order = await Order.findById(req.params.orderId);
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+
+        if (String(order.buyer_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only update your own order.' });
+        }
+
+        if (order.status !== 'shipped') {
+            return res.status(400).json({ error: 'Only shipped orders can be marked as delivered.' });
+        }
+
+        order.status = 'delivered';
+        await order.save();
+
         res.json({ message: 'Order marked as delivered' });
     } catch (err) {
         res.status(500).json({ error: err.message });

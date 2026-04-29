@@ -34,13 +34,13 @@
       <div class="content-area" id="detailContent">
 
         <!-- Loading state -->
-        <div id="detailLoading" class="text-center py-5">
+        <div id="detailLoading" class="state-center">
           <div class="spinner-border text-success" role="status"></div>
           <p class="mt-3 text-muted" style="font-size:.9rem;">Loading product details...</p>
         </div>
 
         <!-- Error state -->
-        <div id="detailError" style="display:none;" class="text-center py-5">
+        <div id="detailError" style="display:none;" class="state-center">
           <i class="bi bi-exclamation-circle fs-1 text-muted"></i>
           <p class="mt-3 text-muted">Product not found. <a href="dashboard.html">Go back to Browse</a>.</p>
         </div>
@@ -96,26 +96,24 @@
                   <div id="sellerEmail" style="font-size:.85rem;color:var(--text-muted);"></div>
                 </div>
               </div>
+              <div class="seller-contact-panel">
+                <div class="seller-contact-heading">
+                  <i class="bi bi-chat-dots-fill"></i>
+                  <span>Contact Seller</span>
+                </div>
+                <p id="sellerContactNote" class="seller-contact-note"></p>
+                <div class="seller-contact-actions" id="sellerContactActions"></div>
+              </div>
             </div>
             <p style="font-size:.8rem;color:var(--text-muted);margin-top:1rem;">
-              <i class="bi bi-shield-check-fill me-1" style="color:var(--primary-light);"></i>
-              <span id="detailListedDate"></span> · Payments protected by Uniformity
+              <i class="bi bi-calendar3 me-1" style="color:var(--primary-light);"></i>
+              <span id="detailListedDate"></span>
             </p>
           </div>
         </div>
 
       </div>
     </div>
-  </div>
-  </div>
-  <p style="font-size:.8rem;color:var(--text-muted);margin-top:1rem;">
-    <i class="bi bi-shield-check-fill me-1" style="color:var(--primary-light);"></i>
-    Listed on Oct 12, 2024 · Payments protected by Uniformity
-  </p>
-  </div>
-  </div>
-  </div>
-  </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

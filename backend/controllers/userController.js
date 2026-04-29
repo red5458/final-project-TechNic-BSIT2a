@@ -15,7 +15,7 @@ exports.createUser = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().select('-password');
         res.json(users);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -24,7 +24,7 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUserById = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await User.findById(req.params.id).select('-password');
         if (!user) return res.status(404).json({ error: 'User not found' });
         res.json(user);
     } catch (err) {
@@ -34,7 +34,17 @@ exports.getUserById = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     try {
-        const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (String(req.user.id) !== String(req.params.id)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
+        const updates = {
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone || '',
+        };
+
+        const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).select('-password');
         res.json(user);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -43,6 +53,10 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
+        if (String(req.user.id) !== String(req.params.id)) {
+            return res.status(403).json({ error: 'Access denied' });
+        }
+
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'User deleted' });
     } catch (err) {
