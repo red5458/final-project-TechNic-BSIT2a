@@ -1,3 +1,4 @@
+//Implement order creation functionality: validate delivery address and items, calculate total amount
 const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
 const Product = require('../models/Product');
