@@ -1,6 +1,6 @@
 const Product = require('../models/Product');
 const { uploadImageBuffer } = require('../config/cloudinary');
-
+//test
 // @desc    Create a new product listing
 exports.createProduct = async (req, res) => {
     try {
