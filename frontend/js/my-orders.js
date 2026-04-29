@@ -64,7 +64,13 @@ function buildOrderCard(order) {
         ? order.status.charAt(0).toUpperCase() + order.status.slice(1)
         : 'Pending';
 
-    const actionBtn = order.status === 'shipped'
+    const actionBtn = order.status === 'pending'
+        ? `<button class="btn btn-outline-danger"
+                style="padding:.3rem .75rem;font-size:.78rem;border-radius:var(--radius-sm);"
+                onclick="event.stopPropagation(); confirmCancelOrder('${order._id}', this)">
+                <i class="bi bi-x-circle me-1"></i>Cancel
+           </button>`
+        : order.status === 'shipped'
         ? `<button class="btn-green"
                 style="padding:.3rem .75rem;font-size:.78rem;border-radius:var(--radius-sm);"
                 onclick="event.stopPropagation(); confirmReceipt('${order._id}', this)">
@@ -115,7 +121,65 @@ function buildOrderCard(order) {
         </div>`;
 }
 
+let pendingCancelConfirmation = null;
 let pendingReceiptConfirmation = null;
+
+function confirmCancelOrder(orderId, btn) {
+    pendingCancelConfirmation = { orderId, btn };
+
+    const modalEl = document.getElementById('cancelOrderModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function submitCancelConfirmation() {
+    const token = localStorage.getItem('token');
+    if (!token || !pendingCancelConfirmation) return;
+
+    const { orderId, btn } = pendingCancelConfirmation;
+    const confirmBtn = document.getElementById('confirmCancelOrderBtn');
+    const originalText = btn?.innerHTML;
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Cancelling...';
+    }
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+            method: 'PATCH',
+            headers: { 'x-auth-token': token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not cancel order.');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+        if (modal) modal.hide();
+
+        pendingCancelConfirmation = null;
+        showToast('Order cancelled.');
+        await loadMyOrders();
+        window.dispatchEvent(new Event('orders-updated'));
+    } catch (err) {
+        showToast(err.message || 'Could not cancel order.', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalConfirmText;
+        }
+    }
+}
 
 function confirmReceipt(orderId, btn) {
     pendingReceiptConfirmation = { orderId, btn };
@@ -187,6 +251,7 @@ function renderEmptyOrders() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirmCancelOrderBtn')?.addEventListener('click', submitCancelConfirmation);
     document.getElementById('confirmReceiptBtn')?.addEventListener('click', submitReceiptConfirmation);
     loadMyOrders();
 });

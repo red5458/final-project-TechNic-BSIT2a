@@ -240,6 +240,16 @@ exports.fulfillOrderItem = async (req, res) => {
             return res.json({ message: 'Item already fulfilled' });
         }
 
+        if (item.status === 'cancelled') {
+            return res.status(400).json({ error: 'Cancelled items cannot be fulfilled.' });
+        }
+
+        const order = await Order.findById(item.order_id);
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+        if (order.status === 'cancelled') {
+            return res.status(400).json({ error: 'Cancelled orders cannot be fulfilled.' });
+        }
+
         item.status = 'fulfilled';
         await item.save();
 
@@ -251,6 +261,43 @@ exports.fulfillOrderItem = async (req, res) => {
         }
 
         res.json({ message: 'Item fulfilled' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.cancelOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.orderId);
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+
+        if (String(order.buyer_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only cancel your own order.' });
+        }
+
+        if (order.status === 'cancelled') {
+            return res.json({ message: 'Order already cancelled' });
+        }
+
+        if (order.status !== 'pending') {
+            return res.status(400).json({ error: 'Only pending orders can be cancelled.' });
+        }
+
+        const items = await OrderItem.find({ order_id: order._id });
+        const hasFulfilledItem = items.some((item) => item.status === 'fulfilled');
+        if (hasFulfilledItem) {
+            return res.status(400).json({ error: 'This order is already being processed by the seller.' });
+        }
+
+        for (const item of items) {
+            await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: Number(item.quantity || 0) } });
+        }
+
+        await OrderItem.updateMany({ order_id: order._id }, { status: 'cancelled' });
+        order.status = 'cancelled';
+        await order.save();
+
+        res.json({ message: 'Order cancelled successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
