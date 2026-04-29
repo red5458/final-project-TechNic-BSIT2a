@@ -1,3 +1,4 @@
+//Refactor user controller: improve error handling and response consistency
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');

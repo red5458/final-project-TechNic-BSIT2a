@@ -1,3 +1,4 @@
+//Refine orderRoutes for improved clarity and structure
 const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');

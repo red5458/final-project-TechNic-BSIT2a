@@ -1,3 +1,4 @@
+//Refine Order model schema for clarity and structure
 const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema({

@@ -1,3 +1,4 @@
+//Enhance product update route by adding image upload middlewar
 const express = require('express');
 const router = express.Router();
 const {
@@ -20,7 +21,7 @@ router.get('/', getAllProducts);
 router.get('/:id', getProductById);
 
 // Protected update and delete
-router.put('/:id', auth, updateProduct);
+router.put('/:id', [auth, upload.single('image')], updateProduct);
 router.delete('/:id', auth, deleteProduct);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+//Refactor database connection setup for reliability and error handling
 const mongoose = require('mongoose');
 
 const connectDB = async () => {

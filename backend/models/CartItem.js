@@ -1,3 +1,4 @@
+//Refine CartItem model for clearer structure and validation
 const mongoose = require('mongoose');
 
 const cartItemSchema = new mongoose.Schema({

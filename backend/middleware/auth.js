@@ -1,3 +1,4 @@
+//Add authentication middleware for JWT verification
 const jwt = require('jsonwebtoken');
 
 module.exports = function (req, res, next) {
