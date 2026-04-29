@@ -35,9 +35,9 @@ function buildSidebar() {
         { section: 'Buyer' },
         { href: 'dashboard.html', icon: 'bi-grid-fill', text: 'Browse Uniforms' },
         { href: 'cart.html', icon: 'bi-cart-fill', text: 'My Cart', extra: 'cart-link' },
-        { href: 'my-orders.html', icon: 'bi-bag-fill', text: 'My Orders' },
+        { href: 'my-orders.html', icon: 'bi-bag-fill', text: 'My Orders', badge: 'orders' },
         { section: 'Seller' },
-        { href: 'my-listings.html', icon: 'bi-tags-fill', text: 'My Listings' },
+        { href: 'my-listings.html', icon: 'bi-tags-fill', text: 'My Listings', badge: 'seller-orders' },
         { href: 'add-listing.html', icon: 'bi-plus-circle-fill', text: 'Add Listing' },
         { section: 'Account' },
         { href: 'profile.html', icon: 'bi-person-fill', text: 'My Profile' },
@@ -48,9 +48,14 @@ function buildSidebar() {
         if (l.section) return `<div class="sidebar-label">${l.section}</div>`;
         const isActive = active === l.href ? 'active' : '';
         const extraClass = l.extra || '';
-        const badgeHTML = l.href === 'cart.html'
-            ? `<span class="cart-count-badge" data-cart-count style="display:none;margin-left:auto;background:var(--accent);color:var(--primary-dark);font-size:.72rem;font-weight:700;min-width:20px;height:20px;padding:0 .35rem;border-radius:999px;align-items:center;justify-content:center;"></span>`
-            : '';
+        let badgeHTML = '';
+        if (l.href === 'cart.html') {
+            badgeHTML = `<span class="cart-count-badge" data-cart-count style="display:none;margin-left:auto;background:var(--accent);color:var(--primary-dark);font-size:.72rem;font-weight:700;min-width:20px;height:20px;padding:0 .35rem;border-radius:999px;align-items:center;justify-content:center;"></span>`;
+        } else if (l.badge === 'orders') {
+            badgeHTML = `<span class="nav-count-badge" data-buyer-order-count style="display:none;margin-left:auto;background:#dc2626;color:#fff;font-size:.72rem;font-weight:800;min-width:20px;height:20px;padding:0 .35rem;border-radius:999px;align-items:center;justify-content:center;"></span>`;
+        } else if (l.badge === 'seller-orders') {
+            badgeHTML = `<span class="nav-count-badge" data-seller-order-count style="display:none;margin-left:auto;background:#dc2626;color:#fff;font-size:.72rem;font-weight:800;min-width:20px;height:20px;padding:0 .35rem;border-radius:999px;align-items:center;justify-content:center;"></span>`;
+        }
         return `<a href="${l.href}" class="sidebar-link ${isActive} ${extraClass}">
                     <i class="bi ${l.icon}"></i> ${l.text}${badgeHTML}
                 </a>`;
@@ -113,6 +118,80 @@ function updateCartCountBadges() {
             badge.style.display = 'none';
         }
     });
+}
+
+function setBadgeCount(selector, count) {
+    document.querySelectorAll(selector).forEach((badge) => {
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.style.display = 'inline-flex';
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+        }
+    });
+}
+
+function getCachedOrderCounts() {
+    try {
+        return JSON.parse(localStorage.getItem('orderBadgeCounts') || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function setCachedOrderCounts(counts) {
+    localStorage.setItem('orderBadgeCounts', JSON.stringify(counts));
+}
+
+function applyCachedOrderBadges() {
+    const counts = getCachedOrderCounts();
+    setBadgeCount('[data-buyer-order-count]', Number(counts.buyer || 0));
+    setBadgeCount('[data-seller-order-count]', Number(counts.seller || 0));
+}
+
+async function updateOrderCountBadges() {
+    const token = localStorage.getItem('token');
+    const user = getUser();
+    if (!token || !user?._id) {
+        setBadgeCount('[data-buyer-order-count]', 0);
+        setBadgeCount('[data-seller-order-count]', 0);
+        localStorage.removeItem('orderBadgeCounts');
+        return;
+    }
+
+    const nextCounts = getCachedOrderCounts();
+
+    try {
+        const buyerRes = await fetch(`${API_BASE}/orders`, {
+            headers: { 'x-auth-token': token }
+        });
+        const buyerOrders = buyerRes.ok ? await buyerRes.json() : [];
+        const activeBuyerOrders = (buyerOrders || []).filter((order) =>
+            !['delivered', 'cancelled'].includes(order.status)
+        ).length;
+        setBadgeCount('[data-buyer-order-count]', activeBuyerOrders);
+        nextCounts.buyer = activeBuyerOrders;
+    } catch {
+        setBadgeCount('[data-buyer-order-count]', Number(nextCounts.buyer || 0));
+    }
+
+    try {
+        const sellerRes = await fetch(`${API_BASE}/orders/seller/${user._id}`, {
+            headers: { 'x-auth-token': token }
+        });
+        const sellerOrders = sellerRes.ok ? await sellerRes.json() : [];
+        const pendingSellerItems = (sellerOrders || []).reduce((sum, order) => {
+            const pendingItems = (order.items || []).filter((item) => item.status !== 'fulfilled').length;
+            return sum + pendingItems;
+        }, 0);
+        setBadgeCount('[data-seller-order-count]', pendingSellerItems);
+        nextCounts.seller = pendingSellerItems;
+    } catch {
+        setBadgeCount('[data-seller-order-count]', Number(nextCounts.seller || 0));
+    }
+
+    setCachedOrderCounts(nextCounts);
 }
 
 // ─── Sidebar User Population ──────────────────
@@ -253,6 +332,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobileNav();
     initProfileDropdown();
     updateCartCountBadges();
+    applyCachedOrderBadges();
+    updateOrderCountBadges();
 });
 
 window.addEventListener('storage', (event) => {
@@ -260,3 +341,4 @@ window.addEventListener('storage', (event) => {
 });
 
 window.addEventListener('cart-updated', updateCartCountBadges);
+window.addEventListener('orders-updated', updateOrderCountBadges);
