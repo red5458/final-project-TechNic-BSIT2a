@@ -3174,3 +3174,73 @@ textarea {
     gap: .75rem;
   }
 }
+
+/* ============================================
+   TYPOGRAPHY WEIGHT CLEANUP
+   ============================================ */
+body {
+  font-weight: 400;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.page-title,
+.auth-title,
+.section-title,
+.hero-title,
+.brand-text {
+  font-weight: 600 !important;
+}
+
+strong,
+b,
+.form-label,
+.cart-item-name,
+.product-card-title,
+.summary-total,
+.stat-value,
+.modal-title,
+.data-table th,
+[style*="font-weight:600"],
+[style*="font-weight: 600"],
+[style*="font-weight:700"],
+[style*="font-weight: 700"],
+[style*="font-weight:800"],
+[style*="font-weight: 800"],
+[style*="font-weight:900"],
+[style*="font-weight: 900"],
+[style*="font-weight:bold"],
+[style*="font-weight: bold"] {
+  font-weight: 500 !important;
+}
+
+.btn,
+button,
+.btn-green,
+.btn-auth,
+.btn-checkout,
+.btn-add-cart,
+.status-badge {
+  font-weight: 500 !important;
+}
+
+.hero-title,
+.page-title,
+.auth-title,
+.summary-total,
+.stat-value {
+  font-weight: 600 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600 !important;
+}
