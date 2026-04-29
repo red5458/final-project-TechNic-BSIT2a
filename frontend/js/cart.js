@@ -5,6 +5,7 @@
    ============================================ */
 
 let cartData = null; // full { cart, items } payload from backend
+let pendingCartRemoval = null;
 
 async function loadCart() {
     const user = getUser();
@@ -90,10 +91,28 @@ function buildCartItem(item) {
             </div>
             <div class="cart-item-price">PHP ${(price * qty).toFixed(2)}</div>
             <button class="btn-sm-action btn-delete ms-2" title="Remove"
-                onclick="event.stopPropagation(); removeFromCart('${item._id}', this)">
+                onclick="event.stopPropagation(); confirmRemoveFromCart('${item._id}', this)">
                 <i class="bi bi-trash-fill"></i>
             </button>
         </div>`;
+}
+
+function confirmRemoveFromCart(itemId, btn) {
+    const item = cartData?.items?.find((cartItem) => cartItem._id === itemId);
+    const name = item?.product_id?.name || 'This item';
+    const nameEl = document.getElementById('deleteCartItemName');
+    const modalEl = document.getElementById('deleteCartItemModal');
+
+    pendingCartRemoval = { itemId, btn };
+
+    if (nameEl) {
+        nameEl.textContent = `${name} will be removed from your cart.`;
+    }
+
+    if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
 }
 
 function openCartProduct(el) {
@@ -170,7 +189,7 @@ function updateTotal() {
 
 async function removeFromCart(itemId, btn) {
     const token = localStorage.getItem('token');
-    if (!token || !cartData?.cart?._id) return;
+    if (!token || !cartData?.cart?._id) return false;
 
     btn.disabled = true;
 
@@ -188,9 +207,37 @@ async function removeFromCart(itemId, btn) {
         if (document.querySelectorAll('.cart-item').length === 0) {
             renderEmptyCart();
         }
+        return true;
     } catch {
         btn.disabled = false;
         showToast('Could not remove item. Try again.', 'error');
+        return false;
+    }
+}
+
+async function submitCartRemoval() {
+    if (!pendingCartRemoval) return;
+
+    const { itemId, btn } = pendingCartRemoval;
+    const confirmBtn = document.getElementById('confirmDeleteCartItemBtn');
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Removing...';
+    }
+
+    const removed = await removeFromCart(itemId, btn);
+
+    if (removed) {
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteCartItemModal'));
+        if (modal) modal.hide();
+        pendingCartRemoval = null;
+    }
+
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = originalConfirmText;
     }
 }
 
@@ -217,4 +264,7 @@ function renderEmptyCart(message = 'Your cart is empty.') {
     window.dispatchEvent(new Event('cart-updated'));
 }
 
-document.addEventListener('DOMContentLoaded', loadCart);
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirmDeleteCartItemBtn')?.addEventListener('click', submitCartRemoval);
+    loadCart();
+});
