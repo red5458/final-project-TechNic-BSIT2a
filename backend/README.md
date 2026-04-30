@@ -9,42 +9,42 @@ Express and MongoDB backend for the Uniformity marketplace.
 - MongoDB with Mongoose
 - JWT authentication
 - bcryptjs for password hashing
-- multer + Cloudinary for image uploads
+- multer and Cloudinary for image uploads
 
 ## Folder Structure
 
 ```text
 backend/
-├── config/
-│   ├── cloudinary.js
-│   └── db.js
-├── controllers/
-│   ├── authController.js
-│   ├── cartController.js
-│   ├── categoryController.js
-│   ├── orderController.js
-│   ├── productController.js
-│   └── userController.js
-├── middleware/
-│   └── auth.js
-├── models/
-│   ├── Cart.js
-│   ├── CartItem.js
-│   ├── Category.js
-│   ├── Order.js
-│   ├── OrderItem.js
-│   ├── Product.js
-│   └── User.js
-├── routes/
-│   ├── authRoutes.js
-│   ├── cartRoutes.js
-│   ├── categoryRoutes.js
-│   ├── orderRoutes.js
-│   ├── productRoutes.js
-│   └── userRoutes.js
-├── seed.js
-├── server.js
-└── package.json
+|-- config/
+|   |-- cloudinary.js
+|   `-- db.js
+|-- controllers/
+|   |-- authController.js
+|   |-- cartController.js
+|   |-- categoryController.js
+|   |-- orderController.js
+|   |-- productController.js
+|   `-- userController.js
+|-- middleware/
+|   `-- auth.js
+|-- models/
+|   |-- Cart.js
+|   |-- CartItem.js
+|   |-- Category.js
+|   |-- Order.js
+|   |-- OrderItem.js
+|   |-- Product.js
+|   `-- User.js
+|-- routes/
+|   |-- authRoutes.js
+|   |-- cartRoutes.js
+|   |-- categoryRoutes.js
+|   |-- orderRoutes.js
+|   |-- productRoutes.js
+|   `-- userRoutes.js
+|-- seed.js
+|-- server.js
+`-- package.json
 ```
 
 ## Setup
@@ -78,7 +78,13 @@ node seed.js
 npm start
 ```
 
-Default port:
+For development with automatic restart:
+
+```bash
+npm run dev
+```
+
+Default URL:
 
 ```text
 http://localhost:5000
@@ -87,8 +93,6 @@ http://localhost:5000
 ## Authentication
 
 Protected routes use the `x-auth-token` header.
-
-Example:
 
 ```http
 x-auth-token: your_jwt_here
@@ -102,10 +106,10 @@ x-auth-token: your_jwt_here
 |---|---|
 | User | Stores account info and hashed password |
 | Category | Product category records |
-| Product | Uniform listings with seller, category, price, quantity, and image URL |
+| Product | Uniform listings with seller, category, price, quantity, description, and image URL |
 | Cart | One cart per user |
 | CartItem | Product entries inside a cart |
-| Order | Top-level order record for a buyer |
+| Order | Top-level buyer order record |
 | OrderItem | Per-product order line tied to seller and order |
 
 ## API Routes
@@ -126,15 +130,15 @@ x-auth-token: your_jwt_here
 | GET | `/` | Get all users | No |
 | GET | `/:id` | Get user by ID | No |
 | GET | `/:id/stats` | Get profile stats for current user | Yes |
-| PUT | `/:id` | Update user | No |
-| DELETE | `/:id` | Delete user | No |
+| PUT | `/:id` | Update user | Yes |
+| DELETE | `/:id` | Delete user | Yes |
 
 ### Categories `/api/categories`
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | POST | `/` | Create category | No |
-| GET | `/` | Get categories | No |
+| GET | `/` | Get all categories | No |
 | DELETE | `/:id` | Delete category | No |
 
 ### Products `/api/products`
@@ -142,46 +146,61 @@ x-auth-token: your_jwt_here
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | POST | `/` | Create listing with optional image upload | Yes |
-| GET | `/` | Get all products, supports seller/category query | No |
+| GET | `/` | Get products, supports seller/category/search-style frontend usage | No |
 | GET | `/:id` | Get single product | No |
-| PUT | `/:id` | Update product | Yes |
-| DELETE | `/:id` | Delete product | Yes |
+| PUT | `/:id` | Update listing with optional image upload | Yes |
+| DELETE | `/:id` | Delete listing | Yes |
 
 ### Cart `/api/cart`
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| GET | `/:userId` | Get or create cart for user | No |
-| POST | `/add` | Add item to cart with stock validation | No |
-| DELETE | `/item/:itemId` | Remove cart item | No |
+| GET | `/:userId` | Get or create cart for user | Yes |
+| POST | `/add` | Add item to cart with stock validation | Yes |
+| DELETE | `/item/:itemId` | Remove cart item | Yes |
 
 ### Orders `/api/orders`
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/` | Create order and deduct stock | Yes |
+| POST | `/` | Create order(s), group items by seller, and deduct stock | Yes |
 | GET | `/` | Get current buyer orders | Yes |
 | GET | `/buyer/:userId` | Get buyer orders by user ID | Yes |
-| GET | `/seller/:sellerId` | Get seller grouped incoming orders | Yes |
+| GET | `/seller/:sellerId` | Get seller incoming orders | Yes |
 | GET | `/:orderId` | Get full order details | Yes |
-| PATCH | `/item/:itemId/fulfill` | Mark order item fulfilled | Yes |
-| PATCH | `/:orderId/deliver` | Mark order delivered | Yes |
+| PATCH | `/item/:itemId/fulfill` | Mark seller order item fulfilled | Yes |
+| PATCH | `/:orderId/cancel` | Cancel pending buyer order and restore stock | Yes |
+| PATCH | `/:orderId/deliver` | Mark shipped order as delivered | Yes |
 
-## Behavior Notes
+## Order Behavior
 
-- Listing creation sets `seller_id` from the logged-in user token
-- Cart add requests validate requested quantity against product stock
-- Checkout validates stock again on the server before creating the order
-- Successful orders reduce `Product.quantity`
-- Profile stats are computed from `Order`, `OrderItem`, and `Product`
+- Checkout validates every item against the latest product record before creating orders.
+- Items from different sellers are split into separate `Order` documents.
+- Multiple items from the same seller stay inside one order.
+- Successful checkout deducts product stock and clears the buyer cart.
+- Pending orders can be cancelled by the buyer.
+- Cancelling an order marks its order items as cancelled and restores stock.
+- Sellers cannot fulfill cancelled items or cancelled orders.
+- Seller fulfillment is item-level; when every item in an order is fulfilled, the order moves to `shipped`.
+- Buyers can mark shipped orders as delivered.
 
-## Available Script
+## Scripts
 
 ```bash
 npm start
 ```
 
-This runs:
+Runs:
+
+```bash
+node server.js
+```
+
+```bash
+npm run dev
+```
+
+Runs:
 
 ```bash
 nodemon server.js

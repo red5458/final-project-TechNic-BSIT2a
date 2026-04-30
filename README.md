@@ -4,88 +4,104 @@
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="200"/>
 </p>
 
-> A web-based E-Commerce platform for buying and selling pre-loved uniforms — safely, conveniently, and sustainably.
-
----
+Uniformity is a web-based marketplace for buying and selling pre-loved uniforms safely, conveniently, and sustainably.
 
 ## Project Overview
 
-Uniformity is a web-based marketplace designed to help users buy and sell pre-loved uniforms safely and conveniently. The platform promotes sustainability by providing a centralized space for students and professionals to exchange uniforms that are still in good condition but no longer in use.
+Uniformity helps students and other users exchange uniforms that are still in good condition. Buyers can browse listings, add products to cart, check out selected items, and track orders. Sellers can create listings, manage inventory, and fulfill incoming order items.
 
----
-
-## 📅 Development Timeline
-
-| Week | Phase | Focus Area | Responsible Roles |
-|---|---|---|---|
-| **Week 10** | **Phase 1 – Project Planning** | Proposal drafting, system architecture, feature list, database schema (ERD), GitHub repo setup, initial group coordination | All roles, especially Project Leader, DB Manager, GitHub Manager |
-| **Week 12** | **Phase 2 – Backend Setup** | Server setup using Node.js and Express; API scaffolding; MongoDB/Mongoose schema creation based on Phase 1 planning | Backend Developer, DB Manager |
-| **Week 12** | **Phase 3 – Frontend Design** | Development of interface layouts using HTML, CSS, and Bootstrap; home, about, and navigation setup | Frontend Developer |
-| **Week 13** | **Phase 4 – Form Submission & Data Insertion** | Creating frontend forms and integrating them with backend APIs; validating and storing data in MongoDB | Frontend Developer, Backend Developer, DB Manager |
-| **Week 14** | **Phase 5 – Data Retrieval & Display** | Fetching and displaying MongoDB data using JavaScript and Bootstrap UI; dashboards and listings | Frontend Developer, Backend Developer |
-| **Week 15** | **Phase 6 – Update & Delete Functionality** | Implementing PUT and DELETE operations; editing and removing data; full CRUD completion | Frontend Developer, Backend Developer |
-| **Week 16** | **Phase 7 – Project Polishing & Documentation** | Testing, debugging, UI/UX improvements, deployment (Render), README finalization, and defense preparation | All roles |
-
----
-
-## 👥 Group Information
+## Group Information
 
 **Group Name:** TechNic  
 **Course & Block:** BSIT-2A  
 **School:** Bicol University Polangui
-
-### Team Members & Roles
 
 | Member | Role |
 |---|---|
 | Mcxyron B. Cipriano | Back-End Developer |
 | Jay L. Romano | Front-End Developer |
 | Paul Orlando B. Red | Project, Database, GitHub Manager & Documentation Officer |
-| Kurt Jushua S. Hernandez | Database Manager & Tester & Debugger |
+| Kurt Jushua S. Hernandez | Database Manager, Tester & Debugger |
 | Mharie Franz Registrado | Tester & Debugger |
 
----
+## Current Features
 
-## ✨ Key Features
+- User registration, login, JWT authentication, and protected account flows
+- Product listing creation with category, size, price, stock quantity, description, and optional Cloudinary image upload
+- Product browsing with search, filters, sorting, pagination, and product detail pages
+- Cart management with quantity controls, selected-item checkout, delete confirmation modal, and stock-aware limits
+- Dynamic checkout summary based on selected cart items
+- Seller-aware checkout: products from different sellers become separate orders; products from the same seller stay grouped in one order
+- Buyer order history and order details pages
+- Pending order cancellation with confirmation modal and stock restoration
+- Seller incoming orders table with item-level fulfillment
+- Cancelled-order handling on buyer and seller screens
+- Profile page with live user details, buyer/seller stats, and recent order activity
+- Shared UI polish including lighter typography, smoother hover states, modal animations, and reduced-motion support
 
-- **User Authentication** — Secure registration and login functionality implemented using JWT (JSON Web Tokens).
-- **Product Listing (Seller Feature)** — Capability to upload uniforms with specific details such as name, size, quantity, price, and images via Cloudinary API.
-- **Product Browsing & Viewing** — Users can browse available listings and view full product information, including seller profiles.
-- **Cart & Checkout System** — Functionality to add items to a cart, provide delivery information, and place orders via a mock payment system.
-- **Order Management** — Tools for users to track order status in their profile and for sellers to manage or fulfill orders.
+## Main Folders
 
----
----
+```text
+finalprojectTechNic-BSIT2a/
+|-- backend/      Express, MongoDB, API routes, models, controllers
+|-- database/     Planning/database resources
+|-- docs/         Project documentation assets
+|-- frontend/     HTML, CSS, Bootstrap, and vanilla JavaScript UI
+`-- README.md
+```
 
-## 🧩 System Design & Diagrams
+## Development Timeline
 
-To ensure a well-structured and scalable system, the following diagrams were created during the planning and design phases:
+| Phase | Focus Area |
+|---|---|
+| Phase 1 | Project planning, proposal, system architecture, feature list, database schema, repository setup |
+| Phase 2 | Node.js, Express, MongoDB, Mongoose models, and backend route scaffolding |
+| Phase 3 | HTML, CSS, Bootstrap layouts, landing page, auth pages, dashboard UI |
+| Phase 4 | Form submissions, API integration, validation, and MongoDB data insertion |
+| Phase 5 | Data retrieval and display for products, cart, orders, profile, and seller pages |
+| Phase 6 | Update/delete flows, cart deletion confirmation, listing edit/delete, order fulfillment, order cancellation |
+| Phase 7 | UI cleanup, mobile testing, animation polish, documentation, and final debugging |
 
-### 📊 Data Flow Diagram (DFD)
-Illustrates how data moves through the system, including user interactions, processes, and data storage.
+## Local Development
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Default backend URL:
+
+```text
+http://localhost:5000
+```
+
+### Frontend
+
+Open the files in `frontend/` using a local static server such as VS Code Live Server. The frontend expects the API base URL in `frontend/js/api.js`:
+
+```js
+const API_BASE = 'http://localhost:5000/api';
+```
+
+## System Design & Diagrams
+
+### Data Flow Diagram
 
 <p align="center">
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/DFD_apfxk4.png" alt="DFD Diagram" width="700"/>
 </p>
 
----
-
-### 🗄️ Entity Relationship Diagram (ERD)
-Represents the database structure, including entities, attributes, and relationships used in the system.
+### Entity Relationship Diagram
 
 <p align="center">
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955476/ERD_yib3lb.png" alt="ERD Diagram" width="700"/>
 </p>
 
----
-
-### 🧱 Unified Modeling Language (UML)
-Shows the system architecture and behavior through diagrams such as use case, class, or sequence diagrams.
+### Unified Modeling Language
 
 <p align="center">
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/UML_kcun7a.png" alt="UML Diagram" width="700"/>
 </p>
-
----
-
-> *Note: This document is subject to change. Additional information will be added as development progresses.*
