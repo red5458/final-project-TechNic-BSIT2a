@@ -3490,7 +3490,7 @@ button:active,
 
   .cart-item {
     display: grid;
-    grid-template-columns: auto 72px minmax(0, 1fr);
+    grid-template-columns: auto 72px minmax(0, 1fr) auto;
     align-items: center;
   }
 
@@ -3504,8 +3504,11 @@ button:active,
   }
 
   .cart-item .btn-delete {
-    grid-column: 1 / -1;
+    grid-column: 4 / 5;
+    grid-row: 1 / 3;
     justify-self: end;
+    align-self: center;
+    margin-left: 0 !important;
   }
 
   .order-card > .d-flex {
@@ -3765,7 +3768,7 @@ button:active,
   }
 
   .cart-item {
-    grid-template-columns: auto 68px minmax(0, 1fr);
+    grid-template-columns: auto 68px minmax(0, 1fr) auto;
     gap: .75rem;
     padding: .85rem;
   }
@@ -3932,5 +3935,12 @@ button:active,
   .cart-item .qty-control,
   .cart-item .cart-item-price {
     grid-column: 1 / -1;
+  }
+
+  .cart-item .btn-delete {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    justify-self: end;
+    align-self: start;
   }
 }
