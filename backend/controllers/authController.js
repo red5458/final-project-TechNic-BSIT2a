@@ -38,7 +38,7 @@ function getResetTokenExpiryDate() {
     return new Date(Date.now() + 10 * 60 * 1000);
 }
 
-async function createAndSendOtp({ user, purpose }) {
+async function createOtpToken({ user, purpose }) {
     const email = String(user.email || '').trim().toLowerCase();
     const otp = generateOtp();
     const otpHash = await hashOtp(otp);
@@ -57,6 +57,10 @@ async function createAndSendOtp({ user, purpose }) {
         resend_available_at: getResendAvailableDate(),
     });
 
+    return { token, otp, email };
+}
+
+async function sendOtpEmail({ token, otp, email, purpose }) {
     try {
         const emailContent = buildOtpEmail({ otp, purpose });
         await sendEmail({
@@ -70,6 +74,12 @@ async function createAndSendOtp({ user, purpose }) {
         await token.save();
         throw err;
     }
+}
+
+function sendOtpEmailInBackground(otpData) {
+    sendOtpEmail(otpData).catch((err) => {
+        console.error(`OTP email failed for ${otpData.email}:`, err.message);
+    });
 }
 
 // @desc    Register a new user
@@ -98,7 +108,8 @@ exports.register = async (req, res) => {
         user.password = await bcrypt.hash(password, salt);
 
         await user.save();
-        await createAndSendOtp({ user, purpose: 'verify_email' });
+        const otpData = await createOtpToken({ user, purpose: 'verify_email' });
+        sendOtpEmailInBackground({ ...otpData, purpose: 'verify_email' });
 
         res.status(201).json({
             msg: 'Account created. Please verify your email using the OTP we sent.',
@@ -227,7 +238,8 @@ exports.resendVerificationOtp = async (req, res) => {
             return res.status(429).json({ msg: 'Please wait before requesting another OTP.' });
         }
 
-        await createAndSendOtp({ user, purpose: 'verify_email' });
+        const otpData = await createOtpToken({ user, purpose: 'verify_email' });
+        sendOtpEmailInBackground({ ...otpData, purpose: 'verify_email' });
         res.json({ msg: 'Verification OTP sent.' });
     } catch (err) {
         console.error(err.message);
@@ -257,7 +269,8 @@ exports.forgotPassword = async (req, res) => {
             return res.status(429).json({ msg: 'Please wait before requesting another OTP.' });
         }
 
-        await createAndSendOtp({ user, purpose: 'forgot_password' });
+        const otpData = await createOtpToken({ user, purpose: 'forgot_password' });
+        sendOtpEmailInBackground({ ...otpData, purpose: 'forgot_password' });
         res.json({ msg: 'If this email is registered, a reset OTP will be sent.' });
     } catch (err) {
         console.error(err.message);

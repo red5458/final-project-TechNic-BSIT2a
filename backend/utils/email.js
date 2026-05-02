@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 
+let transporter;
+
 function createTransporter() {
     const host = process.env.SMTP_HOST;
     const port = Number(process.env.SMTP_PORT || 587);
@@ -10,12 +12,21 @@ function createTransporter() {
         throw new Error('SMTP email settings are not configured.');
     }
 
-    return nodemailer.createTransport({
+    if (transporter) {
+        return transporter;
+    }
+
+    transporter = nodemailer.createTransport({
         host,
         port,
         secure: port === 465,
         auth: { user, pass },
+        pool: true,
+        maxConnections: 2,
+        maxMessages: 20,
     });
+
+    return transporter;
 }
 
 async function sendEmail({ to, subject, html, text }) {
