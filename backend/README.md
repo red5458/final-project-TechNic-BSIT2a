@@ -10,6 +10,7 @@ Express and MongoDB backend for the Uniformity marketplace.
 - JWT authentication
 - bcryptjs for password hashing
 - multer and Cloudinary for image uploads
+- nodemailer for email OTP delivery
 
 ## Folder Structure
 
@@ -33,6 +34,7 @@ backend/
 |   |-- Category.js
 |   |-- Order.js
 |   |-- OrderItem.js
+|   |-- OtpToken.js
 |   |-- Product.js
 |   `-- User.js
 |-- routes/
@@ -44,6 +46,9 @@ backend/
 |   `-- userRoutes.js
 |-- seed.js
 |-- server.js
+|-- utils/
+|   |-- email.js
+|   `-- otp.js
 `-- package.json
 ```
 
@@ -64,6 +69,11 @@ JWT_SECRET=your_jwt_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_email_app_password
+SMTP_FROM=Uniformity <your_email@gmail.com>
 ```
 
 ### 3. Seed categories if needed
@@ -111,6 +121,7 @@ x-auth-token: your_jwt_here
 | CartItem | Product entries inside a cart |
 | Order | Top-level buyer order record |
 | OrderItem | Per-product order line tied to seller and order |
+| OtpToken | Stores hashed email OTP records for verification and password flows |
 
 ## API Routes
 
@@ -183,6 +194,31 @@ x-auth-token: your_jwt_here
 - Sellers cannot fulfill cancelled items or cancelled orders.
 - Seller fulfillment is item-level; when every item in an order is fulfilled, the order moves to `shipped`.
 - Buyers can mark shipped orders as delivered.
+
+## OTP Foundation
+
+The backend includes a reusable email OTP foundation for future authentication flows:
+
+- `models/OtpToken.js` stores OTP records by email, user, purpose, expiry, attempts, and used status.
+- `utils/otp.js` generates 6-digit OTP codes, hashes them with bcrypt, compares submitted codes, and provides expiry/cooldown helpers.
+- `utils/email.js` sends emails through SMTP using nodemailer and includes a reusable OTP email template.
+
+Supported OTP purposes:
+
+```text
+verify_email
+forgot_password
+change_password
+```
+
+Default OTP behavior:
+
+- 6-digit code
+- 10-minute expiry
+- 60-second resend cooldown
+- 5 maximum attempts constant for verification logic
+
+The OTP routes are intentionally added in later auth-specific updates so the model and utilities stay reusable.
 
 ## Scripts
 
