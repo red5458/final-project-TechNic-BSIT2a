@@ -110,6 +110,103 @@ function clearAllErrors(form) {
     form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
 }
 
+let pendingVerificationEmail = '';
+
+function openVerifyEmailModal(email) {
+    pendingVerificationEmail = String(email || '').trim().toLowerCase();
+
+    const emailText = document.getElementById('verifyEmailText');
+    const otpInput = document.getElementById('verifyOtpInput');
+    const modalEl = document.getElementById('verifyEmailModal');
+
+    if (emailText) emailText.textContent = pendingVerificationEmail || 'your email';
+    if (otpInput) otpInput.value = '';
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    setTimeout(() => otpInput?.focus(), 350);
+}
+
+async function finishVerifiedLogin(token) {
+    saveToken(token);
+    const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': token } });
+    const meData = await meRes.json();
+    saveUser(meData);
+}
+
+const verifyEmailForm = document.getElementById('verifyEmailForm');
+if (verifyEmailForm) {
+    verifyEmailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(verifyEmailForm);
+
+        const otpInput = document.getElementById('verifyOtpInput');
+        const btn = document.getElementById('verifyEmailBtn');
+        const originalText = btn?.innerHTML;
+        const otp = otpInput?.value.trim();
+
+        if (!pendingVerificationEmail) {
+            showToast('Please enter your email again.', 'error');
+            return;
+        }
+
+        if (!/^\d{6}$/.test(otp || '')) {
+            showFieldError(otpInput, 'Enter the 6-digit OTP.');
+            return;
+        }
+
+        if (btn) setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingVerificationEmail, otp }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not verify email.');
+
+            await finishVerifiedLogin(data.token);
+            showToast('Email verified successfully! Redirecting...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+        } catch (err) {
+            if (btn) setLoading(btn, false, originalText);
+            showToast(err.message || 'Could not verify email.', 'error');
+        }
+    });
+}
+
+const resendVerifyOtpBtn = document.getElementById('resendVerifyOtpBtn');
+if (resendVerifyOtpBtn) {
+    resendVerifyOtpBtn.addEventListener('click', async () => {
+        if (!pendingVerificationEmail) {
+            showToast('Please enter your email again.', 'error');
+            return;
+        }
+
+        const originalText = resendVerifyOtpBtn.innerHTML;
+        resendVerifyOtpBtn.disabled = true;
+        resendVerifyOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/resend-verification-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingVerificationEmail }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not resend OTP.');
+            showToast(data.msg || 'Verification OTP sent.');
+        } catch (err) {
+            showToast(err.message || 'Could not resend OTP.', 'error');
+        } finally {
+            resendVerifyOtpBtn.disabled = false;
+            resendVerifyOtpBtn.innerHTML = originalText;
+        }
+    });
+}
+
 // ════════════════════════════════════════════
 //  REGISTER FORM
 //  POST /api/auth/register
@@ -164,13 +261,9 @@ if (registerForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.msg || 'Registration failed.');
 
-            saveToken(data.token);
-            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
-            const meData = await meRes.json();
-            saveUser(meData);
-
-            showToast('Account created successfully! Redirecting...');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+            setLoading(btn, false, originalText);
+            showToast(data.msg || 'Account created. Please verify your email.');
+            openVerifyEmailModal(data.email || email);
 
         } catch (err) {
             setLoading(btn, false, originalText);
@@ -219,12 +312,17 @@ if (loginForm) {
                 body: JSON.stringify({ email, password }),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.msg || 'Invalid email or password.');
+            if (!res.ok) {
+                if (data.verification_required) {
+                    setLoading(btn, false, originalText);
+                    showToast(data.msg || 'Please verify your email first.', 'error');
+                    openVerifyEmailModal(data.email || email);
+                    return;
+                }
+                throw new Error(data.msg || 'Invalid email or password.');
+            }
 
-            saveToken(data.token);
-            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
-            const meData = await meRes.json();
-            saveUser(meData);
+            await finishVerifiedLogin(data.token);
 
             showToast('Logged in successfully! Redirecting...');
             setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);

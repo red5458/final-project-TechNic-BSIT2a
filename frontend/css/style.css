@@ -812,6 +812,13 @@ img {
   padding-left: 2.8rem;
 }
 
+.otp-input {
+  text-align: center;
+  letter-spacing: .45rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
 .input-icon-wrap .bi {
   position: absolute;
   left: 1rem;
