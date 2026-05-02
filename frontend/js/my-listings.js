@@ -17,6 +17,18 @@ function shortOrderId(orderId) {
     return orderId ? `#${String(orderId).slice(-8).toUpperCase()}` : '-';
 }
 
+function sellerEscape(value) {
+    return typeof escapeHtml === 'function'
+        ? escapeHtml(value)
+        : String(value ?? '').replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        }[char]));
+}
+
 let sellerListings = [];
 let sellerOrders = [];
 let listingCategories = [];
@@ -120,28 +132,41 @@ function renderListingsTable(products) {
     }
 
     tbody.innerHTML = products.map((product) => {
-        const category = product.category_id?.name || '-';
+        const category = sellerEscape(product.category_id?.name || '-');
+        const name = sellerEscape(product.name || 'Untitled listing');
+        const size = sellerEscape(product.size || '-');
+        const image = product.image_url
+            ? `<img src="${sellerEscape(product.image_url)}" alt="${name}" />`
+            : `<i class="bi bi-image"></i>`;
         const statusCls = product.quantity > 0 ? 'status-available' : 'status-sold';
         const statusTxt = product.quantity > 0 ? 'Available' : 'Sold Out';
+        const qty = Number(product.quantity ?? 0);
+        const qtyClass = qty <= 0 ? 'seller-qty is-empty' : qty <= 3 ? 'seller-qty is-low' : 'seller-qty';
 
         return `
-            <tr>
+            <tr class="seller-table-row">
                 <td data-label="Product">
-                    <span style="font-weight:600;font-size:.9rem;">${product.name}</span>
+                    <div class="seller-product-cell">
+                        <div class="seller-product-thumb">${image}</div>
+                        <div class="seller-product-copy">
+                            <strong>${name}</strong>
+                            <span>Listed product</span>
+                        </div>
+                    </div>
                 </td>
                 <td data-label="Category">${category}</td>
-                <td data-label="Size"><span class="product-size">${product.size || '-'}</span></td>
-                <td data-label="Qty">${product.quantity ?? 0}</td>
-                <td data-label="Price"><strong>${formatCurrency(product.price)}</strong></td>
+                <td data-label="Size"><span class="product-size">${size}</span></td>
+                <td data-label="Qty"><span class="${qtyClass}">${qty}</span></td>
+                <td data-label="Price"><strong class="seller-money">${formatCurrency(product.price)}</strong></td>
                 <td data-label="Status">
                     <span class="status-badge ${statusCls}">${statusTxt}</span>
                 </td>
                 <td data-label="Actions">
-                    <div class="d-flex gap-1 flex-wrap">
-                        <button class="btn-sm-action btn-edit" title="Edit" onclick="openEditModal('${product._id}')">
+                    <div class="seller-row-actions">
+                        <button class="btn-sm-action btn-edit" title="Edit listing" aria-label="Edit listing" onclick="openEditModal('${product._id}')">
                             <i class="bi bi-pencil-fill"></i>
                         </button>
-                        <button class="btn-sm-action btn-delete" title="Delete" onclick="confirmDelete('${product._id}', this)">
+                        <button class="btn-sm-action btn-delete" title="Delete listing" aria-label="Delete listing" onclick="confirmDelete('${product._id}', this)">
                             <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
@@ -217,11 +242,14 @@ function renderIncomingOrders(orders) {
     }
 
     tbody.innerHTML = rows.map(({ order, item }) => {
-        const productName = item.product_id?.name || 'Unknown Item';
-        const buyerName = order.buyer_id?.name || 'Buyer';
-        const address = order.delivery_address || '-';
+        const productName = sellerEscape(item.product_id?.name || 'Unknown Item');
+        const buyerName = sellerEscape(order.buyer_id?.name || 'Buyer');
+        const address = sellerEscape(order.delivery_address || '-');
         const orderDate = formatDate(order.createdAt || order.created_at);
         const total = formatCurrency(item.price * item.quantity);
+        const image = item.product_id?.image_url
+            ? `<img src="${sellerEscape(item.product_id.image_url)}" alt="${productName}" />`
+            : `<i class="bi bi-image"></i>`;
         const isCancelled = order.status === 'cancelled' || item.status === 'cancelled';
         const statusCls = isCancelled
             ? 'status-sold'
@@ -234,7 +262,7 @@ function renderIncomingOrders(orders) {
                 ? 'Fulfilled'
                 : 'Pending';
 
-        const detailBtn = `<button class="btn-sm-action btn-edit" title="View order details"
+        const detailBtn = `<button class="btn-sm-action btn-view" title="View order details" aria-label="View order details"
                     onclick="openSellerOrderDetails('${order._id}')">
                     <i class="bi bi-eye-fill"></i>
                </button>`;
@@ -242,28 +270,32 @@ function renderIncomingOrders(orders) {
         const actionBtn = isCancelled
             ? `<span class="status-badge status-sold" style="font-size:.75rem;">Cancelled</span>`
             : item.status !== 'fulfilled'
-            ? `<button class="btn-green"
-                    style="padding:.3rem .9rem;font-size:.78rem;border-radius:var(--radius-sm);"
+            ? `<button class="seller-fulfill-btn"
                     onclick="markFulfilled('${order._id}', '${item._id}', this)">
                     <i class="bi bi-check-lg me-1"></i>Mark Fulfilled
                </button>`
             : `<span class="status-badge status-available" style="font-size:.75rem;">Done</span>`;
 
         return `
-            <tr>
+            <tr class="seller-table-row">
                 <td data-label="Item">
-                    <div style="font-weight:700;">${productName}</div>
-                    <div style="font-size:.76rem;color:var(--text-muted);">${shortOrderId(order._id)} - ${orderDate}</div>
+                    <div class="seller-product-cell">
+                        <div class="seller-product-thumb">${image}</div>
+                        <div class="seller-product-copy">
+                            <strong>${productName}</strong>
+                            <span>${shortOrderId(order._id)} - ${orderDate}</span>
+                        </div>
+                    </div>
                 </td>
                 <td data-label="Buyer">${buyerName}</td>
                 <td data-label="Address">
-                    <span style="display:block;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${address}</span>
+                    <span class="seller-address">${address}</span>
                 </td>
                 <td data-label="Qty">${item.quantity}</td>
-                <td data-label="Total"><strong>${total}</strong></td>
+                <td data-label="Total"><strong class="seller-money">${total}</strong></td>
                 <td data-label="Status"><span class="status-badge ${statusCls}">${statusTxt}</span></td>
                 <td data-label="Actions">
-                    <div class="d-flex gap-1 flex-wrap align-items-center">
+                    <div class="seller-row-actions">
                         ${detailBtn}
                         ${actionBtn}
                     </div>

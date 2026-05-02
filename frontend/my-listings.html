@@ -63,54 +63,61 @@
           </div>
         </div>
 
-        <div class="table-wrap mb-4">
-          <table class="data-table responsive-stack">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Category</th>
-                <th>Size</th>
-                <th>Qty</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="listingsTableBody">
-              <tr>
-                <td colspan="7" class="text-center text-muted py-4">Loading listings...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <section class="seller-panel mb-4">
+          <div class="seller-panel-header">
+            <div>
+              <span class="seller-panel-kicker">Inventory</span>
+              <h5>Products</h5>
+              <p>Review live stock, pricing, and listing status.</p>
+            </div>
+            <a href="add-listing.html" class="seller-panel-action">
+              <i class="bi bi-plus-lg"></i>Add Listing
+            </a>
+          </div>
+          <div class="table-wrap seller-table-card">
+            <table class="data-table seller-data-table responsive-stack">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Size</th>
+                  <th>Qty</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="listingsTableBody">
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4">Loading listings...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-        <h5 style="font-size:1.1rem;font-weight:700;margin-bottom:.5rem;">Incoming Orders</h5>
-        <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:1rem;">
-          <i class="bi bi-info-circle me-1"></i>Each row represents an order item assigned to you as the seller.
-        </p>
-        <div class="table-wrap">
-          <table class="data-table responsive-stack">
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Buyer</th>
-                <th>Address</th>
-                <th>Qty</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="ordersTableBody">
-              <tr>
-                <td colspan="7" class="text-center text-muted py-4">Loading incoming orders...</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p style="font-size:.8rem;color:var(--text-muted);margin-top:.75rem;">
-          <i class="bi bi-arrow-repeat me-1"></i>When every order item is fulfilled, the overall order moves to shipped.
-        </p>
+        <section class="seller-panel">
+          <div class="table-wrap seller-table-card">
+            <table class="data-table seller-data-table responsive-stack">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Buyer</th>
+                  <th>Address</th>
+                  <th>Qty</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr>
+                  <td colspan="7" class="text-center text-muted py-4">Loading incoming orders...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </div>
   </div>
