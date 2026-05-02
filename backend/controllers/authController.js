@@ -3,6 +3,7 @@ const User = require('../models/User');
 const OtpToken = require('../models/OtpToken');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const {
     OTP_MAX_ATTEMPTS,
     generateOtp,
@@ -27,6 +28,14 @@ function signToken(userId, res) {
             res.json({ token });
         }
     );
+}
+
+function generateResetToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
+
+function getResetTokenExpiryDate() {
+    return new Date(Date.now() + 10 * 60 * 1000);
 }
 
 async function createAndSendOtp({ user, purpose }) {
@@ -220,6 +229,137 @@ exports.resendVerificationOtp = async (req, res) => {
 
         await createAndSendOtp({ user, purpose: 'verify_email' });
         res.json({ msg: 'Verification OTP sent.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Send forgot password OTP
+// @route   POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.json({ msg: 'If this email is registered, a reset OTP will be sent.' });
+        }
+
+        const latestToken = await OtpToken.findOne({
+            email: normalizedEmail,
+            purpose: 'forgot_password',
+            used: false,
+        }).sort({ createdAt: -1 });
+
+        if (latestToken?.resend_available_at > new Date()) {
+            return res.status(429).json({ msg: 'Please wait before requesting another OTP.' });
+        }
+
+        await createAndSendOtp({ user, purpose: 'forgot_password' });
+        res.json({ msg: 'If this email is registered, a reset OTP will be sent.' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Verify forgot password OTP
+// @route   POST /api/auth/verify-reset-otp
+exports.verifyResetOtp = async (req, res) => {
+    const { email, otp } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(400).json({ msg: 'Invalid reset request.' });
+        }
+
+        const token = await OtpToken.findOne({
+            email: normalizedEmail,
+            purpose: 'forgot_password',
+            used: false,
+        }).sort({ createdAt: -1 });
+
+        if (!token) {
+            return res.status(400).json({ msg: 'Reset code is invalid or expired.' });
+        }
+
+        if (token.expires_at < new Date()) {
+            token.used = true;
+            await token.save();
+            return res.status(400).json({ msg: 'Reset code has expired.' });
+        }
+
+        if (token.attempts >= OTP_MAX_ATTEMPTS) {
+            token.used = true;
+            await token.save();
+            return res.status(400).json({ msg: 'Too many incorrect attempts. Please request a new OTP.' });
+        }
+
+        const isMatch = await compareOtp(otp, token.otp_hash);
+        if (!isMatch) {
+            token.attempts += 1;
+            await token.save();
+            return res.status(400).json({ msg: 'Invalid reset code.' });
+        }
+
+        const resetToken = generateResetToken();
+        token.reset_token_hash = await bcrypt.hash(resetToken, 10);
+        token.reset_token_expires_at = getResetTokenExpiryDate();
+        await token.save();
+
+        res.json({
+            msg: 'Reset OTP verified.',
+            reset_token: resetToken,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Reset password after OTP verification
+// @route   POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+    const { email, reset_token, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        if (!password || String(password).length < 8) {
+            return res.status(400).json({ msg: 'Password must be at least 8 characters.' });
+        }
+
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(400).json({ msg: 'Invalid reset request.' });
+        }
+
+        const token = await OtpToken.findOne({
+            email: normalizedEmail,
+            purpose: 'forgot_password',
+            used: false,
+            reset_token_hash: { $ne: '' },
+        }).sort({ updatedAt: -1 });
+
+        if (!token || !token.reset_token_expires_at || token.reset_token_expires_at < new Date()) {
+            return res.status(400).json({ msg: 'Password reset session has expired.' });
+        }
+
+        const tokenMatches = await bcrypt.compare(String(reset_token || ''), token.reset_token_hash);
+        if (!tokenMatches) {
+            return res.status(400).json({ msg: 'Invalid password reset session.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        user.is_verified = true;
+        token.used = true;
+        await Promise.all([user.save(), token.save()]);
+
+        res.json({ msg: 'Password reset successfully.' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

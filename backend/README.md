@@ -133,6 +133,9 @@ x-auth-token: your_jwt_here
 | POST | `/login` | Login and get JWT after email verification | No |
 | POST | `/verify-email` | Verify registration OTP and return JWT | No |
 | POST | `/resend-verification-otp` | Resend registration OTP with cooldown | No |
+| POST | `/forgot-password` | Send forgot password OTP when email exists | No |
+| POST | `/verify-reset-otp` | Verify forgot password OTP and return reset token | No |
+| POST | `/reset-password` | Reset password using verified reset token | No |
 | GET | `/me` | Get current logged-in user | Yes |
 
 ### Users `/api/users`
@@ -220,7 +223,7 @@ Default OTP behavior:
 - 60-second resend cooldown
 - 5 maximum attempts constant for verification logic
 
-The first OTP-backed auth flow is email verification. Forgot password and change password can reuse the same model and utilities.
+The first OTP-backed auth flows are email verification and forgot password. Change password can reuse the same model and utilities.
 
 ## Email Verification Behavior
 
@@ -231,6 +234,15 @@ The first OTP-backed auth flow is email verification. Forgot password and change
 - `/api/auth/verify-email` checks the OTP, marks the user as verified, marks the OTP as used, and returns a JWT.
 - `/api/auth/resend-verification-otp` sends a new verification OTP if cooldown has passed.
 - Existing older users without an `is_verified` field are not blocked by the current login check; newly registered users are blocked until verified.
+
+## Forgot Password Behavior
+
+- `/api/auth/forgot-password` accepts an email and sends a `forgot_password` OTP if the account exists.
+- The response is generic for unknown emails so account existence is not exposed.
+- `/api/auth/verify-reset-otp` checks the OTP and returns a temporary reset token.
+- `/api/auth/reset-password` requires email, reset token, and a new password.
+- Reset tokens expire after 10 minutes.
+- Successful password reset marks the OTP as used and updates the hashed password.
 
 ## Scripts
 

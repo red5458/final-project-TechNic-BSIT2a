@@ -9,6 +9,8 @@ const otpTokenSchema = new mongoose.Schema({
     required: true,
   },
   otp_hash: { type: String, required: true },
+  reset_token_hash: { type: String, default: '' },
+  reset_token_expires_at: { type: Date, default: null },
   attempts: { type: Number, default: 0 },
   used: { type: Boolean, default: false },
   expires_at: { type: Date, required: true },
