@@ -62,8 +62,6 @@ function buildCartItem(item) {
     const productId = product?._id || '';
     const name = product?.name || 'Unknown Item';
     const size = product?.size || '';
-    const seller = product?.seller_id?.name || '';
-    const category = product?.category_id?.name || '';
     const price = Number(item.price || product?.price || 0);
     const qty = item.quantity || 1;
     const stock = Number(product?.quantity || 0);
@@ -86,9 +84,7 @@ function buildCartItem(item) {
             <div class="flex-grow-1">
                 <div class="cart-item-name">${name}</div>
                 <div class="cart-item-meta">
-                    ${size ? `Size: ${size} · ` : ''}
-                    ${seller ? `Seller: ${seller} · ` : ''}
-                    ${category}
+                    ${size ? `Size: ${size}` : ''}
                 </div>
             </div>
             <div class="qty-control">

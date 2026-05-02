@@ -2063,6 +2063,7 @@ img {
   font-size: .82rem;
   color: var(--text-muted);
   font-weight: 400;
+  min-height: 1.2em;
 }
 
 .cart-item-price {
@@ -2070,6 +2071,9 @@ img {
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: max-content;
 }
 
 .qty-control {
