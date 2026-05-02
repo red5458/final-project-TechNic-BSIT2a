@@ -114,7 +114,7 @@ x-auth-token: your_jwt_here
 
 | Model | Purpose |
 |---|---|
-| User | Stores account info and hashed password |
+| User | Stores account info, hashed password, phone, and email verification status |
 | Category | Product category records |
 | Product | Uniform listings with seller, category, price, quantity, description, and image URL |
 | Cart | One cart per user |
@@ -129,8 +129,10 @@ x-auth-token: your_jwt_here
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/register` | Register user | No |
-| POST | `/login` | Login and get JWT | No |
+| POST | `/register` | Register unverified user and send verification OTP | No |
+| POST | `/login` | Login and get JWT after email verification | No |
+| POST | `/verify-email` | Verify registration OTP and return JWT | No |
+| POST | `/resend-verification-otp` | Resend registration OTP with cooldown | No |
 | GET | `/me` | Get current logged-in user | Yes |
 
 ### Users `/api/users`
@@ -218,7 +220,17 @@ Default OTP behavior:
 - 60-second resend cooldown
 - 5 maximum attempts constant for verification logic
 
-The OTP routes are intentionally added in later auth-specific updates so the model and utilities stay reusable.
+The first OTP-backed auth flow is email verification. Forgot password and change password can reuse the same model and utilities.
+
+## Email Verification Behavior
+
+- New accounts are created with `is_verified: false`.
+- Registration sends a `verify_email` OTP to the submitted email address.
+- Registration no longer returns a login token immediately.
+- Login returns `403` for unverified accounts.
+- `/api/auth/verify-email` checks the OTP, marks the user as verified, marks the OTP as used, and returns a JWT.
+- `/api/auth/resend-verification-otp` sends a new verification OTP if cooldown has passed.
+- Existing older users without an `is_verified` field are not blocked by the current login check; newly registered users are blocked until verified.
 
 ## Scripts
 

@@ -1,7 +1,17 @@
 //Refactor auth controller for clarity and reuse
 const User = require('../models/User');
+const OtpToken = require('../models/OtpToken');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const {
+    OTP_MAX_ATTEMPTS,
+    generateOtp,
+    hashOtp,
+    compareOtp,
+    getOtpExpiryDate,
+    getResendAvailableDate,
+} = require('../utils/otp');
+const { sendEmail, buildOtpEmail } = require('../utils/email');
 
 function signToken(userId, res) {
     const payload = {
@@ -19,14 +29,49 @@ function signToken(userId, res) {
     );
 }
 
+async function createAndSendOtp({ user, purpose }) {
+    const email = String(user.email || '').trim().toLowerCase();
+    const otp = generateOtp();
+    const otpHash = await hashOtp(otp);
+
+    await OtpToken.updateMany(
+        { email, purpose, used: false },
+        { used: true }
+    );
+
+    const token = await OtpToken.create({
+        user_id: user._id,
+        email,
+        purpose,
+        otp_hash: otpHash,
+        expires_at: getOtpExpiryDate(),
+        resend_available_at: getResendAvailableDate(),
+    });
+
+    try {
+        const emailContent = buildOtpEmail({ otp, purpose });
+        await sendEmail({
+            to: email,
+            subject: emailContent.subject,
+            text: emailContent.text,
+            html: emailContent.html,
+        });
+    } catch (err) {
+        token.used = true;
+        await token.save();
+        throw err;
+    }
+}
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
 
     try {
         // 1. Check if user already exists
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
         }
@@ -34,9 +79,9 @@ exports.register = async (req, res) => {
         // 2. Create new user instance
         user = new User({
             name,
-            email,
+            email: normalizedEmail,
             password,
-            role
+            is_verified: false,
         });
 
         // 3. Hash the password before saving
@@ -44,8 +89,13 @@ exports.register = async (req, res) => {
         user.password = await bcrypt.hash(password, salt);
 
         await user.save();
+        await createAndSendOtp({ user, purpose: 'verify_email' });
 
-        signToken(user.id, res);
+        res.status(201).json({
+            msg: 'Account created. Please verify your email using the OTP we sent.',
+            email: user.email,
+            verification_required: true,
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -56,10 +106,11 @@ exports.register = async (req, res) => {
 // @route   POST /api/auth/login
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
 
     try {
         // 1. Check if user exists
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
@@ -70,7 +121,105 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
+        if (user.is_verified === false) {
+            return res.status(403).json({
+                msg: 'Please verify your email before logging in.',
+                verification_required: true,
+                email: user.email,
+            });
+        }
+
         signToken(user.id, res);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Verify email using OTP
+// @route   POST /api/auth/verify-email
+exports.verifyEmail = async (req, res) => {
+    const { email, otp } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(400).json({ msg: 'Invalid verification request.' });
+        }
+
+        if (user.is_verified) {
+            return signToken(user.id, res);
+        }
+
+        const token = await OtpToken.findOne({
+            email: normalizedEmail,
+            purpose: 'verify_email',
+            used: false,
+        }).sort({ createdAt: -1 });
+
+        if (!token) {
+            return res.status(400).json({ msg: 'Verification code is invalid or expired.' });
+        }
+
+        if (token.expires_at < new Date()) {
+            token.used = true;
+            await token.save();
+            return res.status(400).json({ msg: 'Verification code has expired.' });
+        }
+
+        if (token.attempts >= OTP_MAX_ATTEMPTS) {
+            token.used = true;
+            await token.save();
+            return res.status(400).json({ msg: 'Too many incorrect attempts. Please request a new OTP.' });
+        }
+
+        const isMatch = await compareOtp(otp, token.otp_hash);
+        if (!isMatch) {
+            token.attempts += 1;
+            await token.save();
+            return res.status(400).json({ msg: 'Invalid verification code.' });
+        }
+
+        token.used = true;
+        user.is_verified = true;
+        await Promise.all([token.save(), user.save()]);
+
+        signToken(user.id, res);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Resend email verification OTP
+// @route   POST /api/auth/resend-verification-otp
+exports.resendVerificationOtp = async (req, res) => {
+    const { email } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.json({ msg: 'If this email is registered and unverified, a new OTP will be sent.' });
+        }
+
+        if (user.is_verified) {
+            return res.status(400).json({ msg: 'Email is already verified.' });
+        }
+
+        const latestToken = await OtpToken.findOne({
+            email: normalizedEmail,
+            purpose: 'verify_email',
+            used: false,
+        }).sort({ createdAt: -1 });
+
+        if (latestToken?.resend_available_at > new Date()) {
+            return res.status(429).json({ msg: 'Please wait before requesting another OTP.' });
+        }
+
+        await createAndSendOtp({ user, purpose: 'verify_email' });
+        res.json({ msg: 'Verification OTP sent.' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
