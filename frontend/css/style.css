@@ -880,6 +880,27 @@ img {
   font-weight: 700;
 }
 
+.auth-form-helper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: .45rem;
+}
+
+.auth-form-helper button {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: .82rem;
+  font-family: 'Poppins', sans-serif;
+  padding: 0;
+  cursor: pointer;
+}
+
+.auth-form-helper button:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
 .auth-aside {
   display: flex;
   flex-direction: column;

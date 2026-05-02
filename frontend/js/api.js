@@ -111,6 +111,8 @@ function clearAllErrors(form) {
 }
 
 let pendingVerificationEmail = '';
+let pendingResetEmail = '';
+let pendingResetToken = '';
 
 function openVerifyEmailModal(email) {
     pendingVerificationEmail = String(email || '').trim().toLowerCase();
@@ -211,6 +213,229 @@ if (resendVerifyOtpBtn) {
 //  REGISTER FORM
 //  POST /api/auth/register
 // ════════════════════════════════════════════
+function setForgotPasswordStep(step) {
+    const emailForm = document.getElementById('forgotPasswordEmailForm');
+    const otpForm = document.getElementById('resetOtpForm');
+    const passwordForm = document.getElementById('newPasswordForm');
+    const backBtn = document.getElementById('backToResetEmailBtn');
+    const title = document.getElementById('forgotPasswordTitle');
+    const help = document.getElementById('forgotPasswordHelp');
+
+    emailForm?.classList.toggle('d-none', step !== 'email');
+    otpForm?.classList.toggle('d-none', step !== 'otp');
+    passwordForm?.classList.toggle('d-none', step !== 'password');
+    backBtn?.classList.toggle('d-none', step === 'email');
+
+    if (!title || !help) return;
+
+    if (step === 'email') {
+        title.textContent = 'Find your account';
+        help.textContent = 'Enter your email and we will send a 6-digit reset code.';
+    } else if (step === 'otp') {
+        title.textContent = 'Check your email';
+        help.textContent = `Enter the 6-digit reset code sent to ${pendingResetEmail || 'your email'}.`;
+    } else {
+        title.textContent = 'Create a new password';
+        help.textContent = 'Use a strong password that is at least 8 characters long.';
+    }
+}
+
+function openForgotPasswordModal(email = '') {
+    pendingResetEmail = String(email || '').trim().toLowerCase();
+    pendingResetToken = '';
+
+    const emailInput = document.getElementById('forgotPasswordEmail');
+    const otpInput = document.getElementById('resetOtpInput');
+    const passwordInput = document.getElementById('newPasswordInput');
+    const confirmInput = document.getElementById('confirmNewPasswordInput');
+    const modalEl = document.getElementById('forgotPasswordModal');
+
+    if (emailInput) emailInput.value = pendingResetEmail;
+    if (otpInput) otpInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+    if (confirmInput) confirmInput.value = '';
+
+    [
+        document.getElementById('forgotPasswordEmailForm'),
+        document.getElementById('resetOtpForm'),
+        document.getElementById('newPasswordForm'),
+    ].filter(Boolean).forEach(clearAllErrors);
+
+    setForgotPasswordStep('email');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    setTimeout(() => emailInput?.focus(), 350);
+}
+
+const openForgotPasswordBtn = document.getElementById('openForgotPasswordBtn');
+if (openForgotPasswordBtn) {
+    openForgotPasswordBtn.addEventListener('click', () => {
+        const loginEmail = document.querySelector('#loginForm [name="email"]')?.value || '';
+        openForgotPasswordModal(loginEmail);
+    });
+}
+
+const backToResetEmailBtn = document.getElementById('backToResetEmailBtn');
+if (backToResetEmailBtn) {
+    backToResetEmailBtn.addEventListener('click', () => {
+        pendingResetToken = '';
+        setForgotPasswordStep('email');
+        setTimeout(() => document.getElementById('forgotPasswordEmail')?.focus(), 150);
+    });
+}
+
+const forgotPasswordEmailForm = document.getElementById('forgotPasswordEmailForm');
+if (forgotPasswordEmailForm) {
+    forgotPasswordEmailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(forgotPasswordEmailForm);
+
+        const emailInput = document.getElementById('forgotPasswordEmail');
+        const btn = document.getElementById('sendResetOtpBtn');
+        const originalText = btn?.innerHTML;
+        const email = emailInput?.value.trim().toLowerCase();
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showFieldError(emailInput, 'Please enter a valid email address.');
+            return;
+        }
+
+        if (btn) setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not send reset OTP.');
+
+            pendingResetEmail = email;
+            pendingResetToken = '';
+            showToast(data.msg || 'If the email exists, a reset OTP has been sent.');
+            setForgotPasswordStep('otp');
+            setTimeout(() => document.getElementById('resetOtpInput')?.focus(), 150);
+        } catch (err) {
+            showToast(err.message || 'Could not send reset OTP.', 'error');
+        } finally {
+            if (btn) setLoading(btn, false, originalText);
+        }
+    });
+}
+
+const resetOtpForm = document.getElementById('resetOtpForm');
+if (resetOtpForm) {
+    resetOtpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(resetOtpForm);
+
+        const otpInput = document.getElementById('resetOtpInput');
+        const btn = document.getElementById('verifyResetOtpBtn');
+        const originalText = btn?.innerHTML;
+        const otp = otpInput?.value.trim();
+
+        if (!pendingResetEmail) {
+            showToast('Please enter your email first.', 'error');
+            setForgotPasswordStep('email');
+            return;
+        }
+
+        if (!/^\d{6}$/.test(otp || '')) {
+            showFieldError(otpInput, 'Enter the 6-digit OTP.');
+            return;
+        }
+
+        if (btn) setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/verify-reset-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingResetEmail, otp }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not verify reset OTP.');
+
+            pendingResetToken = data.reset_token;
+            showToast(data.msg || 'Reset OTP verified.');
+            setForgotPasswordStep('password');
+            setTimeout(() => document.getElementById('newPasswordInput')?.focus(), 150);
+        } catch (err) {
+            showToast(err.message || 'Could not verify reset OTP.', 'error');
+        } finally {
+            if (btn) setLoading(btn, false, originalText);
+        }
+    });
+}
+
+const newPasswordForm = document.getElementById('newPasswordForm');
+if (newPasswordForm) {
+    newPasswordForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(newPasswordForm);
+
+        const passwordInput = document.getElementById('newPasswordInput');
+        const confirmInput = document.getElementById('confirmNewPasswordInput');
+        const btn = document.getElementById('resetPasswordBtn');
+        const originalText = btn?.innerHTML;
+        const password = passwordInput?.value || '';
+        const confirmPassword = confirmInput?.value || '';
+
+        let hasError = false;
+        if (!password || password.length < 8) {
+            showFieldError(passwordInput, 'Password must be at least 8 characters.');
+            hasError = true;
+        }
+        if (password !== confirmPassword) {
+            showFieldError(confirmInput, 'Passwords do not match.');
+            hasError = true;
+        }
+        if (hasError) return;
+
+        if (!pendingResetEmail || !pendingResetToken) {
+            showToast('Please verify your reset OTP first.', 'error');
+            setForgotPasswordStep('otp');
+            return;
+        }
+
+        if (btn) setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: pendingResetEmail,
+                    reset_token: pendingResetToken,
+                    password,
+                }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not reset password.');
+
+            showToast(data.msg || 'Password reset successfully. You can now log in.');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
+            if (modal) modal.hide();
+
+            const loginEmailInput = document.querySelector('#loginForm [name="email"]');
+            const loginPasswordInput = document.querySelector('#loginForm [name="password"]');
+            if (loginEmailInput) loginEmailInput.value = pendingResetEmail;
+            if (loginPasswordInput) loginPasswordInput.value = '';
+
+            pendingResetEmail = '';
+            pendingResetToken = '';
+            setTimeout(() => loginPasswordInput?.focus(), 250);
+        } catch (err) {
+            showToast(err.message || 'Could not reset password.', 'error');
+        } finally {
+            if (btn) setLoading(btn, false, originalText);
+        }
+    });
+}
+
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {

@@ -26,7 +26,7 @@ Uniformity helps students and other users exchange uniforms that are still in go
 
 ## Current Features
 
-- User registration, login, JWT authentication, and protected account flows
+- User registration, login, JWT authentication, email OTP verification, forgot password, and protected account flows
 - Product listing creation with category, size, price, stock quantity, description, and optional Cloudinary image upload
 - Product browsing with search, filters, sorting, pagination, and product detail pages
 - Cart management with quantity controls, selected-item checkout, delete confirmation modal, and stock-aware limits

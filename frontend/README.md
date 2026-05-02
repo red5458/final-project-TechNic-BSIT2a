@@ -8,7 +8,7 @@ The frontend connects to the backend API for the main buyer, seller, and account
 
 Implemented areas include:
 
-- authentication
+- authentication with email verification and forgot password OTP modals
 - product listing
 - product browsing and details
 - cart handling
@@ -65,8 +65,8 @@ frontend/
 | Page | Purpose |
 |---|---|
 | `index.html` | Landing page |
-| `login.html` | Login form with working back-to-home navigation |
-| `register.html` | Registration form |
+| `login.html` | Login form, forgot password OTP modal, and working back-to-home navigation |
+| `register.html` | Registration form with email verification OTP modal |
 | `dashboard.html` | Product browsing with search, filters, sorting, and pagination |
 | `product-detail.html` | Single product view, quantity selection, and add-to-cart |
 | `cart.html` | Cart management, selected-item checkout, quantity controls, and delete confirmation modal |
@@ -82,7 +82,7 @@ frontend/
 | File | Responsibility |
 |---|---|
 | `main.js` | Auth guard, login status helper, sidebar, profile dropdown, logout, cart/order badges |
-| `api.js` | Shared auth helpers, forms, add-to-cart, checkout, profile update, API base URL |
+| `api.js` | Shared auth helpers, email verification, forgot password reset, forms, add-to-cart, checkout, profile update, API base URL |
 | `dashboard.js` | Product fetch, search, filter, sort, pagination, add-to-cart entry point |
 | `product-detail.js` | Product detail fetch, quantity controls, detailed add-to-cart payload |
 | `cart.js` | Cart display, totals, quantity changes, selected checkout snapshot, delete confirmation |
@@ -93,13 +93,7 @@ frontend/
 
 ## Backend Dependency
 
-The frontend expects the backend API at:
-
-```js
-const API_BASE = 'http://localhost:5000/api';
-```
-
-That value is defined in:
+The frontend API base URL is defined in:
 
 ```text
 frontend/js/api.js
@@ -110,6 +104,8 @@ Start the backend before testing authenticated features, cart, checkout, and ord
 ## Implemented UX Details
 
 - Working public pages and auth guard
+- Email verification OTP modal after registration or unverified login
+- Forgot password OTP modal with email, OTP verification, and new password steps
 - Live sidebar badges for cart and order counts
 - Add-listing image preview before upload
 - Product cards with stock status and disabled sold-out action
