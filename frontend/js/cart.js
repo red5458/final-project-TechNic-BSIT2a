@@ -7,6 +7,12 @@
 let cartData = null; // full { cart, items } payload from backend
 let pendingCartRemoval = null;
 
+function saveCartItemCount(items = []) {
+    const count = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    localStorage.setItem('cartItemCount', String(count));
+    window.dispatchEvent(new Event('cart-updated'));
+}
+
 async function loadCart() {
     const user = getUser();
     const token = localStorage.getItem('token');
@@ -27,6 +33,7 @@ async function loadCart() {
         cartData = data;
 
         const items = data?.items || [];
+        saveCartItemCount(items);
         items.length === 0 ? renderEmptyCart() : renderCartItems(items);
     } catch {
         renderEmptyCart('Could not load cart. Please try again.');
@@ -137,6 +144,11 @@ function changeQty(btn, delta) {
 
     qtyEl.textContent = qty;
     priceEl.textContent = `PHP ${(unitPrice * qty).toFixed(2)}`;
+
+    const itemId = cartItem.dataset.itemId;
+    const found = cartData?.items?.find((item) => item._id === itemId);
+    if (found) found.quantity = qty;
+
     updateTotal();
 }
 
@@ -161,7 +173,7 @@ function updateTotal() {
         checkoutBtn.style.pointerEvents = total === 0 ? 'none' : 'auto';
     }
 
-    const cartItems = [];
+    const checkoutItems = [];
     checkedItems.forEach((checkbox) => {
         const cartItem = checkbox.closest('.cart-item');
         const itemId = cartItem.dataset.itemId;
@@ -171,7 +183,7 @@ function updateTotal() {
 
         if (found) {
             const product = found.product_id || {};
-            cartItems.push({
+            checkoutItems.push({
                 product_id: product?._id || found.product_id,
                 seller_id: product?.seller_id?._id || '',
                 name: product?.name || 'Unknown Item',
@@ -183,8 +195,8 @@ function updateTotal() {
         }
     });
 
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-    window.dispatchEvent(new Event('cart-updated'));
+    localStorage.setItem('checkoutCart', JSON.stringify(checkoutItems));
+    saveCartItemCount(cartData?.items || []);
 }
 
 async function removeFromCart(itemId, btn) {
@@ -201,6 +213,9 @@ async function removeFromCart(itemId, btn) {
         if (!res.ok) throw new Error();
 
         btn.closest('.cart-item').remove();
+        if (cartData?.items) {
+            cartData.items = cartData.items.filter((item) => item._id !== itemId);
+        }
         updateTotal();
         showToast('Item removed from cart.');
 
@@ -260,8 +275,8 @@ function renderEmptyCart(message = 'Your cart is empty.') {
     const totalEl = document.getElementById('cartTotal');
     if (totalEl) totalEl.textContent = 'PHP 0.00';
 
-    localStorage.setItem('cart', '[]');
-    window.dispatchEvent(new Event('cart-updated'));
+    localStorage.setItem('checkoutCart', '[]');
+    saveCartItemCount([]);
 }
 
 document.addEventListener('DOMContentLoaded', () => {

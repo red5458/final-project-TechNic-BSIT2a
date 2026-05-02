@@ -84,6 +84,9 @@ function buildSidebar() {
 
 function getCartCount() {
     try {
+        const savedCount = localStorage.getItem('cartItemCount');
+        if (savedCount !== null) return Number(savedCount || 0);
+
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         return cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
     } catch {
@@ -222,6 +225,8 @@ function initLogout() {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutCart');
+            localStorage.removeItem('cartItemCount');
             window.location.href = 'login.html';
         });
     });
@@ -321,6 +326,8 @@ function initProfileDropdown() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('cart');
+        localStorage.removeItem('checkoutCart');
+        localStorage.removeItem('cartItemCount');
         window.location.href = 'login.html';
     });
 }

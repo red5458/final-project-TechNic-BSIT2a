@@ -768,7 +768,9 @@ if (checkoutForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || data.msg || 'Failed to place order.');
 
-            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutCart');
+            localStorage.setItem('cartItemCount', '0');
+            window.dispatchEvent(new Event('cart-updated'));
 
             showToast('Order placed successfully!');
             setTimeout(() => { window.location.href = 'my-orders.html'; }, 1500);
@@ -782,7 +784,7 @@ if (checkoutForm) {
 
 function getCheckoutCart() {
     try {
-        return JSON.parse(localStorage.getItem('cart') || '[]');
+        return JSON.parse(localStorage.getItem('checkoutCart') || localStorage.getItem('cart') || '[]');
     } catch {
         return [];
     }
@@ -919,6 +921,7 @@ async function addToCart(productId, sellerId, price, quantity = 1, details = {})
             });
         }
         localStorage.setItem('cart', JSON.stringify(localCart));
+        localStorage.setItem('cartItemCount', String(localCart.reduce((sum, item) => sum + Number(item.quantity || 0), 0)));
         window.dispatchEvent(new Event('cart-updated'));
 
         showToast('Item added to cart!');
