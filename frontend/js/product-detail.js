@@ -22,6 +22,7 @@ async function loadProductDetail() {
         const product = await res.json();
         currentProduct = product;
         renderProduct(product);
+        loadRelatedProducts(product);
     } catch {
         showError();
     }
@@ -95,6 +96,66 @@ function renderProduct(product) {
 
     document.getElementById('detailLoading').style.display = 'none';
     document.getElementById('detailBody').style.display = '';
+}
+
+async function loadRelatedProducts(product) {
+    const section = document.getElementById('youMayLikeSection');
+    const grid = document.getElementById('youMayLikeGrid');
+    if (!section || !grid) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/products`);
+        if (!res.ok) throw new Error('Could not load related products.');
+
+        const products = await res.json();
+        const currentId = product._id;
+        const currentCategoryId = product.category_id?._id || product.category_id;
+
+        const available = (Array.isArray(products) ? products : [])
+            .filter((item) => item._id !== currentId && Number(item.quantity || 0) > 0);
+
+        const sameCategory = available.filter((item) =>
+            (item.category_id?._id || item.category_id) === currentCategoryId
+        );
+
+        const others = available.filter((item) =>
+            (item.category_id?._id || item.category_id) !== currentCategoryId
+        );
+
+        const related = [...sameCategory, ...others].slice(0, 4);
+        if (related.length === 0) return;
+
+        grid.innerHTML = related.map(buildRelatedCard).join('');
+        section.style.display = '';
+    } catch {
+        section.style.display = 'none';
+    }
+}
+
+function buildRelatedCard(product) {
+    const name = product.name || 'Uniform listing';
+    const image = product.image_url
+        ? `<img src="${product.image_url}" alt="${name}" />`
+        : `<div class="related-product-placeholder"><i class="bi bi-image"></i></div>`;
+    const category = product.category_id?.name || '';
+    const seller = product.seller_id?.name || 'Seller';
+
+    return `
+        <article class="related-product-card" onclick="window.location.href='product-detail.html?id=${product._id}'">
+            <div class="related-product-img">${image}</div>
+            <div class="related-product-body">
+                <div class="related-product-meta">
+                    <span>Size ${product.size || '-'}</span>
+                    ${category ? `<span>${category}</span>` : ''}
+                </div>
+                <h3>${name}</h3>
+                <p><i class="bi bi-person-fill me-1"></i>${seller}</p>
+                <div class="related-product-bottom">
+                    <strong>PHP ${Number(product.price || 0).toFixed(2)}</strong>
+                    <span>${Number(product.quantity || 0)} left</span>
+                </div>
+            </div>
+        </article>`;
 }
 
 function renderSellerContact(seller) {
