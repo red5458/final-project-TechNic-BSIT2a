@@ -131,6 +131,33 @@
     </div>
   </div>
 
+  <div class="modal fade image-preview-modal" id="imagePreviewModal" tabindex="-1" aria-labelledby="imagePreviewTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imagePreviewTitle">Product Image</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="image-preview-toolbar">
+          <button type="button" class="icon-btn" id="imageZoomOutBtn" aria-label="Zoom out" title="Zoom out">
+            <i class="bi bi-zoom-out"></i>
+          </button>
+          <button type="button" class="icon-btn" id="imageZoomResetBtn" aria-label="Reset zoom" title="Reset zoom">
+            <i class="bi bi-aspect-ratio"></i>
+          </button>
+          <button type="button" class="icon-btn" id="imageZoomInBtn" aria-label="Zoom in" title="Zoom in">
+            <i class="bi bi-zoom-in"></i>
+          </button>
+          <span id="imageZoomLabel">100%</span>
+        </div>
+        <div class="image-preview-stage" id="imagePreviewStage">
+          <img id="imagePreviewImg" src="" alt="Product full preview" />
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>

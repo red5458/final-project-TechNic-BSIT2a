@@ -5,6 +5,7 @@
 
 let currentProduct = null;
 let selectedQty = 1;
+let imageZoom = 1;
 
 async function loadProductDetail() {
     const params = new URLSearchParams(window.location.search);
@@ -45,9 +46,17 @@ function renderProduct(product) {
     if (imgContainer) {
         imgContainer.innerHTML = product.image_url
             ? `<img src="${product.image_url}" alt="${product.name}" style="width:100%;border-radius:var(--radius);object-fit:cover;max-height:420px;" />
+               <button type="button" class="image-preview-trigger" aria-label="View full image">
+                   <i class="bi bi-arrows-fullscreen"></i>
+               </button>
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`
             : `<i class="bi bi-image" style="color:var(--text-muted);font-size:3rem;"></i>
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`;
+
+        imgContainer.classList.toggle('is-clickable', Boolean(product.image_url));
+        imgContainer.onclick = product.image_url
+            ? () => openImagePreview(product.image_url, product.name || 'Product image')
+            : null;
     }
 
     setText('detailName', product.name);
@@ -96,6 +105,36 @@ function renderProduct(product) {
 
     document.getElementById('detailLoading').style.display = 'none';
     document.getElementById('detailBody').style.display = '';
+}
+
+function openImagePreview(src, alt) {
+    const modalEl = document.getElementById('imagePreviewModal');
+    const imageEl = document.getElementById('imagePreviewImg');
+    const titleEl = document.getElementById('imagePreviewTitle');
+    if (!modalEl || !imageEl) return;
+
+    imageZoom = 1;
+    imageEl.src = src;
+    imageEl.alt = alt;
+    if (titleEl) titleEl.textContent = alt || 'Product Image';
+    updateImageZoom();
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function updateImageZoom() {
+    const imageEl = document.getElementById('imagePreviewImg');
+    const labelEl = document.getElementById('imageZoomLabel');
+    if (!imageEl) return;
+
+    imageEl.style.transform = `scale(${imageZoom})`;
+    imageEl.classList.toggle('is-zoomed', imageZoom > 1);
+    if (labelEl) labelEl.textContent = `${Math.round(imageZoom * 100)}%`;
+}
+
+function changeImageZoom(delta) {
+    imageZoom = Math.min(3, Math.max(1, Number((imageZoom + delta).toFixed(2))));
+    updateImageZoom();
 }
 
 async function loadRelatedProducts(product) {
@@ -211,5 +250,23 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedQty++;
             document.getElementById('qtyDisplay').textContent = selectedQty;
         }
+    });
+
+    document.getElementById('imageZoomOutBtn')?.addEventListener('click', () => changeImageZoom(-0.25));
+    document.getElementById('imageZoomInBtn')?.addEventListener('click', () => changeImageZoom(0.25));
+    document.getElementById('imageZoomResetBtn')?.addEventListener('click', () => {
+        imageZoom = 1;
+        updateImageZoom();
+    });
+
+    document.getElementById('imagePreviewStage')?.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        changeImageZoom(e.deltaY < 0 ? 0.15 : -0.15);
+    }, { passive: false });
+
+    document.getElementById('imagePreviewModal')?.addEventListener('hidden.bs.modal', () => {
+        const imageEl = document.getElementById('imagePreviewImg');
+        if (imageEl) imageEl.removeAttribute('src');
+        imageZoom = 1;
     });
 });
