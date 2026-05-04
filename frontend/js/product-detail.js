@@ -5,7 +5,6 @@
 
 let currentProduct = null;
 let selectedQty = 1;
-let imageZoom = 1;
 
 async function loadProductDetail() {
     const params = new URLSearchParams(window.location.search);
@@ -46,9 +45,6 @@ function renderProduct(product) {
     if (imgContainer) {
         imgContainer.innerHTML = product.image_url
             ? `<img src="${product.image_url}" alt="${product.name}" style="width:100%;border-radius:var(--radius);object-fit:cover;max-height:420px;" />
-               <button type="button" class="image-preview-trigger" aria-label="View full image">
-                   <i class="bi bi-arrows-fullscreen"></i>
-               </button>
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`
             : `<i class="bi bi-image" style="color:var(--text-muted);font-size:3rem;"></i>
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`;
@@ -108,33 +104,26 @@ function renderProduct(product) {
 }
 
 function openImagePreview(src, alt) {
-    const modalEl = document.getElementById('imagePreviewModal');
+    const overlayEl = document.getElementById('imagePreviewOverlay');
     const imageEl = document.getElementById('imagePreviewImg');
-    const titleEl = document.getElementById('imagePreviewTitle');
-    if (!modalEl || !imageEl) return;
+    if (!overlayEl || !imageEl) return;
 
-    imageZoom = 1;
     imageEl.src = src;
     imageEl.alt = alt;
-    if (titleEl) titleEl.textContent = alt || 'Product Image';
-    updateImageZoom();
-
-    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    overlayEl.classList.add('show');
+    overlayEl.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-open');
 }
 
-function updateImageZoom() {
+function closeImagePreview() {
+    const overlayEl = document.getElementById('imagePreviewOverlay');
     const imageEl = document.getElementById('imagePreviewImg');
-    const labelEl = document.getElementById('imageZoomLabel');
-    if (!imageEl) return;
+    if (!overlayEl) return;
 
-    imageEl.style.transform = `scale(${imageZoom})`;
-    imageEl.classList.toggle('is-zoomed', imageZoom > 1);
-    if (labelEl) labelEl.textContent = `${Math.round(imageZoom * 100)}%`;
-}
-
-function changeImageZoom(delta) {
-    imageZoom = Math.min(3, Math.max(1, Number((imageZoom + delta).toFixed(2))));
-    updateImageZoom();
+    overlayEl.classList.remove('show');
+    overlayEl.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-open');
+    if (imageEl) imageEl.removeAttribute('src');
 }
 
 async function loadRelatedProducts(product) {
@@ -252,21 +241,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.getElementById('imageZoomOutBtn')?.addEventListener('click', () => changeImageZoom(-0.25));
-    document.getElementById('imageZoomInBtn')?.addEventListener('click', () => changeImageZoom(0.25));
-    document.getElementById('imageZoomResetBtn')?.addEventListener('click', () => {
-        imageZoom = 1;
-        updateImageZoom();
+    document.getElementById('imagePreviewCloseBtn')?.addEventListener('click', closeImagePreview);
+    document.getElementById('imagePreviewOverlay')?.addEventListener('click', (e) => {
+        if (e.target.id === 'imagePreviewOverlay') closeImagePreview();
     });
 
-    document.getElementById('imagePreviewStage')?.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        changeImageZoom(e.deltaY < 0 ? 0.15 : -0.15);
-    }, { passive: false });
-
-    document.getElementById('imagePreviewModal')?.addEventListener('hidden.bs.modal', () => {
-        const imageEl = document.getElementById('imagePreviewImg');
-        if (imageEl) imageEl.removeAttribute('src');
-        imageZoom = 1;
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeImagePreview();
     });
 });
