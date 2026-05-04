@@ -1427,6 +1427,7 @@ body.landing-page {
   border-radius: 0;
   box-shadow: none;
   background: #fff;
+  margin-top: .65rem;
   overflow: auto;
 }
 
