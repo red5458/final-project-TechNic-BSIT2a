@@ -4630,7 +4630,7 @@ button:active,
   .seller-data-table.responsive-stack td[data-label="Actions"] {
     margin-top: .4rem;
     padding: .75rem .9rem .9rem;
-    background: var(--bg-soft);
+    background: var(--card-bg);
     border-top: 1px solid var(--border);
   }
 
