@@ -1294,23 +1294,18 @@ body.landing-page {
   position: relative;
   align-items: flex-start;
   padding: 1.25rem;
-  border: 1px solid rgba(45, 106, 79, .12);
-  background:
-    radial-gradient(circle at top right, rgba(82, 183, 136, .14), transparent 36%),
-    linear-gradient(180deg, #ffffff 0%, #fbfdfb 100%);
-  box-shadow: 0 10px 30px rgba(45, 106, 79, .08);
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: none;
 }
 
-.seller-stat-card::after {
-  content: '';
-  position: absolute;
-  left: 1.25rem;
-  right: 1.25rem;
-  bottom: 0;
-  height: 3px;
-  border-radius: 999px 999px 0 0;
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
-  opacity: .72;
+.seller-stat-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.seller-stat-card:hover .stat-icon {
+  transform: none;
 }
 
 .seller-stat-card .stat-icon {
