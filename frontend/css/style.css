@@ -1558,9 +1558,15 @@ body.landing-page {
 }
 
 .seller-row-actions .btn-sm-action {
-  width: 34px;
+  width: auto;
+  min-width: 34px;
   height: 34px;
+  padding: 0 .75rem;
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
 }
 
 .btn-sm-action.btn-view {
@@ -4567,7 +4573,7 @@ button:active,
   }
 
   .seller-row-actions {
-    justify-content: flex-end;
+    justify-content: flex-start;
     width: 100%;
   }
 
@@ -4615,6 +4621,33 @@ button:active,
 
   .data-table.responsive-stack td[data-label="Actions"] > .d-flex {
     justify-content: flex-start;
+  }
+
+  .seller-data-table.responsive-stack td[data-label="Actions"]::before {
+    content: none;
+  }
+
+  .seller-data-table.responsive-stack td[data-label="Actions"] {
+    margin-top: .4rem;
+    padding: .75rem .9rem .9rem;
+    background: var(--bg-soft);
+    border-top: 1px solid var(--border);
+  }
+
+  .seller-data-table.responsive-stack td[data-label="Actions"] .seller-row-actions {
+    justify-content: flex-start;
+    width: 100%;
+    gap: .6rem;
+    flex-wrap: nowrap;
+  }
+
+  .seller-data-table.responsive-stack td[data-label="Actions"] .btn-sm-action,
+  .seller-data-table.responsive-stack td[data-label="Actions"] .seller-fulfill-btn {
+    flex: 1 1 0;
+    min-height: 38px;
+    border-radius: 10px;
+    font-size: .78rem;
+    text-align: center;
   }
 
   .modal-dialog {

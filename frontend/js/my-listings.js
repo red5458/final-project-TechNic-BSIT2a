@@ -164,10 +164,10 @@ function renderListingsTable(products) {
                 <td data-label="Actions">
                     <div class="seller-row-actions">
                         <button class="btn-sm-action btn-edit" title="Edit listing" aria-label="Edit listing" onclick="openEditModal('${product._id}')">
-                            <i class="bi bi-pencil-fill"></i>
+                            <i class="bi bi-pencil-fill"></i><span>Edit</span>
                         </button>
                         <button class="btn-sm-action btn-delete" title="Delete listing" aria-label="Delete listing" onclick="confirmDelete('${product._id}', this)">
-                            <i class="bi bi-trash-fill"></i>
+                            <i class="bi bi-trash-fill"></i><span>Delete</span>
                         </button>
                     </div>
                 </td>
@@ -259,22 +259,20 @@ function renderIncomingOrders(orders) {
         const statusTxt = isCancelled
             ? 'Cancelled'
             : item.status === 'fulfilled'
-                ? 'Fulfilled'
+                ? 'Delivered'
                 : 'Pending';
 
         const detailBtn = `<button class="btn-sm-action btn-view" title="View order details" aria-label="View order details"
                     onclick="openSellerOrderDetails('${order._id}')">
-                    <i class="bi bi-eye-fill"></i>
+                    <i class="bi bi-eye-fill"></i><span>View Details</span>
                </button>`;
 
-        const actionBtn = isCancelled
-            ? `<span class="status-badge status-sold" style="font-size:.75rem;">Cancelled</span>`
-            : item.status !== 'fulfilled'
+        const actionBtn = !isCancelled && item.status !== 'fulfilled'
             ? `<button class="seller-fulfill-btn"
                     onclick="markFulfilled('${order._id}', '${item._id}', this)">
                     <i class="bi bi-check-lg me-1"></i>Mark Fulfilled
                </button>`
-            : `<span class="status-badge status-available" style="font-size:.75rem;">Done</span>`;
+            : '';
 
         return `
             <tr class="seller-table-row">
@@ -348,7 +346,7 @@ function openSellerOrderDetails(orderId) {
             const itemStatusTxt = isCancelled
                 ? 'Cancelled'
                 : item.status === 'fulfilled'
-                    ? 'Fulfilled'
+                    ? 'Delivered'
                     : 'Pending';
             const lineTotal = formatCurrency(Number(item.price || 0) * Number(item.quantity || 0));
 
