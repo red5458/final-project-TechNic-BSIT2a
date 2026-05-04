@@ -4531,14 +4531,22 @@ button:active,
   }
 
   .seller-table-card {
-    background: var(--bg);
+    background: var(--card-bg);
+    overflow: hidden;
   }
 
   .seller-data-table.responsive-stack tr {
-    margin: .85rem;
+    margin: 0;
     padding: 0;
     overflow: hidden;
-    box-shadow: 0 8px 22px rgba(45, 106, 79, .08);
+    border-radius: 0;
+    border-bottom: 1px solid var(--border);
+    box-shadow: none;
+    background: var(--card-bg);
+  }
+
+  .seller-data-table.responsive-stack tr:last-child {
+    border-bottom: 0;
   }
 
   .seller-data-table.responsive-stack td {
@@ -4612,7 +4620,7 @@ button:active,
   }
 
   .data-table.responsive-stack tr {
-    margin: .75rem 0;
+    margin: 0;
   }
 
   .data-table.responsive-stack td {
