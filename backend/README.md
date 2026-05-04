@@ -10,7 +10,6 @@ Express and MongoDB backend for the Uniformity marketplace.
 - JWT authentication
 - bcryptjs for password hashing
 - multer and Cloudinary for image uploads
-- nodemailer for email OTP delivery
 
 ## Folder Structure
 
@@ -34,7 +33,6 @@ backend/
 |   |-- Category.js
 |   |-- Order.js
 |   |-- OrderItem.js
-|   |-- OtpToken.js
 |   |-- Product.js
 |   `-- User.js
 |-- routes/
@@ -46,9 +44,6 @@ backend/
 |   `-- userRoutes.js
 |-- seed.js
 |-- server.js
-|-- utils/
-|   |-- email.js
-|   `-- otp.js
 `-- package.json
 ```
 
@@ -69,11 +64,6 @@ JWT_SECRET=your_jwt_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_email_app_password
-SMTP_FROM=Uniformity <your_email@gmail.com>
 ```
 
 ### 3. Seed categories if needed
@@ -114,14 +104,13 @@ x-auth-token: your_jwt_here
 
 | Model | Purpose |
 |---|---|
-| User | Stores account info, hashed password, phone, and email verification status |
+| User | Stores account info, hashed password, and phone |
 | Category | Product category records |
 | Product | Uniform listings with seller, category, price, quantity, description, and image URL |
 | Cart | One cart per user |
 | CartItem | Product entries inside a cart |
 | Order | Top-level buyer order record |
 | OrderItem | Per-product order line tied to seller and order |
-| OtpToken | Stores hashed email OTP records for verification and password flows |
 
 ## API Routes
 
@@ -129,13 +118,8 @@ x-auth-token: your_jwt_here
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/register` | Register unverified user and send verification OTP | No |
-| POST | `/login` | Login and get JWT after email verification | No |
-| POST | `/verify-email` | Verify registration OTP and return JWT | No |
-| POST | `/resend-verification-otp` | Resend registration OTP with cooldown | No |
-| POST | `/forgot-password` | Send forgot password OTP when email exists | No |
-| POST | `/verify-reset-otp` | Verify forgot password OTP and return reset token | No |
-| POST | `/reset-password` | Reset password using verified reset token | No |
+| POST | `/register` | Register user and return JWT | No |
+| POST | `/login` | Login and get JWT | No |
 | GET | `/me` | Get current logged-in user | Yes |
 
 ### Users `/api/users`
@@ -199,50 +183,6 @@ x-auth-token: your_jwt_here
 - Sellers cannot fulfill cancelled items or cancelled orders.
 - Seller fulfillment is item-level; when every item in an order is fulfilled, the order moves to `shipped`.
 - Buyers can mark shipped orders as delivered.
-
-## OTP Foundation
-
-The backend includes a reusable email OTP foundation for future authentication flows:
-
-- `models/OtpToken.js` stores OTP records by email, user, purpose, expiry, attempts, and used status.
-- `utils/otp.js` generates 6-digit OTP codes, hashes them with bcrypt, compares submitted codes, and provides expiry/cooldown helpers.
-- `utils/email.js` sends emails through SMTP using nodemailer and includes a reusable OTP email template.
-
-Supported OTP purposes:
-
-```text
-verify_email
-forgot_password
-change_password
-```
-
-Default OTP behavior:
-
-- 6-digit code
-- 10-minute expiry
-- 60-second resend cooldown
-- 5 maximum attempts constant for verification logic
-
-The first OTP-backed auth flows are email verification and forgot password. Change password can reuse the same model and utilities.
-
-## Email Verification Behavior
-
-- New accounts are created with `is_verified: false`.
-- Registration sends a `verify_email` OTP to the submitted email address.
-- Registration no longer returns a login token immediately.
-- Login returns `403` for unverified accounts.
-- `/api/auth/verify-email` checks the OTP, marks the user as verified, marks the OTP as used, and returns a JWT.
-- `/api/auth/resend-verification-otp` sends a new verification OTP if cooldown has passed.
-- Existing older users without an `is_verified` field are not blocked by the current login check; newly registered users are blocked until verified.
-
-## Forgot Password Behavior
-
-- `/api/auth/forgot-password` accepts an email and sends a `forgot_password` OTP if the account exists.
-- The response is generic for unknown emails so account existence is not exposed.
-- `/api/auth/verify-reset-otp` checks the OTP and returns a temporary reset token.
-- `/api/auth/reset-password` requires email, reset token, and a new password.
-- Reset tokens expire after 10 minutes.
-- Successful password reset marks the OTP as used and updates the hashed password.
 
 ## Scripts
 

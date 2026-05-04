@@ -90,8 +90,25 @@ img {
   transition: var(--transition);
 }
 
+body.landing-page #mainNav {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+  width: 100%;
+}
+
 #mainNav.scrolled {
   padding: .6rem 0;
+}
+
+body:has(#mainNav.fixed-top) {
+  padding-top: 74px;
+}
+
+body.landing-page {
+  padding-top: 74px;
 }
 
 .navbar-brand {
@@ -812,13 +829,6 @@ img {
   padding-left: 2.8rem;
 }
 
-.otp-input {
-  text-align: center;
-  letter-spacing: .45rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
 .input-icon-wrap .bi {
   position: absolute;
   left: 1rem;
@@ -878,27 +888,6 @@ img {
 .auth-footer-link a {
   color: var(--primary);
   font-weight: 700;
-}
-
-.auth-form-helper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: .45rem;
-}
-
-.auth-form-helper button {
-  border: 0;
-  background: transparent;
-  color: var(--primary);
-  font-size: .82rem;
-  font-family: 'Poppins', sans-serif;
-  padding: 0;
-  cursor: pointer;
-}
-
-.auth-form-helper button:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
 }
 
 .auth-aside {
@@ -1098,6 +1087,7 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: nowrap;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -1135,6 +1125,8 @@ img {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .icon-btn {
@@ -1740,8 +1732,8 @@ img {
   border-radius: var(--radius);
   padding: 1.2rem 1.5rem;
   margin-bottom: 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto repeat(3, minmax(145px, 1fr)) auto;
   gap: 1rem;
   align-items: center;
 }
@@ -1758,11 +1750,28 @@ img {
   font-weight: 400;
   appearance: auto;
   -webkit-appearance: auto;
+  min-width: 0;
+  width: 100%;
 }
 
 .filter-select:focus {
   outline: none;
   border-color: var(--primary-light);
+}
+
+.filter-title {
+  grid-column: 1 / -1;
+  color: var(--primary-dark);
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.listing-count-row {
+  margin: -.75rem 0 1.25rem;
+  font-size: .85rem;
+  text-align: center;
 }
 
 /* TABLE */
@@ -2171,7 +2180,7 @@ img {
   background: var(--bg-soft);
   border-radius: var(--radius);
   padding: 1.5rem;
-  margin-top: 1.5rem;
+  margin-top: .25rem;
 }
 
 .detail-listed-date {
@@ -2193,7 +2202,7 @@ img {
 }
 
 .you-may-like-section {
-  margin-top: 3rem;
+  margin-top: 2rem;
 }
 
 .you-may-like-header {
@@ -3069,7 +3078,7 @@ textarea {
 
   .topbar {
     padding: .9rem 1rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .topbar>div {
@@ -3094,7 +3103,8 @@ textarea {
 
   .filter-bar .ms-auto {
     margin-left: 0 !important;
-    width: 100%;
+    width: auto;
+    white-space: nowrap;
   }
 
   .profile-layout {
@@ -3280,7 +3290,8 @@ textarea {
   }
 
   .filter-bar {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: center;
     gap: .75rem;
   }
@@ -3290,14 +3301,15 @@ textarea {
   }
 
   .filter-select {
-    width: calc(50% - .375rem);
-    flex: 0 0 calc(50% - .375rem);
+    width: 100%;
+    flex: 0 0 auto;
     padding: .4rem 1.75rem .4rem .85rem;
     font-size: .78rem;
     border-radius: 16px;
   }
 
   .filter-bar .ms-auto {
+    grid-column: 1 / -1;
     width: 100%;
     font-size: .75rem !important;
     text-align: left;
@@ -3483,6 +3495,15 @@ textarea {
   .filter-select {
     width: 100%;
     flex-basis: auto;
+  }
+
+  .filter-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-select:first-of-type,
+  .filter-bar .ms-auto {
+    grid-column: auto;
   }
 
   .topbar-search input,
@@ -3874,7 +3895,7 @@ button:active,
 
 @media (max-width: 768px) {
   .topbar {
-    align-items: stretch;
+    align-items: center;
   }
 
   .topbar > .d-flex {
@@ -3903,6 +3924,7 @@ button:active,
 
   .filter-bar .ms-auto {
     grid-column: 1 / -1;
+    justify-self: start;
   }
 
   .cart-item {
@@ -4064,11 +4086,6 @@ button:active,
     height: 52px !important;
   }
 
-  .otp-input {
-    letter-spacing: .25rem;
-    font-size: 1.05rem !important;
-  }
-
   .content-area {
     padding: 1rem .85rem;
   }
@@ -4119,7 +4136,20 @@ button:active,
   }
 
   .filter-bar {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filter-bar>i {
+    display: none;
+  }
+
+  .filter-select:first-of-type {
+    grid-column: 1 / -1;
+  }
+
+  .filter-bar .ms-auto {
+    grid-column: 1 / -1;
   }
 
   .product-grid {
@@ -4233,12 +4263,39 @@ button:active,
   .product-detail-actions .qty-control {
     height: 44px;
     align-self: stretch;
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
   }
 
   .product-detail-actions .qty-btn,
   .product-detail-actions .qty-display,
   .product-detail-actions #addToCartBtn {
     min-height: 44px;
+  }
+
+  .product-detail-actions .qty-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .product-detail-actions .qty-display {
+    height: 44px;
+    min-width: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 .65rem !important;
   }
 
   .product-detail-actions #addToCartBtn {
@@ -4264,7 +4321,7 @@ button:active,
   }
 
   .you-may-like-section {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
   }
 
   .you-may-like-header {
@@ -4524,5 +4581,31 @@ button:active,
     grid-row: 1 / 2;
     justify-self: end;
     align-self: start;
+  }
+}
+
+/* Stable dashboard filters */
+.filter-bar {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.filter-bar>i {
+  display: none;
+}
+
+.filter-select:first-of-type,
+.filter-bar .ms-auto {
+  grid-column: auto;
+}
+
+@media (max-width: 576px) {
+  .filter-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .filter-bar {
+    grid-template-columns: 1fr;
   }
 }
