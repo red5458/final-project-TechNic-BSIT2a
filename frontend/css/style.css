@@ -3799,6 +3799,34 @@ h6 {
   font-weight: 600 !important;
 }
 
+body.landing-page .navbar-brand,
+body.landing-page .navbar-brand span,
+body.landing-page .hero-title,
+body.landing-page .section-title,
+body.landing-page .cta-title,
+body.landing-page .footer-brand,
+body.landing-page .stat-num,
+body.landing-page .how-num {
+  font-weight: 800 !important;
+}
+
+body.landing-page .hero-badge,
+body.landing-page .btn-primary-custom,
+body.landing-page .btn-outline-custom,
+body.landing-page .btn-outline-custom-light,
+body.landing-page .btn-nav-cta,
+body.landing-page .how-card h5,
+body.landing-page .why-center-card h6,
+body.landing-page .why-badge,
+body.landing-page .footer-heading {
+  font-weight: 700 !important;
+}
+
+body.landing-page .nav-link,
+body.landing-page .why-list li {
+  font-weight: 600 !important;
+}
+
 /* ============================================
    MOTION POLISH
    ============================================ */
