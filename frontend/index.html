@@ -210,8 +210,10 @@
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script>
-    // If logged in, change auth nav items to "Dashboard" + "Log Out"
-    if (isLoggedIn()) {
+    (async () => {
+      const sessionValid = await validateStoredSession();
+      if (!sessionValid) return;
+
       document.getElementById('navAuthLinks').innerHTML =
         '<a class="nav-link landing-dashboard-link" href="dashboard.html" aria-label="Dashboard"><i class="bi bi-grid-fill me-1"></i><span>Dashboard</span></a>';
       document.getElementById('navRegLink').innerHTML =
@@ -221,7 +223,8 @@
       if (ctaJoin) { ctaJoin.href = 'dashboard.html'; ctaJoin.textContent = 'Go to Dashboard'; }
       const ctaCreate = document.getElementById('ctaCreate');
       if (ctaCreate) { ctaCreate.href = 'dashboard.html'; ctaCreate.textContent = 'Go to Dashboard'; }
-    }
+      initLogout();
+    })();
   </script>
 </body>
 

@@ -25,10 +25,51 @@ function getUser() {
         return null;
     }
 }
-function logout() {
+
+function clearSession() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('cart');
+    localStorage.removeItem('checkoutCart');
+    localStorage.removeItem('cartItemCount');
+    localStorage.removeItem('orderBadgeCounts');
+}
+
+function logout() {
+    clearSession();
     window.location.href = 'login.html';
+}
+
+async function validateStoredSession() {
+    const token = getToken();
+    if (!token) {
+        clearSession();
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { 'x-auth-token': token },
+            cache: 'no-store',
+        });
+
+        if (!res.ok) {
+            clearSession();
+            return false;
+        }
+
+        const user = await res.json();
+        if (!user?._id) {
+            clearSession();
+            return false;
+        }
+
+        saveUser(user);
+        return true;
+    } catch {
+        clearSession();
+        return false;
+    }
 }
 
 // ─── Toast Notification ──────────────────────
@@ -113,6 +154,10 @@ function clearAllErrors(form) {
 async function finishLogin(token) {
     saveToken(token);
     const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': token } });
+    if (!meRes.ok) {
+        clearSession();
+        throw new Error('Login session could not be verified.');
+    }
     const meData = await meRes.json();
     saveUser(meData);
 }

@@ -222,12 +222,7 @@ function initLogout() {
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('cart');
-            localStorage.removeItem('checkoutCart');
-            localStorage.removeItem('cartItemCount');
-            window.location.href = 'login.html';
+            logout();
         });
     });
 }
@@ -323,17 +318,20 @@ function initProfileDropdown() {
     // Logout inside dropdown
     dropdown.querySelector('.dropdown-logout').addEventListener('click', e => {
         e.preventDefault();
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('cart');
-        localStorage.removeItem('checkoutCart');
-        localStorage.removeItem('cartItemCount');
-        window.location.href = 'login.html';
+        logout();
     });
 }
 
 // ─── Boot ─────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
+    const sessionValid = hadSavedSession ? await validateStoredSession() : false;
+
+    if (hadSavedSession && !sessionValid && !isPublicPage()) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     buildSidebar();
     enforceAuth();
     populateSidebarUser();
