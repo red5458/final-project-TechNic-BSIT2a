@@ -144,7 +144,7 @@ function renderListingsTable(products) {
         const qtyClass = qty <= 0 ? 'seller-qty is-empty' : qty <= 3 ? 'seller-qty is-low' : 'seller-qty';
 
         return `
-            <tr class="seller-table-row">
+            <tr class="seller-table-row seller-product-row">
                 <td data-label="Product">
                     <div class="seller-product-cell">
                         <div class="seller-product-thumb">${image}</div>
@@ -164,10 +164,10 @@ function renderListingsTable(products) {
                 <td data-label="Actions">
                     <div class="seller-row-actions">
                         <button class="btn-sm-action btn-edit" title="Edit listing" aria-label="Edit listing" onclick="openEditModal('${product._id}')">
-                            <i class="bi bi-pencil-fill"></i><span>Edit</span>
+                            <i class="bi bi-pencil-fill"></i>
                         </button>
                         <button class="btn-sm-action btn-delete" title="Delete listing" aria-label="Delete listing" onclick="confirmDelete('${product._id}', this)">
-                            <i class="bi bi-trash-fill"></i><span>Delete</span>
+                            <i class="bi bi-trash-fill"></i>
                         </button>
                     </div>
                 </td>
@@ -244,7 +244,6 @@ function renderIncomingOrders(orders) {
     tbody.innerHTML = rows.map(({ order, item }) => {
         const productName = sellerEscape(item.product_id?.name || 'Unknown Item');
         const buyerName = sellerEscape(order.buyer_id?.name || 'Buyer');
-        const address = sellerEscape(order.delivery_address || '-');
         const orderDate = formatDate(order.createdAt || order.created_at);
         const total = formatCurrency(item.price * item.quantity);
         const image = item.product_id?.image_url
@@ -264,7 +263,7 @@ function renderIncomingOrders(orders) {
 
         const detailBtn = `<button class="btn-sm-action btn-view" title="View order details" aria-label="View order details"
                     onclick="openSellerOrderDetails('${order._id}')">
-                    <i class="bi bi-eye-fill"></i><span>View Details</span>
+                    <i class="bi bi-eye-fill"></i><span>View Order Details</span>
                </button>`;
 
         const actionBtn = !isCancelled && item.status !== 'fulfilled'
@@ -275,7 +274,7 @@ function renderIncomingOrders(orders) {
             : '';
 
         return `
-            <tr class="seller-table-row">
+            <tr class="seller-table-row seller-order-row">
                 <td data-label="Item">
                     <div class="seller-product-cell">
                         <div class="seller-product-thumb">${image}</div>
@@ -286,9 +285,6 @@ function renderIncomingOrders(orders) {
                     </div>
                 </td>
                 <td data-label="Buyer">${buyerName}</td>
-                <td data-label="Address">
-                    <span class="seller-address">${address}</span>
-                </td>
                 <td data-label="Qty">${item.quantity}</td>
                 <td data-label="Total"><strong class="seller-money">${total}</strong></td>
                 <td data-label="Status"><span class="status-badge ${statusCls}">${statusTxt}</span></td>

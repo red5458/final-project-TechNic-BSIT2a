@@ -59,6 +59,7 @@ async function loadProfileStats() {
 
         setText('profileStatOrders', stats.ordersPlaced ?? 0);
         setText('profileStatListings', stats.activeListings ?? 0);
+        setText('profileStatOrdersReceived', stats.ordersReceived ?? 0);
         setText('profileStatSpent', formatCurrency(stats.totalSpent));
         setText('profileStatEarned', formatCurrency(stats.totalEarned));
 
@@ -68,6 +69,7 @@ async function loadProfileStats() {
     } catch {
         setText('profileStatOrders', '0');
         setText('profileStatListings', '0');
+        setText('profileStatOrdersReceived', '0');
         setText('profileStatSpent', formatCurrency(0));
         setText('profileStatEarned', formatCurrency(0));
         setText('sellerSnapshotListings', '0 active');

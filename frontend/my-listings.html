@@ -23,9 +23,6 @@
           <span style="font-weight:700;font-size:.95rem;">My Listings</span>
         </div>
         <div class="topbar-actions">
-          <a href="add-listing.html" class="btn-green" style="padding:.5rem 1.2rem;font-size:.82rem;">
-            <i class="bi bi-plus-lg"></i> New Listing
-          </a>
           <button class="icon-btn" id="profileTopBtn" title="Account" type="button">
             <i class="bi bi-person-fill"></i>
           </button>
@@ -36,38 +33,11 @@
         <div class="page-title">My Listings</div>
         <p class="page-sub">Manage your live inventory and keep an eye on incoming order items.</p>
 
-        <div class="stats-grid seller-stats-grid mb-4">
-          <div class="stat-card seller-stat-card">
-            <div class="stat-icon si-green"><i class="bi bi-tags-fill"></i></div>
-            <div class="seller-stat-copy">
-              <div class="label">Total Listed</div>
-              <div class="value" id="statTotalListed">0</div>
-              <div class="hint">Live products in your shop</div>
-            </div>
-          </div>
-          <div class="stat-card seller-stat-card">
-            <div class="stat-icon si-blue"><i class="bi bi-bag-check-fill"></i></div>
-            <div class="seller-stat-copy">
-              <div class="label">Orders Received</div>
-              <div class="value" id="statOrdersReceived">0</div>
-              <div class="hint">Unique buyer orders</div>
-            </div>
-          </div>
-          <div class="stat-card seller-stat-card">
-            <div class="stat-icon si-rose"><i class="bi bi-cash-stack"></i></div>
-            <div class="seller-stat-copy">
-              <div class="label">Total Earned</div>
-              <div class="value" id="statTotalEarned">PHP 0.00</div>
-              <div class="hint">From fulfilled items</div>
-            </div>
-          </div>
-        </div>
-
-        <section class="seller-panel mb-4">
+        <section class="seller-panel seller-panel-inventory mb-4">
           <div class="seller-panel-header">
             <div>
               <span class="seller-panel-kicker">Inventory</span>
-              <h5>Products</h5>
+              <h5>Products Listed</h5>
               <p>Review live stock, pricing, and listing status.</p>
             </div>
             <a href="add-listing.html" class="seller-panel-action">
@@ -96,14 +66,20 @@
           </div>
         </section>
 
-        <section class="seller-panel">
+        <section class="seller-panel seller-panel-orders">
+          <div class="seller-panel-header">
+            <div>
+              <span class="seller-panel-kicker">Orders</span>
+              <h5>Incoming Orders</h5>
+              <p>Track buyer requests and update item fulfillment.</p>
+            </div>
+          </div>
           <div class="table-wrap seller-table-card">
             <table class="data-table seller-data-table responsive-stack">
               <thead>
                 <tr>
                   <th>Item</th>
                   <th>Buyer</th>
-                  <th>Address</th>
                   <th>Qty</th>
                   <th>Total</th>
                   <th>Status</th>
