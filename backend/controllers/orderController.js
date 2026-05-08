@@ -142,7 +142,7 @@ exports.getCurrentBuyerOrders = async (req, res) => {
     try {
         const orders = await Order.find({ buyer_id: req.user.id })
             .sort({ created_at: -1 })
-            .populate('buyer_id', 'name email');
+            .populate('buyer_id', 'name email phone');
 
         const hydratedOrders = await attachItems(orders);
         res.json(hydratedOrders);
@@ -159,7 +159,7 @@ exports.getBuyerOrders = async (req, res) => {
 
         const orders = await Order.find({ buyer_id: req.params.userId })
             .sort({ created_at: -1 })
-            .populate('buyer_id', 'name email');
+            .populate('buyer_id', 'name email phone');
 
         const hydratedOrders = await attachItems(orders);
         res.json(hydratedOrders);
@@ -170,7 +170,7 @@ exports.getBuyerOrders = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.orderId).populate('buyer_id', 'name email');
+        const order = await Order.findById(req.params.orderId).populate('buyer_id', 'name email phone');
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
@@ -211,7 +211,7 @@ exports.getSellerOrders = async (req, res) => {
         const orderIds = [...new Set(sellerItems.map((item) => String(item.order_id)))];
         const orders = await Order.find({ _id: { $in: orderIds } })
             .sort({ created_at: -1 })
-            .populate('buyer_id', 'name email');
+            .populate('buyer_id', 'name email phone');
 
         const grouped = orders.map((order) => {
             const orderId = String(order._id);

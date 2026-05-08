@@ -1756,6 +1756,132 @@ body.landing-page {
   color: #fff;
 }
 
+.seller-order-modal-body {
+  background: #fbfcfb;
+}
+
+.seller-order-receipt {
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow: hidden;
+}
+
+.seller-order-receipt-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: .9rem 1rem;
+  border-bottom: 1px dashed var(--border);
+}
+
+.seller-order-receipt-row:last-child {
+  border-bottom: 0;
+}
+
+.seller-order-receipt-row > span {
+  flex: 0 0 150px;
+  color: var(--text-muted);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.seller-order-receipt-row strong {
+  display: block;
+  color: var(--text);
+  font-size: .95rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.seller-order-receipt-row p {
+  margin: .25rem 0 0;
+  color: var(--text-muted);
+  font-size: .84rem;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+
+.seller-order-address {
+  align-items: flex-start;
+}
+
+.seller-order-address p {
+  color: var(--text);
+}
+
+.seller-order-items-title {
+  margin: .25rem 0 .75rem;
+  color: var(--text);
+  font-size: .95rem;
+  font-weight: 700 !important;
+}
+
+.seller-order-item-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .95rem;
+  padding: .95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.seller-order-item-card + .seller-order-item-card {
+  margin-top: .75rem;
+}
+
+.seller-order-item-media {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+}
+
+.seller-order-item-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.seller-order-item-copy {
+  min-width: 0;
+}
+
+.seller-order-item-copy strong {
+  display: block;
+  color: var(--text);
+  font-size: .95rem;
+  font-weight: 700 !important;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.seller-order-item-copy > span:not(.status-badge) {
+  display: block;
+  margin: .25rem 0 .5rem;
+  color: var(--text-muted);
+  font-size: .82rem;
+}
+
+.seller-order-item-total {
+  color: var(--primary-dark);
+  font-size: .95rem;
+  font-weight: 700 !important;
+  white-space: nowrap;
+}
+
 .seller-fulfill-btn {
   border: 0;
   border-radius: 999px;
@@ -5478,5 +5604,35 @@ button:active,
     flex: 0 0 38px;
     width: 38px;
     min-width: 38px;
+  }
+
+  .seller-order-item-card {
+    grid-template-columns: 60px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .seller-order-receipt-row {
+    display: block;
+  }
+
+  .seller-order-receipt-row > span {
+    display: block;
+    margin-bottom: .35rem;
+  }
+
+  .seller-order-receipt-row strong,
+  .seller-order-receipt-row p {
+    text-align: left;
+  }
+
+  .seller-order-item-media {
+    width: 60px;
+    height: 60px;
+  }
+
+  .seller-order-item-total {
+    grid-column: 2 / 3;
+    justify-self: start;
+    margin-top: -.25rem;
   }
 }

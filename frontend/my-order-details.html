@@ -97,19 +97,11 @@
 
                     <div class="col-lg-5">
                         <div id="orderActionCard" class="table-wrap p-4 mb-4"
-                            style="background:linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%); border:none; color:#fff;">
-                            <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:#fff;">Order has
-                                Shipped!</h6>
-                            <p
-                                style="font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:1.25rem;line-height:1.6;">
-                                Your items are on the way. Once you receive them, please confirm delivery to complete
-                                the order.</p>
-                            <button class="btn w-100"
-                                style="background:#fff;color:var(--primary-dark);font-weight:700;padding:.8rem;border-radius:50px;transition:var(--transition);"
-                                onmouseover="this.style.background='var(--bg-soft)'"
-                                onmouseout="this.style.background='#fff'">
-                                <i class="bi bi-check-circle-fill me-2"></i>Confirm Receipt
-                            </button>
+                            style="background:#fff; border:1px solid var(--border); color:var(--text);">
+                            <div class="state-center state-center-sm">
+                                <div class="spinner-border spinner-border-sm text-success"></div>
+                                <span class="text-muted" style="font-size:.85rem;">Loading order status...</span>
+                            </div>
                         </div>
 
                         <div class="order-summary">

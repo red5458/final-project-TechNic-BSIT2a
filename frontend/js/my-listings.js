@@ -29,6 +29,16 @@ function sellerEscape(value) {
         }[char]));
 }
 
+function formatSellerAddress(value) {
+    const parts = String(value || '')
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean);
+
+    if (parts.length > 1) parts.shift();
+    return parts.length ? parts.join('<br/>') : '-';
+}
+
 let sellerListings = [];
 let sellerOrders = [];
 let listingCategories = [];
@@ -321,10 +331,22 @@ function openSellerOrderDetails(orderId) {
     setValue('sellerOrderBuyerName', buyer.name || 'Buyer');
     setValue('sellerOrderBuyerEmail', buyer.email || '');
     setValue('sellerOrderDate', formatDate(placedAt));
-    setValue('sellerOrderStatus', status);
+
+    const phoneRow = document.getElementById('sellerOrderPhoneRow');
+    const phoneEl = document.getElementById('sellerOrderBuyerPhone');
+    const phone = String(buyer.phone || '').trim();
+    if (phoneRow && phoneEl) {
+        if (phone) {
+            phoneEl.textContent = phone;
+            phoneRow.style.display = '';
+        } else {
+            phoneEl.textContent = '-';
+            phoneRow.style.display = 'none';
+        }
+    }
 
     const addressEl = document.getElementById('sellerOrderAddress');
-    if (addressEl) addressEl.innerHTML = (order.delivery_address || '-').replace(/,\s*/g, '<br/>');
+    if (addressEl) addressEl.innerHTML = formatSellerAddress(order.delivery_address);
 
     const itemsEl = document.getElementById('sellerOrderItems');
     if (itemsEl) {
@@ -347,22 +369,16 @@ function openSellerOrderDetails(orderId) {
             const lineTotal = formatCurrency(Number(item.price || 0) * Number(item.quantity || 0));
 
             return `
-                <article class="order-card">
-                    <div class="d-flex gap-3 align-items-center">
-                        <div style="width:72px;height:72px;background:var(--bg-soft);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+                <article class="seller-order-item-card">
+                    <div class="seller-order-item-media">
                             ${image}
-                        </div>
-                        <div class="flex-grow-1" style="min-width:0;">
-                            <div style="font-weight:800;color:var(--text);">${product.name || 'Unknown Item'}</div>
-                            <div style="font-size:.82rem;color:var(--text-muted);">
-                                Size ${product.size || '-'} - Qty ${item.quantity} - ${formatCurrency(item.price)} each
-                            </div>
-                            <div style="margin-top:.45rem;">
-                                <span class="status-badge ${itemStatusCls}">${itemStatusTxt}</span>
-                            </div>
-                        </div>
-                        <strong style="color:var(--primary);white-space:nowrap;">${lineTotal}</strong>
                     </div>
+                    <div class="seller-order-item-copy">
+                        <strong>${product.name || 'Unknown Item'}</strong>
+                        <span>Size ${product.size || '-'} - Qty ${item.quantity} - ${formatCurrency(item.price)} each</span>
+                        <span class="status-badge ${itemStatusCls}">${itemStatusTxt}</span>
+                    </div>
+                    <strong class="seller-order-item-total">${lineTotal}</strong>
                 </article>`;
         }).join('');
     }
