@@ -55,7 +55,7 @@ function applyFiltersAndRender() {
 // ─── Render Page (Pagination slice) ──────────
 function renderPage(filtered) {
     const countEl = document.getElementById('listingCount');
-    if (countEl) countEl.textContent = `${filtered.length} listing${filtered.length !== 1 ? 's' : ''} found`;
+    if (countEl) countEl.textContent = '';
 
     const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
     const start      = (currentPageNum - 1) * PAGE_SIZE;

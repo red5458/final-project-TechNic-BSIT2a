@@ -401,6 +401,7 @@ if (listingForm) {
 const checkoutForm = document.getElementById('checkoutForm');
 if (checkoutForm) {
     renderCheckoutSummary();
+    prefillCheckoutDetails();
 
     checkoutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -415,23 +416,20 @@ if (checkoutForm) {
             return;
         }
 
-        const firstNameInput = document.getElementById('firstName');
-        const lastNameInput = document.getElementById('lastName');
+        const nameInput = document.getElementById('checkoutName');
         const streetInput = document.getElementById('street');
         const cityInput = document.getElementById('city');
         const provinceInput = document.getElementById('province');
         const postalInput = document.getElementById('postal');
+        const phoneInput = document.getElementById('phone');
+        const notesInput = document.getElementById('notes');
         const btn = checkoutForm.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
 
         let hasError = false;
 
-        if (!firstNameInput.value.trim()) {
-            showFieldError(firstNameInput, 'First name is required.');
-            hasError = true;
-        }
-        if (!lastNameInput.value.trim()) {
-            showFieldError(lastNameInput, 'Last name is required.');
+        if (!nameInput.value.trim()) {
+            showFieldError(nameInput, 'Name is required.');
             hasError = true;
         }
         if (!streetInput.value.trim()) {
@@ -445,16 +443,27 @@ if (checkoutForm) {
 
         if (hasError) return;
 
-        // Build full address string
+        const checkoutDetails = {
+            name: nameInput.value.trim(),
+            street: streetInput.value.trim(),
+            city: cityInput.value.trim(),
+            province: provinceInput?.value.trim() || '',
+            postal: postalInput?.value.trim() || '',
+            phone: phoneInput?.value.trim() || '',
+            notes: notesInput?.value.trim() || '',
+        };
+
+        saveCheckoutDetails(checkoutDetails);
+
         const delivery_address = [
-            `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-            streetInput.value.trim(),
-            cityInput.value.trim(),
-            provinceInput?.value.trim(),
-            postalInput?.value.trim(),
+            checkoutDetails.name,
+            checkoutDetails.street,
+            checkoutDetails.city,
+            checkoutDetails.province,
+            checkoutDetails.postal,
+            checkoutDetails.notes ? `Notes: ${checkoutDetails.notes}` : '',
         ].filter(Boolean).join(', ');
 
-        // Get cart from localStorage (Phase 5 will populate this dynamically)
         const cart = getCheckoutCart();
 
         if (cart.length === 0) {
@@ -501,6 +510,49 @@ if (checkoutForm) {
             setLoading(btn, false, originalText);
             showToast(err.message || 'Something went wrong. Try again.', 'error');
         }
+    });
+}
+
+function getCheckoutDetailsKey(user = getUser()) {
+    return user?._id ? `checkoutDeliveryDetails:${user._id}` : 'checkoutDeliveryDetails';
+}
+
+function getSavedCheckoutDetails() {
+    try {
+        return JSON.parse(localStorage.getItem(getCheckoutDetailsKey()) || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function saveCheckoutDetails(details) {
+    localStorage.setItem(getCheckoutDetailsKey(), JSON.stringify(details));
+}
+
+function prefillCheckoutDetails() {
+    const user = getUser();
+    const saved = getSavedCheckoutDetails();
+    const defaults = {
+        name: saved.name || user?.name || '',
+        phone: saved.phone || user?.phone || '',
+        street: saved.street || '',
+        city: saved.city || '',
+        province: saved.province || '',
+        postal: saved.postal || '',
+        notes: saved.notes || '',
+    };
+
+    Object.entries({
+        checkoutName: defaults.name,
+        phone: defaults.phone,
+        street: defaults.street,
+        city: defaults.city,
+        province: defaults.province,
+        postal: defaults.postal,
+        notes: defaults.notes,
+    }).forEach(([id, value]) => {
+        const field = document.getElementById(id);
+        if (field && !field.value && value) field.value = value;
     });
 }
 

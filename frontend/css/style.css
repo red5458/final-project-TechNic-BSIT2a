@@ -1055,14 +1055,49 @@ body.landing-page {
 }
 
 .sidebar-footer {
-  padding: 1.5rem;
+  padding: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, .08);
 }
 
 .sidebar-user {
   display: flex;
   align-items: center;
   gap: .75rem;
+  width: 100%;
+  padding: .75rem;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .06);
+  color: #fff;
+  transition: var(--transition);
+}
+
+.sidebar-user:hover {
+  background: rgba(255, 255, 255, .11);
+  color: #fff;
+}
+
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .5rem;
+  width: 100%;
+  margin-top: .6rem;
+  padding: .7rem .85rem;
+  border: 1px solid rgba(239, 68, 68, .22);
+  border-radius: 12px;
+  background: rgba(239, 68, 68, .08);
+  color: #fecaca;
+  font-size: .84rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.sidebar-logout:hover {
+  background: rgba(239, 68, 68, .18);
+  color: #fff;
 }
 
 .user-avatar {
@@ -1085,6 +1120,10 @@ body.landing-page {
   color: #fff;
   font-size: .88rem;
   font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .user-info span {

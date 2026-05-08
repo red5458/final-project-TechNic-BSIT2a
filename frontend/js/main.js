@@ -35,16 +35,11 @@ function buildSidebar() {
     const active = currentPage() === 'product-detail.html' ? 'dashboard.html' : currentPage();
 
     const links = [
-        { section: 'Buyer' },
         { href: 'dashboard.html', icon: 'bi-grid-fill', text: 'Browse Uniforms' },
         { href: 'cart.html', icon: 'bi-cart-fill', text: 'My Cart', extra: 'cart-link' },
         { href: 'my-orders.html', icon: 'bi-bag-fill', text: 'My Orders', badge: 'orders' },
-        { section: 'Seller' },
         { href: 'my-listings.html', icon: 'bi-tags-fill', text: 'My Listings', badge: 'seller-orders' },
         { href: 'add-listing.html', icon: 'bi-plus-circle-fill', text: 'Add Listing' },
-        { section: 'Account' },
-        { href: 'profile.html', icon: 'bi-person-fill', text: 'My Profile' },
-        { href: '#', icon: 'bi-box-arrow-left', text: 'Log Out', extra: 'logout-link' },
     ];
 
     const navHTML = links.map(l => {
@@ -67,17 +62,20 @@ function buildSidebar() {
     const aside = document.createElement('aside');
     aside.className = 'sidebar';
     aside.innerHTML = `
-        <div class="sidebar-logo">
+        <a class="sidebar-logo" href="dashboard.html" aria-label="Go to dashboard">
             <img src="img/logo.png" alt="Logo"
                 style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />
             Uniformity
-        </div>
+        </a>
         <nav class="sidebar-nav">${navHTML}</nav>
         <div class="sidebar-footer">
-            <div class="sidebar-user">
+            <a href="profile.html" class="sidebar-user" aria-label="Open profile">
                 <div class="user-avatar">U</div>
                 <div class="user-info"><strong>Student User</strong></div>
-            </div>
+            </a>
+            <a href="#" class="sidebar-logout logout-link">
+                <i class="bi bi-box-arrow-left"></i><span>Log Out</span>
+            </a>
         </div>`;
     placeholder.replaceWith(aside);
 }
