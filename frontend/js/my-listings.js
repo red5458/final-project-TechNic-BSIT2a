@@ -254,12 +254,12 @@ function renderIncomingOrders(orders) {
         const statusCls = isCancelled
             ? 'status-sold'
             : item.status === 'fulfilled'
-                ? 'status-available'
+                ? 'status-fulfilled'
                 : 'status-pending';
         const statusTxt = isCancelled
             ? 'Cancelled'
             : item.status === 'fulfilled'
-                ? 'Delivered'
+                ? 'Fulfilled'
                 : 'Pending';
 
         const detailBtn = `<button class="btn-sm-action btn-view" title="View order details" aria-label="View order details"
@@ -341,12 +341,12 @@ function openSellerOrderDetails(orderId) {
             const itemStatusCls = isCancelled
                 ? 'status-sold'
                 : item.status === 'fulfilled'
-                    ? 'status-available'
+                    ? 'status-fulfilled'
                     : 'status-pending';
             const itemStatusTxt = isCancelled
                 ? 'Cancelled'
                 : item.status === 'fulfilled'
-                    ? 'Delivered'
+                    ? 'Fulfilled'
                     : 'Pending';
             const lineTotal = formatCurrency(Number(item.price || 0) * Number(item.quantity || 0));
 
