@@ -39,6 +39,8 @@
 html {
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -49,6 +51,17 @@ body {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+body.modal-open {
+  overflow: visible !important;
+  overflow-y: scroll !important;
+  padding-right: 0 !important;
+}
+
+body.modal-open .page-wrapper,
+body.modal-open .main-content {
+  padding-right: 0 !important;
 }
 
 body,
@@ -1078,6 +1091,7 @@ body.landing-page {
   flex: 1;
   min-width: 0;
   overflow-x: hidden;
+  padding-top: 73px;
 }
 
 @media (min-width: 992px) {
@@ -1108,9 +1122,19 @@ body.landing-page {
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 50;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  min-height: 73px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+}
+
+@media (min-width: 992px) {
+  .topbar {
+    left: 260px;
+  }
 }
 
 .topbar-search {
@@ -1785,6 +1809,53 @@ body.landing-page {
   border-color: var(--primary-light);
 }
 
+.filter-modal-trigger {
+  flex-shrink: 0;
+}
+
+.filter-modal-trigger.is-active {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  border-color: rgba(31, 122, 74, .28);
+}
+
+.filter-modal-content {
+  border: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.filter-modal-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.filter-modal-field {
+  display: grid;
+  gap: .45rem;
+}
+
+.filter-modal-field span {
+  color: var(--text-muted);
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.filter-modal-footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+
+.filter-modal-footer>* {
+  width: 100%;
+  margin: 0 !important;
+  min-height: 42px;
+  border-radius: 999px;
+}
+
 .filter-title {
   grid-column: 1 / -1;
   color: var(--primary-dark);
@@ -1795,7 +1866,7 @@ body.landing-page {
 }
 
 .listing-count-row {
-  margin: -.75rem 0 1.25rem;
+  margin: 0 0 1.25rem;
   font-size: .85rem;
   text-align: center;
 }
@@ -3997,7 +4068,7 @@ button:active,
   }
 
   .topbar {
-    position: sticky;
+    position: fixed;
     top: 0;
     z-index: 80;
   }
@@ -4253,6 +4324,10 @@ button:active,
     height: 52px !important;
   }
 
+  .main-content {
+    padding-top: 64px;
+  }
+
   .content-area {
     padding: 1rem .85rem;
   }
@@ -4260,6 +4335,7 @@ button:active,
   .topbar {
     padding: .75rem .85rem;
     gap: .75rem;
+    min-height: 64px;
   }
 
   .topbar-actions {

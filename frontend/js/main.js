@@ -323,6 +323,45 @@ function initProfileDropdown() {
 }
 
 // ─── Boot ─────────────────────────────────────
+function initModalLayoutStabilizer() {
+    if (window.bootstrap?.Modal && !window.bootstrap.Modal.__uniformityStableLayout) {
+        const modalProto = window.bootstrap.Modal.prototype;
+        const originalShow = modalProto.show;
+
+        modalProto._adjustDialog = function () { };
+        modalProto._resetAdjustments = function () { };
+        modalProto.show = function (...args) {
+            if (this._scrollBar) {
+                this._scrollBar.hide = function () { };
+                this._scrollBar.reset = function () { };
+            }
+            return originalShow.apply(this, args);
+        };
+
+        window.bootstrap.Modal.__uniformityStableLayout = true;
+    }
+
+    const resetInjectedPadding = () => {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '0px';
+        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
+            el.style.paddingRight = '0px';
+        });
+    };
+
+    const clearInjectedPadding = () => {
+        document.body.style.removeProperty('padding-right');
+        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
+            el.style.removeProperty('padding-right');
+        });
+    };
+
+    document.addEventListener('show.bs.modal', resetInjectedPadding);
+    document.addEventListener('shown.bs.modal', resetInjectedPadding);
+    document.addEventListener('hide.bs.modal', resetInjectedPadding);
+    document.addEventListener('hidden.bs.modal', clearInjectedPadding);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
     const sessionValid = hadSavedSession ? await validateStoredSession() : false;
@@ -339,6 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCategoryFilter();
     initMobileNav();
     initProfileDropdown();
+    initModalLayoutStabilizer();
     updateCartCountBadges();
     applyCachedOrderBadges();
     updateOrderCountBadges();

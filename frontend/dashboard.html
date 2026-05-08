@@ -25,6 +25,10 @@
             <i class="bi bi-search"></i>
             <input type="text" id="searchInput" placeholder="Search uniforms..." />
           </div>
+          <button class="icon-btn filter-modal-trigger" type="button" data-bs-toggle="modal"
+            data-bs-target="#filterProductsModal" title="Filter products" aria-label="Filter products">
+            <i class="bi bi-funnel-fill"></i>
+          </button>
         </div>
         <div class="topbar-actions">
           <a href="cart.html" class="icon-btn" title="Cart">
@@ -40,28 +44,6 @@
         <div class="page-title">Browse Uniforms</div>
         <p class="page-sub">Find the perfect pre-loved uniform at an affordable price.</p>
 
-        <div class="filter-bar">
-          <div class="filter-title">Filter Products</div>
-          <i class="bi bi-funnel-fill text-muted"></i>
-          <select class="filter-select" id="filterCategory">
-            <option value="">All Categories</option>
-
-          </select>
-          <select class="filter-select" id="filterSize">
-            <option value="">All Sizes</option>
-            <option>XS</option>
-            <option>S</option>
-            <option>M</option>
-            <option>L</option>
-            <option>XL</option>
-            <option>XXL</option>
-          </select>
-          <select class="filter-select" id="filterSort">
-            <option value="newest">Newest First</option>
-            <option value="price_asc">Price: Low to High</option>
-            <option value="price_desc">Price: High to Low</option>
-          </select>
-        </div>
         <div class="listing-count-row text-muted" id="listingCount"></div>
 
         <div class="product-grid" id="productGrid"></div>
@@ -73,8 +55,56 @@
 
   </div>
 
+  <div class="modal fade" id="filterProductsModal" tabindex="-1" aria-labelledby="filterProductsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content filter-modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="filterProductsModalLabel">
+            <i class="bi bi-funnel-fill me-2"></i>Filter Products
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="filter-modal-grid">
+            <label class="filter-modal-field">
+              <span>Category</span>
+              <select class="filter-select" id="filterCategory">
+                <option value="">All Categories</option>
+              </select>
+            </label>
+            <label class="filter-modal-field">
+              <span>Size</span>
+              <select class="filter-select" id="filterSize">
+                <option value="">All Sizes</option>
+                <option>XS</option>
+                <option>S</option>
+                <option>M</option>
+                <option>L</option>
+                <option>XL</option>
+                <option>XXL</option>
+              </select>
+            </label>
+            <label class="filter-modal-field">
+              <span>Sort</span>
+              <select class="filter-select" id="filterSort">
+                <option value="newest">Newest First</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer filter-modal-footer">
+          <button type="button" class="btn btn-outline-secondary" id="clearFilterBtn">Clear</button>
+          <button type="button" class="btn-green" data-bs-dismiss="modal">Apply Filters</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="js/api.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
