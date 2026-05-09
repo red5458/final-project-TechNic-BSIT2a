@@ -28,8 +28,12 @@ function enforceAuth() {
 
 // ─── Sidebar Builder ──────────────────────────
 function buildSidebar() {
-    const placeholder = document.getElementById('sidebar-placeholder');
+    const placeholder = document.getElementById('sidebar-placeholder') || document.querySelector('.sidebar');
     if (!placeholder) return;
+
+    const user = getUser();
+    const displayName = user?.name || '';
+    const avatarInitial = (displayName || 'U').charAt(0).toUpperCase();
 
     // product-detail is visually under Browse Uniforms
     const active = currentPage() === 'product-detail.html' ? 'dashboard.html' : currentPage();
@@ -72,16 +76,26 @@ function buildSidebar() {
             Uniformity
         </a>
         <nav class="sidebar-nav">${navHTML}</nav>
-        <div class="sidebar-footer">
+        <div class="sidebar-footer" ${user ? '' : 'style="display:none;"'}>
             <a href="profile.html" class="sidebar-user" aria-label="Open profile">
-                <div class="user-avatar">U</div>
-                <div class="user-info"><strong>Student User</strong></div>
+                <div class="user-avatar">${escapeSidebarText(avatarInitial)}</div>
+                <div class="user-info"><strong>${escapeSidebarText(displayName || 'Account')}</strong></div>
             </a>
             <a href="#" class="sidebar-logout logout-link">
                 <i class="bi bi-box-arrow-left"></i><span>Log Out</span>
             </a>
         </div>`;
     placeholder.replaceWith(aside);
+}
+
+function escapeSidebarText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+    }[char]));
 }
 
 function getCartCount() {
@@ -366,6 +380,7 @@ function initModalLayoutStabilizer() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
+    buildSidebar();
     const sessionValid = hadSavedSession ? await validateStoredSession() : false;
 
     if (hadSavedSession && !sessionValid && !isPublicPage()) {
@@ -373,7 +388,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    buildSidebar();
+    if (sessionValid) buildSidebar();
     enforceAuth();
     populateSidebarUser();
     initLogout();
