@@ -2353,6 +2353,8 @@ body.landing-page {
 
 .admin-stat-card {
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .admin-stat-card:hover {
@@ -2360,8 +2362,86 @@ body.landing-page {
   box-shadow: none;
 }
 
+.admin-stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--admin-stat-accent, var(--primary));
+}
+
+.admin-stat-card:has(.si-green) {
+  --admin-stat-accent: #16A34A;
+  background: linear-gradient(90deg, rgba(22, 163, 74, .08), #fff 42%);
+  border-color: rgba(22, 163, 74, .22);
+}
+
+.admin-stat-card:has(.si-blue) {
+  --admin-stat-accent: #2563EB;
+  background: linear-gradient(90deg, rgba(37, 99, 235, .08), #fff 42%);
+  border-color: rgba(37, 99, 235, .22);
+}
+
+.admin-stat-card:has(.si-amber) {
+  --admin-stat-accent: #D97706;
+  background: linear-gradient(90deg, rgba(217, 119, 6, .1), #fff 42%);
+  border-color: rgba(217, 119, 6, .24);
+}
+
+.admin-stat-card:has(.si-rose) {
+  --admin-stat-accent: #E11D48;
+  background: linear-gradient(90deg, rgba(225, 29, 72, .08), #fff 42%);
+  border-color: rgba(225, 29, 72, .22);
+}
+
 .admin-panel {
   overflow: hidden;
+  position: relative;
+  --admin-panel-accent: var(--primary);
+}
+
+.admin-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--admin-panel-accent);
+}
+
+.admin-panel-categories {
+  --admin-panel-accent: #E11D48;
+  border-color: rgba(225, 29, 72, .2);
+}
+
+.admin-panel-categories .admin-panel-header {
+  background: linear-gradient(90deg, rgba(225, 29, 72, .08), #fff 46%);
+}
+
+.admin-panel-users {
+  --admin-panel-accent: #16A34A;
+  border-color: rgba(22, 163, 74, .2);
+}
+
+.admin-panel-users .admin-panel-header {
+  background: linear-gradient(90deg, rgba(22, 163, 74, .08), #fff 46%);
+}
+
+.admin-panel-products {
+  --admin-panel-accent: #2563EB;
+  border-color: rgba(37, 99, 235, .2);
+}
+
+.admin-panel-products .admin-panel-header {
+  background: linear-gradient(90deg, rgba(37, 99, 235, .08), #fff 46%);
+}
+
+.admin-panel-orders {
+  --admin-panel-accent: #D97706;
+  border-color: rgba(217, 119, 6, .22);
+}
+
+.admin-panel-orders .admin-panel-header {
+  background: linear-gradient(90deg, rgba(217, 119, 6, .1), #fff 46%);
 }
 
 .admin-panel-header {
