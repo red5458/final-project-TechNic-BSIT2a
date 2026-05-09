@@ -42,6 +42,10 @@ function buildSidebar() {
         { href: 'add-listing.html', icon: 'bi-plus-circle-fill', text: 'Add Listing' },
     ];
 
+    if (getUser()?.role === 'admin') {
+        links.push({ href: 'admin.html', icon: 'bi-shield-lock-fill', text: 'Admin Panel' });
+    }
+
     const navHTML = links.map(l => {
         if (l.section) return `<div class="sidebar-label">${l.section}</div>`;
         const isActive = active === l.href ? 'active' : '';

@@ -1,5 +1,6 @@
 //Refactor category controller for cleaner structure and consistent responses
 const Category = require('../models/Category');
+const Product = require('../models/Product');
 
 exports.createCategory = async (req, res) => {
     try {
@@ -50,6 +51,11 @@ exports.updateCategory = async (req, res) => {
 
 exports.deleteCategory = async (req, res) => {
     try {
+        const usedByProducts = await Product.countDocuments({ category_id: req.params.id });
+        if (usedByProducts > 0) {
+            return res.status(400).json({ error: 'Category is used by existing products.' });
+        }
+
         const category = await Category.findByIdAndDelete(req.params.id);
         if (!category) {
             return res.status(404).json({ error: 'Category not found.' });
