@@ -35,16 +35,11 @@ function buildSidebar() {
     const active = currentPage() === 'product-detail.html' ? 'dashboard.html' : currentPage();
 
     const links = [
-        { section: 'Buyer' },
         { href: 'dashboard.html', icon: 'bi-grid-fill', text: 'Browse Uniforms' },
         { href: 'cart.html', icon: 'bi-cart-fill', text: 'My Cart', extra: 'cart-link' },
         { href: 'my-orders.html', icon: 'bi-bag-fill', text: 'My Orders', badge: 'orders' },
-        { section: 'Seller' },
         { href: 'my-listings.html', icon: 'bi-tags-fill', text: 'My Listings', badge: 'seller-orders' },
         { href: 'add-listing.html', icon: 'bi-plus-circle-fill', text: 'Add Listing' },
-        { section: 'Account' },
-        { href: 'profile.html', icon: 'bi-person-fill', text: 'My Profile' },
-        { href: '#', icon: 'bi-box-arrow-left', text: 'Log Out', extra: 'logout-link' },
     ];
 
     const navHTML = links.map(l => {
@@ -67,23 +62,29 @@ function buildSidebar() {
     const aside = document.createElement('aside');
     aside.className = 'sidebar';
     aside.innerHTML = `
-        <div class="sidebar-logo">
+        <a class="sidebar-logo" href="dashboard.html" aria-label="Go to dashboard">
             <img src="img/logo.png" alt="Logo"
                 style="width:28px;height:28px;object-fit:contain;border-radius:6px;margin-right:.5rem;vertical-align:middle;" />
             Uniformity
-        </div>
+        </a>
         <nav class="sidebar-nav">${navHTML}</nav>
         <div class="sidebar-footer">
-            <div class="sidebar-user">
+            <a href="profile.html" class="sidebar-user" aria-label="Open profile">
                 <div class="user-avatar">U</div>
                 <div class="user-info"><strong>Student User</strong></div>
-            </div>
+            </a>
+            <a href="#" class="sidebar-logout logout-link">
+                <i class="bi bi-box-arrow-left"></i><span>Log Out</span>
+            </a>
         </div>`;
     placeholder.replaceWith(aside);
 }
 
 function getCartCount() {
     try {
+        const savedCount = localStorage.getItem('cartItemCount');
+        if (savedCount !== null) return Number(savedCount || 0);
+
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         return cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
     } catch {
@@ -219,10 +220,7 @@ function initLogout() {
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', e => {
             e.preventDefault();
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('cart');
-            window.location.href = 'login.html';
+            logout();
         });
     });
 }
@@ -318,15 +316,59 @@ function initProfileDropdown() {
     // Logout inside dropdown
     dropdown.querySelector('.dropdown-logout').addEventListener('click', e => {
         e.preventDefault();
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('cart');
-        window.location.href = 'login.html';
+        logout();
     });
 }
 
 // ─── Boot ─────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+function initModalLayoutStabilizer() {
+    if (window.bootstrap?.Modal && !window.bootstrap.Modal.__uniformityStableLayout) {
+        const modalProto = window.bootstrap.Modal.prototype;
+        const originalShow = modalProto.show;
+
+        modalProto._adjustDialog = function () { };
+        modalProto._resetAdjustments = function () { };
+        modalProto.show = function (...args) {
+            if (this._scrollBar) {
+                this._scrollBar.hide = function () { };
+                this._scrollBar.reset = function () { };
+            }
+            return originalShow.apply(this, args);
+        };
+
+        window.bootstrap.Modal.__uniformityStableLayout = true;
+    }
+
+    const resetInjectedPadding = () => {
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '0px';
+        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
+            el.style.paddingRight = '0px';
+        });
+    };
+
+    const clearInjectedPadding = () => {
+        document.body.style.removeProperty('padding-right');
+        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
+            el.style.removeProperty('padding-right');
+        });
+    };
+
+    document.addEventListener('show.bs.modal', resetInjectedPadding);
+    document.addEventListener('shown.bs.modal', resetInjectedPadding);
+    document.addEventListener('hide.bs.modal', resetInjectedPadding);
+    document.addEventListener('hidden.bs.modal', clearInjectedPadding);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
+    const sessionValid = hadSavedSession ? await validateStoredSession() : false;
+
+    if (hadSavedSession && !sessionValid && !isPublicPage()) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     buildSidebar();
     enforceAuth();
     populateSidebarUser();
@@ -334,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCategoryFilter();
     initMobileNav();
     initProfileDropdown();
+    initModalLayoutStabilizer();
     updateCartCountBadges();
     applyCachedOrderBadges();
     updateOrderCountBadges();

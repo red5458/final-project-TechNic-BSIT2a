@@ -46,7 +46,7 @@
         </div>
 
         <!-- Real content populated by product-detail.js -->
-        <div id="detailBody" style="display:none;" class="row g-5">
+        <div id="detailBody" style="display:none;" class="row g-4">
           <div class="col-lg-5">
             <div class="product-detail-img" id="detailImage">
               <i class="bi bi-image" style="color:var(--text-muted);"></i>
@@ -74,8 +74,12 @@
                 style="margin-bottom:.75rem;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">
                 Description</h6>
               <p id="detailDescription" style="margin:0;line-height:1.7;color:var(--text);"></p>
+              <p class="detail-listed-date">
+                <i class="bi bi-calendar3 me-1" style="color:var(--primary-light);"></i>
+                <span id="detailListedDate"></span>
+              </p>
             </div>
-            <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+            <div class="product-detail-actions d-flex align-items-center gap-3 mb-4 flex-wrap">
               <div class="qty-control">
                 <button class="qty-btn" id="qtyMinus">−</button>
                 <span class="qty-display" id="qtyDisplay"
@@ -86,34 +90,52 @@
                 <i class="bi bi-cart-plus me-2"></i>Add to Cart
               </button>
             </div>
+          </div>
+          <div class="col-12">
             <div class="seller-card">
               <h6>About the Seller</h6>
-              <div class="d-flex align-items-center gap-3">
-                <div class="user-avatar" id="sellerAvatar"
-                  style="background:var(--primary);color:#fff;width:46px;height:46px;font-size:1rem;"></div>
-                <div>
-                  <strong id="sellerName"></strong>
-                  <div id="sellerEmail" style="font-size:.85rem;color:var(--text-muted);"></div>
+              <div class="seller-card-layout">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="user-avatar" id="sellerAvatar"
+                    style="background:var(--primary);color:#fff;width:46px;height:46px;font-size:1rem;"></div>
+                  <div>
+                    <strong id="sellerName"></strong>
+                    <div id="sellerEmail" style="font-size:.85rem;color:var(--text-muted);"></div>
+                  </div>
                 </div>
-              </div>
-              <div class="seller-contact-panel">
-                <div class="seller-contact-heading">
-                  <i class="bi bi-chat-dots-fill"></i>
-                  <span>Contact Seller</span>
+                <div class="seller-contact-panel">
+                  <div class="seller-contact-heading">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>Contact Seller</span>
+                  </div>
+                  <p id="sellerContactNote" class="seller-contact-note"></p>
+                  <div class="seller-contact-actions" id="sellerContactActions"></div>
                 </div>
-                <p id="sellerContactNote" class="seller-contact-note"></p>
-                <div class="seller-contact-actions" id="sellerContactActions"></div>
               </div>
             </div>
-            <p style="font-size:.8rem;color:var(--text-muted);margin-top:1rem;">
-              <i class="bi bi-calendar3 me-1" style="color:var(--primary-light);"></i>
-              <span id="detailListedDate"></span>
-            </p>
           </div>
         </div>
 
+        <section class="you-may-like-section" id="youMayLikeSection" style="display:none;">
+          <div class="you-may-like-header">
+            <div>
+              <span class="section-tag">More Finds</span>
+              <h2>You May Like</h2>
+            </div>
+            <a href="dashboard.html">Browse all</a>
+          </div>
+          <div class="you-may-like-grid" id="youMayLikeGrid"></div>
+        </section>
+
       </div>
     </div>
+  </div>
+
+  <div class="image-lightbox" id="imagePreviewOverlay" aria-hidden="true">
+    <button type="button" class="image-lightbox-close" id="imagePreviewCloseBtn" aria-label="Close image preview">
+      <i class="bi bi-x-lg"></i>
+    </button>
+    <img id="imagePreviewImg" src="" alt="Product full preview" />
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

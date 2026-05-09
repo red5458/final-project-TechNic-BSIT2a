@@ -5,7 +5,7 @@
 
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api'
-    : 'https://final-project-technic-bsit2a.onrender.com/api';
+    : '/api';
 
 
 // ─── Token Helpers ───────────────────────────
@@ -25,10 +25,51 @@ function getUser() {
         return null;
     }
 }
-function logout() {
+
+function clearSession() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('cart');
+    localStorage.removeItem('checkoutCart');
+    localStorage.removeItem('cartItemCount');
+    localStorage.removeItem('orderBadgeCounts');
+}
+
+function logout() {
+    clearSession();
     window.location.href = 'login.html';
+}
+
+async function validateStoredSession() {
+    const token = getToken();
+    if (!token) {
+        clearSession();
+        return false;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/auth/me`, {
+            headers: { 'x-auth-token': token },
+            cache: 'no-store',
+        });
+
+        if (!res.ok) {
+            clearSession();
+            return false;
+        }
+
+        const user = await res.json();
+        if (!user?._id) {
+            clearSession();
+            return false;
+        }
+
+        saveUser(user);
+        return true;
+    } catch {
+        clearSession();
+        return false;
+    }
 }
 
 // ─── Toast Notification ──────────────────────
@@ -110,10 +151,21 @@ function clearAllErrors(form) {
     form.querySelectorAll('.field-error-msg').forEach(el => el.remove());
 }
 
-// ════════════════════════════════════════════
+async function finishLogin(token) {
+    saveToken(token);
+    const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': token } });
+    if (!meRes.ok) {
+        clearSession();
+        throw new Error('Login session could not be verified.');
+    }
+    const meData = await meRes.json();
+    saveUser(meData);
+}
+
+// ============================================
 //  REGISTER FORM
 //  POST /api/auth/register
-// ════════════════════════════════════════════
+// ============================================
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
@@ -164,13 +216,9 @@ if (registerForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.msg || 'Registration failed.');
 
-            saveToken(data.token);
-            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
-            const meData = await meRes.json();
-            saveUser(meData);
-
+            await finishLogin(data.token);
             showToast('Account created successfully! Redirecting...');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
 
         } catch (err) {
             setLoading(btn, false, originalText);
@@ -221,10 +269,7 @@ if (loginForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.msg || 'Invalid email or password.');
 
-            saveToken(data.token);
-            const meRes = await fetch(`${API_BASE}/auth/me`, { headers: { 'x-auth-token': data.token } });
-            const meData = await meRes.json();
-            saveUser(meData);
+            await finishLogin(data.token);
 
             showToast('Logged in successfully! Redirecting...');
             setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
@@ -356,6 +401,7 @@ if (listingForm) {
 const checkoutForm = document.getElementById('checkoutForm');
 if (checkoutForm) {
     renderCheckoutSummary();
+    prefillCheckoutDetails();
 
     checkoutForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -370,23 +416,20 @@ if (checkoutForm) {
             return;
         }
 
-        const firstNameInput = document.getElementById('firstName');
-        const lastNameInput = document.getElementById('lastName');
+        const nameInput = document.getElementById('checkoutName');
         const streetInput = document.getElementById('street');
         const cityInput = document.getElementById('city');
         const provinceInput = document.getElementById('province');
         const postalInput = document.getElementById('postal');
+        const phoneInput = document.getElementById('phone');
+        const notesInput = document.getElementById('notes');
         const btn = checkoutForm.querySelector('button[type="submit"]');
         const originalText = btn.innerHTML;
 
         let hasError = false;
 
-        if (!firstNameInput.value.trim()) {
-            showFieldError(firstNameInput, 'First name is required.');
-            hasError = true;
-        }
-        if (!lastNameInput.value.trim()) {
-            showFieldError(lastNameInput, 'Last name is required.');
+        if (!nameInput.value.trim()) {
+            showFieldError(nameInput, 'Name is required.');
             hasError = true;
         }
         if (!streetInput.value.trim()) {
@@ -400,16 +443,27 @@ if (checkoutForm) {
 
         if (hasError) return;
 
-        // Build full address string
+        const checkoutDetails = {
+            name: nameInput.value.trim(),
+            street: streetInput.value.trim(),
+            city: cityInput.value.trim(),
+            province: provinceInput?.value.trim() || '',
+            postal: postalInput?.value.trim() || '',
+            phone: phoneInput?.value.trim() || '',
+            notes: notesInput?.value.trim() || '',
+        };
+
+        saveCheckoutDetails(checkoutDetails);
+
         const delivery_address = [
-            `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-            streetInput.value.trim(),
-            cityInput.value.trim(),
-            provinceInput?.value.trim(),
-            postalInput?.value.trim(),
+            checkoutDetails.name,
+            checkoutDetails.street,
+            checkoutDetails.city,
+            checkoutDetails.province,
+            checkoutDetails.postal,
+            checkoutDetails.notes ? `Notes: ${checkoutDetails.notes}` : '',
         ].filter(Boolean).join(', ');
 
-        // Get cart from localStorage (Phase 5 will populate this dynamically)
         const cart = getCheckoutCart();
 
         if (cart.length === 0) {
@@ -445,7 +499,9 @@ if (checkoutForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || data.msg || 'Failed to place order.');
 
-            localStorage.removeItem('cart');
+            localStorage.removeItem('checkoutCart');
+            localStorage.setItem('cartItemCount', '0');
+            window.dispatchEvent(new Event('cart-updated'));
 
             showToast('Order placed successfully!');
             setTimeout(() => { window.location.href = 'my-orders.html'; }, 1500);
@@ -457,9 +513,52 @@ if (checkoutForm) {
     });
 }
 
+function getCheckoutDetailsKey(user = getUser()) {
+    return user?._id ? `checkoutDeliveryDetails:${user._id}` : 'checkoutDeliveryDetails';
+}
+
+function getSavedCheckoutDetails() {
+    try {
+        return JSON.parse(localStorage.getItem(getCheckoutDetailsKey()) || '{}');
+    } catch {
+        return {};
+    }
+}
+
+function saveCheckoutDetails(details) {
+    localStorage.setItem(getCheckoutDetailsKey(), JSON.stringify(details));
+}
+
+function prefillCheckoutDetails() {
+    const user = getUser();
+    const saved = getSavedCheckoutDetails();
+    const defaults = {
+        name: saved.name || user?.name || '',
+        phone: saved.phone || user?.phone || '',
+        street: saved.street || '',
+        city: saved.city || '',
+        province: saved.province || '',
+        postal: saved.postal || '',
+        notes: saved.notes || '',
+    };
+
+    Object.entries({
+        checkoutName: defaults.name,
+        phone: defaults.phone,
+        street: defaults.street,
+        city: defaults.city,
+        province: defaults.province,
+        postal: defaults.postal,
+        notes: defaults.notes,
+    }).forEach(([id, value]) => {
+        const field = document.getElementById(id);
+        if (field && !field.value && value) field.value = value;
+    });
+}
+
 function getCheckoutCart() {
     try {
-        return JSON.parse(localStorage.getItem('cart') || '[]');
+        return JSON.parse(localStorage.getItem('checkoutCart') || localStorage.getItem('cart') || '[]');
     } catch {
         return [];
     }
@@ -596,6 +695,7 @@ async function addToCart(productId, sellerId, price, quantity = 1, details = {})
             });
         }
         localStorage.setItem('cart', JSON.stringify(localCart));
+        localStorage.setItem('cartItemCount', String(localCart.reduce((sum, item) => sum + Number(item.quantity || 0), 0)));
         window.dispatchEvent(new Event('cart-updated'));
 
         showToast('Item added to cart!');

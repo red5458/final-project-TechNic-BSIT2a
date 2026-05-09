@@ -8,7 +8,7 @@ The frontend connects to the backend API for the main buyer, seller, and account
 
 Implemented areas include:
 
-- authentication
+- registration and login with JWT authentication
 - product listing
 - product browsing and details
 - cart handling
@@ -65,7 +65,7 @@ frontend/
 | Page | Purpose |
 |---|---|
 | `index.html` | Landing page |
-| `login.html` | Login form with working back-to-home navigation |
+| `login.html` | Login form and working back-to-home navigation |
 | `register.html` | Registration form |
 | `dashboard.html` | Product browsing with search, filters, sorting, and pagination |
 | `product-detail.html` | Single product view, quantity selection, and add-to-cart |
@@ -93,13 +93,7 @@ frontend/
 
 ## Backend Dependency
 
-The frontend expects the backend API at:
-
-```js
-const API_BASE = 'http://localhost:5000/api';
-```
-
-That value is defined in:
+The frontend API base URL is defined in:
 
 ```text
 frontend/js/api.js

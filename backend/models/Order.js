@@ -6,6 +6,7 @@ const orderSchema = new mongoose.Schema({
   delivery_address: { type: String, required: true },
   total_amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
+  hidden_for_buyer: { type: Boolean, default: false },
   created_at: { type: Date, default: Date.now }
 });
 

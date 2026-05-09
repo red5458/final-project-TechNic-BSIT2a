@@ -1,7 +1,11 @@
 //Refine authRoutes for improved clarity and structure
 const express = require('express');
 const router = express.Router();
-const { register, login, getMe } = require('../controllers/authController');
+const {
+    register,
+    login,
+    getMe,
+} = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
 // POST /api/auth/register - Sign up

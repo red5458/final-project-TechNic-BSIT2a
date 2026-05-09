@@ -11,7 +11,7 @@ function signToken(userId, res) {
     jwt.sign(
         payload,
         process.env.JWT_SECRET,
-        { expiresIn: '1h' },
+        { expiresIn: '7d' },
         (err, token) => {
             if (err) throw err;
             res.json({ token });
@@ -22,11 +22,12 @@ function signToken(userId, res) {
 // @desc    Register a new user
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
 
     try {
         // 1. Check if user already exists
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
         if (user) {
             return res.status(400).json({ msg: 'User already exists' });
         }
@@ -34,9 +35,8 @@ exports.register = async (req, res) => {
         // 2. Create new user instance
         user = new User({
             name,
-            email,
+            email: normalizedEmail,
             password,
-            role
         });
 
         // 3. Hash the password before saving
@@ -44,7 +44,6 @@ exports.register = async (req, res) => {
         user.password = await bcrypt.hash(password, salt);
 
         await user.save();
-
         signToken(user.id, res);
     } catch (err) {
         console.error(err.message);
@@ -56,10 +55,11 @@ exports.register = async (req, res) => {
 // @route   POST /api/auth/login
 exports.login = async (req, res) => {
     const { email, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
 
     try {
         // 1. Check if user exists
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email: normalizedEmail });
         if (!user) {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }

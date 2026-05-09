@@ -22,6 +22,7 @@ async function loadProductDetail() {
         const product = await res.json();
         currentProduct = product;
         renderProduct(product);
+        loadRelatedProducts(product);
     } catch {
         showError();
     }
@@ -47,6 +48,11 @@ function renderProduct(product) {
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`
             : `<i class="bi bi-image" style="color:var(--text-muted);font-size:3rem;"></i>
                ${isSoldOut ? '<div class="sold-out-overlay">Sold Out</div>' : ''}`;
+
+        imgContainer.classList.toggle('is-clickable', Boolean(product.image_url));
+        imgContainer.onclick = product.image_url
+            ? () => openImagePreview(product.image_url, product.name || 'Product image')
+            : null;
     }
 
     setText('detailName', product.name);
@@ -95,6 +101,89 @@ function renderProduct(product) {
 
     document.getElementById('detailLoading').style.display = 'none';
     document.getElementById('detailBody').style.display = '';
+}
+
+function openImagePreview(src, alt) {
+    const overlayEl = document.getElementById('imagePreviewOverlay');
+    const imageEl = document.getElementById('imagePreviewImg');
+    if (!overlayEl || !imageEl) return;
+
+    imageEl.src = src;
+    imageEl.alt = alt;
+    overlayEl.classList.add('show');
+    overlayEl.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-open');
+}
+
+function closeImagePreview() {
+    const overlayEl = document.getElementById('imagePreviewOverlay');
+    const imageEl = document.getElementById('imagePreviewImg');
+    if (!overlayEl) return;
+
+    overlayEl.classList.remove('show');
+    overlayEl.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-open');
+    if (imageEl) imageEl.removeAttribute('src');
+}
+
+async function loadRelatedProducts(product) {
+    const section = document.getElementById('youMayLikeSection');
+    const grid = document.getElementById('youMayLikeGrid');
+    if (!section || !grid) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/products`);
+        if (!res.ok) throw new Error('Could not load related products.');
+
+        const products = await res.json();
+        const currentId = product._id;
+        const currentCategoryId = product.category_id?._id || product.category_id;
+
+        const available = (Array.isArray(products) ? products : [])
+            .filter((item) => item._id !== currentId && Number(item.quantity || 0) > 0);
+
+        const sameCategory = available.filter((item) =>
+            (item.category_id?._id || item.category_id) === currentCategoryId
+        );
+
+        const others = available.filter((item) =>
+            (item.category_id?._id || item.category_id) !== currentCategoryId
+        );
+
+        const related = [...sameCategory, ...others].slice(0, 4);
+        if (related.length === 0) return;
+
+        grid.innerHTML = related.map(buildRelatedCard).join('');
+        section.style.display = '';
+    } catch {
+        section.style.display = 'none';
+    }
+}
+
+function buildRelatedCard(product) {
+    const name = product.name || 'Uniform listing';
+    const image = product.image_url
+        ? `<img src="${product.image_url}" alt="${name}" />`
+        : `<div class="related-product-placeholder"><i class="bi bi-image"></i></div>`;
+    const category = product.category_id?.name || '';
+    const seller = product.seller_id?.name || 'Seller';
+
+    return `
+        <article class="related-product-card" onclick="window.location.href='product-detail.html?id=${product._id}'">
+            <div class="related-product-img">${image}</div>
+            <div class="related-product-body">
+                <div class="related-product-meta">
+                    <span>Size ${product.size || '-'}</span>
+                    ${category ? `<span>${category}</span>` : ''}
+                </div>
+                <h3>${name}</h3>
+                <p><i class="bi bi-person-fill me-1"></i>${seller}</p>
+                <div class="related-product-bottom">
+                    <strong>PHP ${Number(product.price || 0).toFixed(2)}</strong>
+                    <span>${Number(product.quantity || 0)} left</span>
+                </div>
+            </div>
+        </article>`;
 }
 
 function renderSellerContact(seller) {
@@ -150,5 +239,14 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedQty++;
             document.getElementById('qtyDisplay').textContent = selectedQty;
         }
+    });
+
+    document.getElementById('imagePreviewCloseBtn')?.addEventListener('click', closeImagePreview);
+    document.getElementById('imagePreviewOverlay')?.addEventListener('click', (e) => {
+        if (e.target.id === 'imagePreviewOverlay') closeImagePreview();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeImagePreview();
     });
 });

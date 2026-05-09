@@ -104,7 +104,7 @@ x-auth-token: your_jwt_here
 
 | Model | Purpose |
 |---|---|
-| User | Stores account info and hashed password |
+| User | Stores account info, hashed password, and phone |
 | Category | Product category records |
 | Product | Uniform listings with seller, category, price, quantity, description, and image URL |
 | Cart | One cart per user |
@@ -118,7 +118,7 @@ x-auth-token: your_jwt_here
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/register` | Register user | No |
+| POST | `/register` | Register user and return JWT | No |
 | POST | `/login` | Login and get JWT | No |
 | GET | `/me` | Get current logged-in user | Yes |
 

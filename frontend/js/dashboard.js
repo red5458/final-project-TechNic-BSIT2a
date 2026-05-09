@@ -55,7 +55,7 @@ function applyFiltersAndRender() {
 // ─── Render Page (Pagination slice) ──────────
 function renderPage(filtered) {
     const countEl = document.getElementById('listingCount');
-    if (countEl) countEl.textContent = `${filtered.length} listing${filtered.length !== 1 ? 's' : ''} found`;
+    if (countEl) countEl.textContent = '';
 
     const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
     const start      = (currentPageNum - 1) * PAGE_SIZE;
@@ -194,6 +194,19 @@ function clearFilters() {
     document.getElementById('filterSort').value     = 'newest';
     document.getElementById('searchInput').value    = '';
     applyFiltersAndRender();
+    updateFilterButtonState();
+}
+
+function updateFilterButtonState() {
+    const trigger = document.querySelector('.filter-modal-trigger');
+    if (!trigger) return;
+
+    const category = document.getElementById('filterCategory')?.value || '';
+    const size = document.getElementById('filterSize')?.value || '';
+    const sort = document.getElementById('filterSort')?.value || 'newest';
+    const isActive = Boolean(category || size || sort !== 'newest');
+
+    trigger.classList.toggle('is-active', isActive);
 }
 
 // ─── Wire Controls ────────────────────────────
@@ -207,7 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
         searchTimer = setTimeout(applyFiltersAndRender, 350);
     });
 
-    document.getElementById('filterCategory')?.addEventListener('change', applyFiltersAndRender);
-    document.getElementById('filterSize')?.addEventListener('change', applyFiltersAndRender);
-    document.getElementById('filterSort')?.addEventListener('change', applyFiltersAndRender);
+    ['filterCategory', 'filterSize', 'filterSort'].forEach((id) => {
+        document.getElementById(id)?.addEventListener('change', () => {
+            applyFiltersAndRender();
+            updateFilterButtonState();
+        });
+    });
+    document.getElementById('clearFilterBtn')?.addEventListener('click', clearFilters);
 });
