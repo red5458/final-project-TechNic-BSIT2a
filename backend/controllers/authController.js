@@ -64,6 +64,10 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
+        if (user.status === 'disabled') {
+            return res.status(403).json({ msg: 'This account has been disabled.' });
+        }
+
         // 2. Compare password with hashed password in DB
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
@@ -83,6 +87,9 @@ exports.getMe = async (req, res) => {
     try {
         // req.user.id comes from the auth middleware
         const user = await User.findById(req.user.id).select('-password');
+        if (!user || user.status === 'disabled') {
+            return res.status(403).json({ msg: 'This account has been disabled.' });
+        }
         res.json(user);
     } catch (err) {
         console.error(err.message);

@@ -42,7 +42,6 @@ function formatSellerAddress(value) {
 let sellerListings = [];
 let sellerOrders = [];
 let listingCategories = [];
-let listingSizes = [];
 let editingProductId = null;
 let deletingProductId = null;
 let fulfillingOrderItem = null;
@@ -125,34 +124,6 @@ async function loadCategoriesForEdit(selectedCategoryId = '') {
     });
 
     select.value = selectedCategoryId || '';
-}
-
-async function loadSizesForEdit(selectedSize = '') {
-    if (listingSizes.length === 0) {
-        const res = await fetch(`${API_BASE}/sizes`);
-        if (!res.ok) throw new Error('Could not load sizes.');
-        listingSizes = await res.json();
-    }
-
-    const select = document.querySelector('#editForm [name="size"]');
-    if (!select) return;
-
-    select.innerHTML = '<option value="" disabled>Select size</option>';
-    listingSizes.forEach((size) => {
-        const option = document.createElement('option');
-        option.value = size.name;
-        option.textContent = size.name;
-        select.appendChild(option);
-    });
-
-    if (!listingSizes.some((size) => size.name === selectedSize) && selectedSize) {
-        const option = document.createElement('option');
-        option.value = selectedSize;
-        option.textContent = selectedSize;
-        select.appendChild(option);
-    }
-
-    select.value = selectedSize || '';
 }
 
 function renderListingsTable(products) {
@@ -492,10 +463,7 @@ async function openEditModal(productId) {
 
     try {
         const categoryId = product.category_id?._id || product.category_id || '';
-        await Promise.all([
-            loadCategoriesForEdit(categoryId),
-            loadSizesForEdit(product.size || ''),
-        ]);
+        await loadCategoriesForEdit(categoryId);
 
         form.elements.name.value = product.name || '';
         form.elements.category_id.value = categoryId;

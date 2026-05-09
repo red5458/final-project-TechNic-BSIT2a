@@ -72,16 +72,8 @@
               <div class="label">Categories</div>
             </div>
           </div>
-          <div class="stat-card admin-stat-card">
-            <div class="stat-icon si-blue"><i class="bi bi-rulers"></i></div>
-            <div>
-              <div class="value" id="adminTotalSizes">0</div>
-              <div class="label">Sizes</div>
-            </div>
-          </div>
         </div>
 
-        <div class="admin-manage-grid">
         <section class="admin-panel">
           <div class="admin-panel-header">
             <div>
@@ -118,40 +110,53 @@
         <section class="admin-panel">
           <div class="admin-panel-header">
             <div>
-              <span class="admin-kicker">Product Setup</span>
-              <h2>Sizes</h2>
-              <p>These sizes are used by product listings and filters.</p>
+              <span class="admin-kicker">Account Control</span>
+              <h2>Users</h2>
+              <p>Review accounts, assign admin access, and disable accounts when needed.</p>
             </div>
           </div>
 
-          <form class="admin-inline-form admin-size-form" id="sizeForm">
-            <input type="hidden" id="sizeId" />
-            <label class="admin-form-field">
-              <span>Size Name</span>
-              <input type="text" id="sizeName" placeholder="e.g., XL" required />
-            </label>
-            <label class="admin-form-field">
-              <span>Order</span>
-              <input type="number" id="sizeOrder" placeholder="0" value="0" />
-            </label>
-            <div class="admin-form-actions">
-              <button type="submit" class="btn-green" id="saveSizeBtn">
-                <i class="bi bi-save-fill me-1"></i>Save
-              </button>
-              <button type="button" class="btn btn-outline-secondary" id="cancelSizeEditBtn" hidden>
-                Cancel
-              </button>
-            </div>
-          </form>
-
-          <div class="admin-list" id="sizeList">
+          <div class="admin-list" id="userList">
             <div class="state-center state-center-sm">
               <div class="spinner-border text-success" role="status"></div>
-              <p class="mt-2 text-muted">Loading sizes...</p>
+              <p class="mt-2 text-muted">Loading users...</p>
             </div>
           </div>
         </section>
-        </div>
+
+        <section class="admin-panel">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Listing Control</span>
+              <h2>Products</h2>
+              <p>Review listings and remove products that should not appear in the marketplace.</p>
+            </div>
+          </div>
+
+          <div class="admin-list" id="productList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading products...</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-panel">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Order Monitoring</span>
+              <h2>Orders</h2>
+              <p>Review buyer orders, seller assignments, totals, and item fulfillment status.</p>
+            </div>
+          </div>
+
+          <div class="admin-list" id="orderList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading orders...</p>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
@@ -171,28 +176,6 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
           <button type="button" class="btn btn-danger" id="confirmDeleteCategoryBtn">
-            <i class="bi bi-trash3-fill me-1"></i>Delete
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="deleteSizeModal" tabindex="-1" aria-labelledby="deleteSizeModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteSizeModalLabel">Delete Size</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p class="mb-1" style="font-weight:700;color:var(--text);">Delete this size?</p>
-          <p class="mb-0 text-muted" style="font-size:.88rem;">Only delete sizes that are no longer used.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
-          <button type="button" class="btn btn-danger" id="confirmDeleteSizeBtn">
             <i class="bi bi-trash3-fill me-1"></i>Delete
           </button>
         </div>
