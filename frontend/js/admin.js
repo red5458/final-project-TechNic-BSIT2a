@@ -165,6 +165,11 @@ function renderAdminCategories() {
     const list = document.getElementById('categoryList');
     if (!list) return;
 
+    const query = getAdminSearchQuery('adminCategorySearch');
+    const categories = adminCategories.filter((category) => {
+        return matchesAdminSearch(query, category.name, category._id);
+    });
+
     if (!adminCategories.length) {
         list.innerHTML = `
             <div class="state-center state-center-sm">
@@ -174,7 +179,12 @@ function renderAdminCategories() {
         return;
     }
 
-    list.innerHTML = adminCategories.map((category) => `
+    if (!categories.length) {
+        list.innerHTML = renderAdminNoResults('No categories match your search.');
+        return;
+    }
+
+    list.innerHTML = categories.map((category) => `
         <div class="admin-list-row">
             <div class="admin-list-main">
                 <span class="admin-list-icon"><i class="bi bi-folder-fill"></i></span>
@@ -200,6 +210,11 @@ function renderAdminUsers() {
     const list = document.getElementById('userList');
     if (!list) return;
 
+    const query = getAdminSearchQuery('adminUserSearch');
+    const users = adminUsers.filter((user) => {
+        return matchesAdminSearch(query, user.name, user.email, user.role, user.status, user._id);
+    });
+
     if (!adminUsers.length) {
         list.innerHTML = `
             <div class="state-center state-center-sm">
@@ -209,9 +224,14 @@ function renderAdminUsers() {
         return;
     }
 
+    if (!users.length) {
+        list.innerHTML = renderAdminNoResults('No users match your search.');
+        return;
+    }
+
     const currentUser = getUser();
 
-    list.innerHTML = adminUsers.map((user) => {
+    list.innerHTML = users.map((user) => {
         const isSelf = String(user._id) === String(currentUser?._id);
         const joinedDate = user.created_at
             ? new Date(user.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' })
@@ -250,6 +270,20 @@ function renderAdminProducts() {
     const list = document.getElementById('productList');
     if (!list) return;
 
+    const query = getAdminSearchQuery('adminProductSearch');
+    const products = adminProducts.filter((product) => {
+        return matchesAdminSearch(
+            query,
+            product.name,
+            product.size,
+            product.status,
+            product.seller_id?.name,
+            product.seller_id?.email,
+            product.category_id?.name,
+            product._id
+        );
+    });
+
     if (!adminProducts.length) {
         list.innerHTML = `
             <div class="state-center state-center-sm">
@@ -259,7 +293,12 @@ function renderAdminProducts() {
         return;
     }
 
-    list.innerHTML = adminProducts.map((product) => {
+    if (!products.length) {
+        list.innerHTML = renderAdminNoResults('No products match your search.');
+        return;
+    }
+
+    list.innerHTML = products.map((product) => {
         const status = product.status || 'active';
         const statusClass = status === 'removed' ? 'status-cancelled' : 'status-delivered';
         const image = product.image_url
@@ -294,12 +333,37 @@ function renderAdminOrders() {
     const list = document.getElementById('orderList');
     if (!list) return;
 
+    const query = getAdminSearchQuery('adminOrderSearch');
+    const orders = adminOrders.filter((order) => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        return matchesAdminSearch(
+            query,
+            order._id,
+            order.status,
+            order.buyer_id?.name,
+            order.buyer_id?.email,
+            order.total_amount,
+            ...items.flatMap((item) => [
+                item.product_id?.name,
+                item.product_id?.size,
+                item.seller_id?.name,
+                item.seller_id?.email,
+                item.status,
+            ])
+        );
+    });
+
     if (!adminOrders.length) {
         list.innerHTML = `
             <div class="state-center state-center-sm">
                 <i class="bi bi-bag-x fs-2 text-muted"></i>
                 <p class="mt-2 text-muted">No orders found.</p>
             </div>`;
+        return;
+    }
+
+    if (!orders.length) {
+        list.innerHTML = renderAdminNoResults('No orders match your search.');
         return;
     }
 
@@ -311,7 +375,7 @@ function renderAdminOrders() {
         cancelled: 'status-cancelled',
     };
 
-    list.innerHTML = adminOrders.map((order) => {
+    list.innerHTML = orders.map((order) => {
         const status = order.status || 'pending';
         const statusClass = statusClassMap[status] || 'status-pending';
         const placedDate = order.created_at
@@ -544,6 +608,23 @@ function setValue(id, value) {
     if (element) element.value = value ?? '';
 }
 
+function getAdminSearchQuery(id) {
+    return document.getElementById(id)?.value.trim().toLowerCase() || '';
+}
+
+function matchesAdminSearch(query, ...values) {
+    if (!query) return true;
+    return values.some((value) => String(value ?? '').toLowerCase().includes(query));
+}
+
+function renderAdminNoResults(message) {
+    return `
+        <div class="state-center state-center-sm">
+            <i class="bi bi-search fs-2 text-muted"></i>
+            <p class="mt-2 text-muted">${escapeHtml(message)}</p>
+        </div>`;
+}
+
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -561,6 +642,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('categoryForm')?.addEventListener('submit', saveCategory);
     document.getElementById('cancelCategoryEditBtn')?.addEventListener('click', resetCategoryForm);
     document.getElementById('confirmDeleteCategoryBtn')?.addEventListener('click', deleteCategory);
+    document.getElementById('adminUserSearch')?.addEventListener('input', renderAdminUsers);
+    document.getElementById('adminProductSearch')?.addEventListener('input', renderAdminProducts);
+    document.getElementById('adminOrderSearch')?.addEventListener('input', renderAdminOrders);
+    document.getElementById('adminCategorySearch')?.addEventListener('input', renderAdminCategories);
 
     try {
         await Promise.all([
