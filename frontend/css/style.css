@@ -2364,6 +2364,12 @@ body.landing-page {
   overflow: hidden;
 }
 
+.admin-manage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+
 .admin-panel-header {
   padding: 1.25rem 1.5rem;
   border-bottom: 1px solid var(--border);
@@ -2416,6 +2422,10 @@ body.landing-page {
   display: flex;
   gap: .55rem;
   align-items: center;
+}
+
+.admin-size-form {
+  grid-template-columns: minmax(0, 1fr) 110px auto;
 }
 
 .admin-list {
@@ -2482,6 +2492,10 @@ body.landing-page {
 }
 
 @media (max-width: 640px) {
+  .admin-manage-grid {
+    grid-template-columns: 1fr;
+  }
+
   .admin-inline-form {
     grid-template-columns: 1fr;
   }

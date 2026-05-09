@@ -324,6 +324,37 @@ function initProfileDropdown() {
     });
 }
 
+async function initSizeOptions() {
+    const selects = document.querySelectorAll('#filterSize, #listingForm [name="size"]');
+    if (!selects.length) return;
+
+    try {
+        const res = await fetch(`${API_BASE}/sizes`);
+        const sizes = await res.json();
+        if (!res.ok || !Array.isArray(sizes)) throw new Error();
+
+        selects.forEach((select) => {
+            const isFilter = select.id === 'filterSize';
+            select.innerHTML = isFilter
+                ? '<option value="">All Sizes</option>'
+                : '<option value="" disabled selected>Select size</option>';
+
+            sizes.forEach((size) => {
+                const option = document.createElement('option');
+                option.value = size.name;
+                option.textContent = size.name;
+                select.appendChild(option);
+            });
+
+            if (!isFilter && sizes.length === 0) {
+                select.innerHTML = '<option value="" disabled selected>No sizes available</option>';
+            }
+        });
+    } catch {
+        // keep page defaults if the size service is unavailable
+    }
+}
+
 // ─── Boot ─────────────────────────────────────
 function initModalLayoutStabilizer() {
     if (window.bootstrap?.Modal && !window.bootstrap.Modal.__uniformityStableLayout) {
@@ -378,6 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     populateSidebarUser();
     initLogout();
     initCategoryFilter();
+    initSizeOptions();
     initMobileNav();
     initProfileDropdown();
     initModalLayoutStabilizer();

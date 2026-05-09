@@ -18,6 +18,7 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes')); // New Auth Routes
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/categories', require('./routes/categoryRoutes'));
+app.use('/api/sizes', require('./routes/sizeRoutes'));
 app.use('/api/products', require('./routes/productRoutes'));
 app.use('/api/cart', require('./routes/cartRoutes'));
 app.use('/api/orders', require('./routes/orderRoutes'));
