@@ -108,6 +108,37 @@
     </div>
   </div>
 
+  <div class="modal fade" id="deleteOrderModal" tabindex="-1" aria-labelledby="deleteOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteOrderModalLabel">Delete Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="d-flex gap-3 align-items-start">
+            <div class="stat-icon si-rose" style="width:44px;height:44px;font-size:1.15rem;">
+              <i class="bi bi-trash3-fill"></i>
+            </div>
+            <div>
+              <p class="mb-1" style="font-weight:700;color:var(--text);">Delete this order from My Orders?</p>
+              <p class="mb-0 text-muted" style="font-size:.88rem;">
+                This only removes it from your order history. Seller records will stay unchanged.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Order</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteOrderBtn">
+            <i class="bi bi-trash3-fill me-1"></i>Delete Order
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>

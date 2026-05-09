@@ -140,7 +140,7 @@ exports.createOrder = async (req, res) => {
 
 exports.getCurrentBuyerOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ buyer_id: req.user.id })
+        const orders = await Order.find({ buyer_id: req.user.id, hidden_for_buyer: { $ne: true } })
             .sort({ created_at: -1 })
             .populate('buyer_id', 'name email phone');
 
@@ -157,7 +157,7 @@ exports.getBuyerOrders = async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
-        const orders = await Order.find({ buyer_id: req.params.userId })
+        const orders = await Order.find({ buyer_id: req.params.userId, hidden_for_buyer: { $ne: true } })
             .sort({ created_at: -1 })
             .populate('buyer_id', 'name email phone');
 
@@ -180,6 +180,10 @@ exports.getOrderById = async (req, res) => {
             order_id: order._id,
             seller_id: req.user.id,
         });
+
+        if (isOwner && order.hidden_for_buyer && !isSeller) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
 
         if (!isOwner && !isSeller) {
             return res.status(403).json({ error: 'Access denied' });
@@ -298,6 +302,28 @@ exports.cancelOrder = async (req, res) => {
         await order.save();
 
         res.json({ message: 'Order cancelled successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.hideBuyerOrder = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.orderId);
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+
+        if (String(order.buyer_id) !== String(req.user.id)) {
+            return res.status(403).json({ error: 'You can only delete your own order history.' });
+        }
+
+        if (!['delivered', 'cancelled'].includes(order.status)) {
+            return res.status(400).json({ error: 'Only delivered or cancelled orders can be deleted from your history.' });
+        }
+
+        order.hidden_for_buyer = true;
+        await order.save();
+
+        res.json({ message: 'Order removed from your history' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

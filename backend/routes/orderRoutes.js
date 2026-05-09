@@ -10,6 +10,7 @@ const {
     getSellerOrders,
     fulfillOrderItem,
     cancelOrder,
+    hideBuyerOrder,
     markAsDelivered,
 } = require('../controllers/orderController');
 
@@ -21,5 +22,6 @@ router.get('/:orderId', auth, getOrderById);
 router.patch('/item/:itemId/fulfill', auth, fulfillOrderItem);
 router.patch('/:orderId/cancel', auth, cancelOrder);
 router.patch('/:orderId/deliver', auth, markAsDelivered);
+router.delete('/:orderId', auth, hideBuyerOrder);
 
 module.exports = router;

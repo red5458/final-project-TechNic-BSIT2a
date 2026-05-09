@@ -64,6 +64,14 @@ function buildOrderCard(order) {
         ? order.status.charAt(0).toUpperCase() + order.status.slice(1)
         : 'Pending';
 
+    const deleteBtn = ['delivered', 'cancelled'].includes(order.status)
+        ? `<button class="btn btn-outline-danger"
+                style="padding:.3rem .75rem;font-size:.78rem;border-radius:var(--radius-sm);"
+                onclick="event.stopPropagation(); confirmDeleteOrder('${order._id}', this)">
+                <i class="bi bi-trash3 me-1"></i>Delete
+           </button>`
+        : '';
+
     const actionBtn = order.status === 'pending'
         ? `<button class="btn btn-outline-danger"
                 style="padding:.3rem .75rem;font-size:.78rem;border-radius:var(--radius-sm);"
@@ -81,6 +89,7 @@ function buildOrderCard(order) {
                 <i class="bi bi-check-circle-fill"></i>Completed
            </span>`
             : '';
+    const actionsHTML = [actionBtn, deleteBtn].filter(Boolean).join('');
 
     const imageUrl = imageItem?.product_id?.image_url || '';
     const imgHTML = imageUrl
@@ -112,7 +121,9 @@ function buildOrderCard(order) {
                             <div style="font-size:.85rem;color:var(--text-muted);">Placed on ${placedDate}</div>
                             <div class="d-flex align-items-center gap-3">
                                 <strong style="color:var(--text);font-size:1.1rem;">${total}</strong>
-                                <div onclick="event.stopPropagation();">${actionBtn}</div>
+                                <div class="d-flex align-items-center gap-2 flex-wrap justify-content-end" onclick="event.stopPropagation();">
+                                    ${actionsHTML}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -123,6 +134,7 @@ function buildOrderCard(order) {
 
 let pendingCancelConfirmation = null;
 let pendingReceiptConfirmation = null;
+let pendingDeleteConfirmation = null;
 
 function confirmCancelOrder(orderId, btn) {
     pendingCancelConfirmation = { orderId, btn };
@@ -238,6 +250,63 @@ async function submitReceiptConfirmation() {
     }
 }
 
+function confirmDeleteOrder(orderId, btn) {
+    pendingDeleteConfirmation = { orderId, btn };
+
+    const modalEl = document.getElementById('deleteOrderModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function submitDeleteConfirmation() {
+    const token = localStorage.getItem('token');
+    if (!token || !pendingDeleteConfirmation) return;
+
+    const { orderId, btn } = pendingDeleteConfirmation;
+    const confirmBtn = document.getElementById('confirmDeleteOrderBtn');
+    const originalText = btn?.innerHTML;
+    const originalConfirmText = confirmBtn?.innerHTML;
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
+    }
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/orders/${orderId}`, {
+            method: 'DELETE',
+            headers: { 'x-auth-token': token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not delete order.');
+
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteOrderModal'));
+        if (modal) modal.hide();
+
+        pendingDeleteConfirmation = null;
+        showToast('Order removed from My Orders.');
+        await loadMyOrders();
+        window.dispatchEvent(new Event('orders-updated'));
+    } catch (err) {
+        showToast(err.message || 'Could not delete order.', 'error');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    } finally {
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = originalConfirmText;
+        }
+    }
+}
+
 function renderEmptyOrders() {
     const container = document.getElementById('ordersContainer');
     if (!container) return;
@@ -253,5 +322,6 @@ function renderEmptyOrders() {
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('confirmCancelOrderBtn')?.addEventListener('click', submitCancelConfirmation);
     document.getElementById('confirmReceiptBtn')?.addEventListener('click', submitReceiptConfirmation);
+    document.getElementById('confirmDeleteOrderBtn')?.addEventListener('click', submitDeleteConfirmation);
     loadMyOrders();
 });
