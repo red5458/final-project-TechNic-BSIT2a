@@ -174,13 +174,13 @@ finalprojectTechNic-BSIT2a/
 ### Entity Relationship Diagram
 
 <p align="center">
-  <img src="docs/planning/ERD.png" alt="Entity Relationship Diagram" width="700"/>
+  <img src="docs/planning/Final-ERD.png" alt="Entity Relationship Diagram" width="700"/>
 </p>
 
 ### Unified Modeling Language Diagram
 
 <p align="center">
-  <img src="docs/planning/UML.svg" alt="UML Diagram" width="700"/>
+  <img src="docs/planning/Final-UML.svg" alt="UML Diagram" width="700"/>
 </p>
 
 ## Contributors
