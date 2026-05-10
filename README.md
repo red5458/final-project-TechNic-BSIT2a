@@ -9,6 +9,7 @@ Uniformity is a web-based marketplace for buying and selling pre-loved uniforms 
 ## Project Overview
 
 Uniformity helps students and other users exchange uniforms that are still in good condition. Buyers can browse listings, add products to cart, check out selected items, and track orders. Sellers can create listings, manage inventory, and fulfill incoming order items.
+The system also includes an admin panel for managing core marketplace data without editing code directly.
 
 ## Group Information
 
@@ -27,17 +28,25 @@ Uniformity helps students and other users exchange uniforms that are still in go
 ## Current Features
 
 - User registration, login, JWT authentication, and protected account flows
+- Role-based access with regular users and admin users
 - Product listing creation with category, size, price, stock quantity, description, and optional Cloudinary image upload
-- Product browsing with search, filters, sorting, pagination, and product detail pages
+- Product browsing with search, filter modal, sorting, pagination, and product detail pages
+- Product detail image overlay preview and related product suggestions
 - Cart management with quantity controls, selected-item checkout, delete confirmation modal, and stock-aware limits
 - Dynamic checkout summary based on selected cart items
+- Checkout delivery details with reusable saved name and phone fields
 - Seller-aware checkout: products from different sellers become separate orders; products from the same seller stay grouped in one order
 - Buyer order history and order details pages
 - Pending order cancellation with confirmation modal and stock restoration
 - Seller incoming orders table with item-level fulfillment
 - Cancelled-order handling on buyer and seller screens
 - Profile page with live user details, buyer/seller stats, and recent order activity
-- Shared UI polish including lighter typography, smoother hover states, modal animations, and reduced-motion support
+- Admin panel with system stats, user controls, product controls, order monitoring, and category management
+- Admin users section with search, role badges, edit modal, enable/disable controls, and no-flash updates
+- Admin products section with search, edit modal, remove/restore controls, and no-flash updates
+- Admin orders section with search, status filters, receipt-style details modal, status updates, cancellation confirmation, and no-flash updates
+- Admin categories section with search, add/edit/delete controls, delete confirmation, and no-flash updates
+- Shared UI polish including sticky topbars, responsive layouts, smoother hover states, modal animations, scroll locking, and reduced-motion support
 
 ## Main Folders
 
@@ -60,7 +69,7 @@ finalprojectTechNic-BSIT2a/
 | Phase 4 | Form submissions, API integration, validation, and MongoDB data insertion |
 | Phase 5 | Data retrieval and display for products, cart, orders, profile, and seller pages |
 | Phase 6 | Update/delete flows, cart deletion confirmation, listing edit/delete, order fulfillment, order cancellation |
-| Phase 7 | UI cleanup, mobile testing, animation polish, documentation, and final debugging |
+| Phase 7 | Admin panel, UI cleanup, mobile testing, animation polish, documentation, and final debugging |
 
 ## Local Development
 
@@ -80,7 +89,7 @@ http://localhost:5000
 
 ### Frontend
 
-Open the files in `frontend/` using a local static server such as VS Code Live Server. The frontend expects the API base URL in `frontend/js/api.js`:
+Open the files in `frontend/` using a local static server such as VS Code Live Server, or run the backend server and open the frontend pages through the same local server. The frontend expects the API base URL in `frontend/js/api.js`:
 
 ```js
 const API_BASE = 'http://localhost:5000/api';

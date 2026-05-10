@@ -53,9 +53,13 @@ exports.createOrder = async (req, res) => {
                 throw new Error('Invalid order quantity.');
             }
 
-            const product = await Product.findById(item.product_id).select('price seller_id quantity');
+            const product = await Product.findById(item.product_id).select('price seller_id quantity status');
             if (!product) {
                 throw new Error('One or more products no longer exist.');
+            }
+
+            if (product.status === 'removed') {
+                throw new Error('One or more products are no longer available.');
             }
 
             if (String(product.seller_id) !== String(item.seller_id)) {
@@ -63,7 +67,7 @@ exports.createOrder = async (req, res) => {
             }
 
             const updatedProduct = await Product.findOneAndUpdate(
-                { _id: item.product_id, quantity: { $gte: qty } },
+                { _id: item.product_id, status: { $ne: 'removed' }, quantity: { $gte: qty } },
                 { $inc: { quantity: -qty } },
                 { new: true }
             ).select('name quantity');

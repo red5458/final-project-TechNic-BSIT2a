@@ -1,7 +1,8 @@
 //Add authentication middleware for JWT verification
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-module.exports = function (req, res, next) {
+module.exports = async function (req, res, next) {
     // Get token from header
     const token = req.header('x-auth-token');
 
@@ -13,6 +14,11 @@ module.exports = function (req, res, next) {
     // Verify token
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const user = await User.findById(decoded.user.id).select('status');
+        if (!user || user.status === 'disabled') {
+            return res.status(403).json({ msg: 'This account has been disabled.' });
+        }
 
         // Add user from payload to request object
         req.user = decoded.user;

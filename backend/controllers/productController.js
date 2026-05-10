@@ -30,7 +30,7 @@ exports.createProduct = async (req, res) => {
 
 exports.getAllProducts = async (req, res) => {
     try {
-        const filter = {};
+        const filter = { status: { $ne: 'removed' } };
         if (req.query.category) filter.category_id = req.query.category;
         if (req.query.seller) filter.seller_id = req.query.seller;
 
@@ -50,6 +50,7 @@ exports.getProductById = async (req, res) => {
             .populate('category_id', 'name');
 
         if (!product) return res.status(404).json({ error: 'Product not found' });
+        if (product.status === 'removed') return res.status(404).json({ error: 'Product not found' });
         res.json(product);
     } catch (err) {
         res.status(500).json({ error: err.message });

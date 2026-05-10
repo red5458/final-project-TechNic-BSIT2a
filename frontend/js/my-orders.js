@@ -312,7 +312,7 @@ function renderEmptyOrders() {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="state-center">
+        <div class="state-center empty-page-state">
             <i class="bi bi-bag-x fs-1 text-muted"></i>
             <p class="mt-3 text-muted">You haven't placed any orders yet.</p>
             <a href="dashboard.html" class="btn-green mt-2" style="padding:.5rem 1.5rem;">Browse Uniforms</a>

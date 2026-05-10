@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Uniformity</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="main-content">
+      <div class="topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn mobile-nav-toggle" type="button" aria-label="Open navigation">
+            <i class="bi bi-list"></i>
+          </button>
+          <span style="font-weight:700;font-size:.95rem;">Admin Panel</span>
+        </div>
+        <div class="topbar-actions">
+          <a href="cart.html" class="icon-btn" title="Cart">
+            <i class="bi bi-cart-fill"></i>
+          </a>
+          <button class="icon-btn" id="profileTopBtn" title="Account" type="button">
+            <i class="bi bi-person-fill"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="content-area admin-content">
+        <div class="admin-header">
+          <div>
+            <span class="admin-kicker">System Control</span>
+            <h1>Admin Panel</h1>
+            <p>Manage basic system data without editing the code.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid admin-stats-grid">
+          <a class="stat-card admin-stat-card" href="#adminUsersSection" aria-label="Go to users section">
+            <div class="admin-stat-top">
+              <span class="admin-stat-label">Total Users</span>
+              <span class="admin-stat-icon"><i class="bi bi-people-fill"></i></span>
+            </div>
+            <div class="admin-stat-value" id="adminTotalUsers">0</div>
+            <div class="admin-stat-foot">Manage accounts <i class="bi bi-arrow-right"></i></div>
+          </a>
+          <a class="stat-card admin-stat-card" href="#adminProductsSection" aria-label="Go to products section">
+            <div class="admin-stat-top">
+              <span class="admin-stat-label">Products</span>
+              <span class="admin-stat-icon"><i class="bi bi-tags-fill"></i></span>
+            </div>
+            <div class="admin-stat-value" id="adminTotalProducts">0</div>
+            <div class="admin-stat-foot">Review listings <i class="bi bi-arrow-right"></i></div>
+          </a>
+          <a class="stat-card admin-stat-card" href="#adminOrdersSection" aria-label="Go to orders section">
+            <div class="admin-stat-top">
+              <span class="admin-stat-label">Orders</span>
+              <span class="admin-stat-icon"><i class="bi bi-bag-check-fill"></i></span>
+            </div>
+            <div class="admin-stat-value" id="adminTotalOrders">0</div>
+            <div class="admin-stat-foot">Monitor activity <i class="bi bi-arrow-right"></i></div>
+          </a>
+          <a class="stat-card admin-stat-card" href="#adminCategoriesSection" aria-label="Go to categories section">
+            <div class="admin-stat-top">
+              <span class="admin-stat-label">Categories</span>
+              <span class="admin-stat-icon"><i class="bi bi-folder-fill"></i></span>
+            </div>
+            <div class="admin-stat-value" id="adminTotalCategories">0</div>
+            <div class="admin-stat-foot">Edit setup <i class="bi bi-arrow-right"></i></div>
+          </a>
+        </div>
+
+        <section class="admin-panel admin-panel-users" id="adminUsersSection">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Account Control</span>
+              <h2>Users</h2>
+              <p>Review accounts, assign admin access, and disable accounts when needed.</p>
+            </div>
+            <label class="admin-section-search" aria-label="Search users">
+              <i class="bi bi-search"></i>
+              <input type="search" id="adminUserSearch" placeholder="Search users..." />
+            </label>
+          </div>
+
+          <div class="admin-list" id="userList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading users...</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-panel admin-panel-products" id="adminProductsSection">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Listing Control</span>
+              <h2>Products</h2>
+              <p>Review listings and remove products that should not appear in the marketplace.</p>
+            </div>
+            <label class="admin-section-search" aria-label="Search products">
+              <i class="bi bi-search"></i>
+              <input type="search" id="adminProductSearch" placeholder="Search products..." />
+            </label>
+          </div>
+
+          <div class="admin-list" id="productList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading products...</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-panel admin-panel-orders" id="adminOrdersSection">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Order Monitoring</span>
+              <h2>Orders</h2>
+              <p>Review buyer orders, seller assignments, totals, and item fulfillment status.</p>
+            </div>
+            <label class="admin-section-search" aria-label="Search orders">
+              <i class="bi bi-search"></i>
+              <input type="search" id="adminOrderSearch" placeholder="Search orders..." />
+            </label>
+          </div>
+          <div class="admin-order-tools" aria-label="Filter orders by status">
+            <button type="button" class="admin-filter-chip active" data-order-status="all">All</button>
+            <button type="button" class="admin-filter-chip" data-order-status="pending">Pending</button>
+            <button type="button" class="admin-filter-chip" data-order-status="shipped">Fulfilled</button>
+            <button type="button" class="admin-filter-chip" data-order-status="delivered">Delivered</button>
+            <button type="button" class="admin-filter-chip" data-order-status="cancelled">Cancelled</button>
+          </div>
+
+          <div class="admin-list" id="orderList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading orders...</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="admin-panel admin-panel-categories" id="adminCategoriesSection">
+          <div class="admin-panel-header">
+            <div>
+              <span class="admin-kicker">Product Setup</span>
+              <h2>Categories</h2>
+              <p>These category names are used by product listings and filters.</p>
+            </div>
+            <label class="admin-section-search" aria-label="Search categories">
+              <i class="bi bi-search"></i>
+              <input type="search" id="adminCategorySearch" placeholder="Search categories..." />
+            </label>
+          </div>
+
+          <form class="admin-inline-form" id="categoryForm">
+            <input type="hidden" id="categoryId" />
+            <label class="admin-form-field">
+              <span>Category Name</span>
+              <input type="text" id="categoryName" placeholder="e.g., IT Polo" required />
+            </label>
+            <div class="admin-form-actions">
+              <button type="submit" class="btn-green" id="saveCategoryBtn">
+                <i class="bi bi-save-fill me-1"></i>Save
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="cancelCategoryEditBtn" hidden>
+                Cancel
+              </button>
+            </div>
+          </form>
+
+          <div class="admin-list" id="categoryList">
+            <div class="state-center state-center-sm">
+              <div class="spinner-border text-success" role="status"></div>
+              <p class="mt-2 text-muted">Loading categories...</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminEditUserModal" tabindex="-1" aria-labelledby="adminEditUserModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminEditUserModalLabel">Edit User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="adminEditUserForm" action="#" method="POST">
+          <div class="modal-body">
+            <input type="hidden" name="user_id" />
+            <div class="mb-3">
+              <label class="form-label" for="adminUserNameInput">Full Name</label>
+              <input id="adminUserNameInput" type="text" class="form-control" name="name" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="adminUserEmailInput">Email Address</label>
+              <input id="adminUserEmailInput" type="email" class="form-control" name="email" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="adminUserPhoneInput">Phone Number</label>
+              <input id="adminUserPhoneInput" type="tel" class="form-control" name="phone"
+                placeholder="09XX XXX XXXX" />
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="adminUserRoleInput">Account Role</label>
+              <select id="adminUserRoleInput" class="form-select" name="role" required>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-green">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminEditProductModal" tabindex="-1" aria-labelledby="adminEditProductModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminEditProductModalLabel">Edit Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="adminEditProductForm" action="#" method="POST">
+            <input type="hidden" name="product_id" />
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="adminProductNameInput">Uniform Name</label>
+                <input id="adminProductNameInput" type="text" class="form-control" name="name" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="adminProductCategoryInput">Category</label>
+                <select id="adminProductCategoryInput" class="form-select" name="category_id" required></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="adminProductSizeInput">Size</label>
+                <select id="adminProductSizeInput" class="form-select" name="size" required>
+                  <option value="" disabled>Select size</option>
+                  <option>XS</option>
+                  <option>S</option>
+                  <option>M</option>
+                  <option>L</option>
+                  <option>XL</option>
+                  <option>XXL</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="adminProductQtyInput">Qty</label>
+                <input id="adminProductQtyInput" type="number" class="form-control" name="quantity" min="0" required />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="adminProductPriceInput">Price</label>
+                <input id="adminProductPriceInput" type="number" class="form-control" name="price" min="1" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="adminProductDescriptionInput">Description</label>
+                <textarea id="adminProductDescriptionInput" class="form-control" name="description" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer px-0 pb-0 mt-4 border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn-green">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteCategoryModalLabel">Delete Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1" style="font-weight:700;color:var(--text);">Delete this category?</p>
+          <p class="mb-0 text-muted" style="font-size:.88rem;">Only delete categories that are no longer used.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteCategoryBtn">
+            <i class="bi bi-trash3-fill me-1"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminOrderDetailsModal" tabindex="-1" aria-labelledby="adminOrderDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="adminOrderDetailsModalLabel">Order Details</h5>
+            <p class="mb-0 text-muted" id="adminOrderDetailsSubtitle" style="font-size:.82rem;"></p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="adminOrderDetailsBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminConfirmActionModal" tabindex="-1" aria-labelledby="adminConfirmActionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminConfirmActionModalLabel">Confirm Action</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1" id="adminConfirmActionTitle" style="font-weight:700;color:var(--text);">Confirm this action?</p>
+          <p class="mb-0 text-muted" id="adminConfirmActionText" style="font-size:.88rem;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
+          <button type="button" class="btn btn-danger" id="adminConfirmActionBtn">
+            <i class="bi bi-check-circle-fill me-1"></i>Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+
+</html>

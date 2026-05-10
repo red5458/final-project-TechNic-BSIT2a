@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema({
   image_url: { type: String },
   seller_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
+  status: { type: String, enum: ['active', 'removed'], default: 'active' },
   created_at: { type: Date, default: Date.now }
 });
 
