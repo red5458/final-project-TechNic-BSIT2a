@@ -53,6 +53,27 @@ exports.updateAdminUser = async (req, res) => {
         const targetUserId = req.params.userId;
         const isSelf = String(req.user.id) === String(targetUserId);
 
+        if (req.body.name !== undefined) {
+            const name = String(req.body.name || '').trim();
+            if (!name) return res.status(400).json({ error: 'Name is required.' });
+            updates.name = name;
+        }
+
+        if (req.body.email !== undefined) {
+            const email = String(req.body.email || '').trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                return res.status(400).json({ error: 'Please enter a valid email address.' });
+            }
+
+            const emailOwner = await User.findOne({ email, _id: { $ne: targetUserId } }).select('_id');
+            if (emailOwner) return res.status(400).json({ error: 'Email is already in use.' });
+            updates.email = email;
+        }
+
+        if (req.body.phone !== undefined) {
+            updates.phone = String(req.body.phone || '').trim();
+        }
+
         if (req.body.role !== undefined) {
             if (!['user', 'admin'].includes(req.body.role)) {
                 return res.status(400).json({ error: 'Invalid role.' });
@@ -109,6 +130,43 @@ exports.getAdminProducts = async (req, res) => {
 exports.updateAdminProduct = async (req, res) => {
     try {
         const updates = {};
+
+        if (req.body.name !== undefined) {
+            const name = String(req.body.name || '').trim();
+            if (!name) return res.status(400).json({ error: 'Product name is required.' });
+            updates.name = name;
+        }
+
+        if (req.body.category_id !== undefined) {
+            if (!req.body.category_id) return res.status(400).json({ error: 'Category is required.' });
+            updates.category_id = req.body.category_id;
+        }
+
+        if (req.body.size !== undefined) {
+            const size = String(req.body.size || '').trim();
+            if (!size) return res.status(400).json({ error: 'Size is required.' });
+            updates.size = size;
+        }
+
+        if (req.body.quantity !== undefined) {
+            const quantity = Number(req.body.quantity);
+            if (!Number.isFinite(quantity) || quantity < 0) {
+                return res.status(400).json({ error: 'Quantity must be 0 or higher.' });
+            }
+            updates.quantity = quantity;
+        }
+
+        if (req.body.price !== undefined) {
+            const price = Number(req.body.price);
+            if (!Number.isFinite(price) || price < 1) {
+                return res.status(400).json({ error: 'Price must be at least 1.' });
+            }
+            updates.price = price;
+        }
+
+        if (req.body.description !== undefined) {
+            updates.description = String(req.body.description || '').trim();
+        }
 
         if (req.body.status !== undefined) {
             if (!['active', 'removed'].includes(req.body.status)) {

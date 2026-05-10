@@ -181,6 +181,95 @@
     </div>
   </div>
 
+  <div class="modal fade" id="adminEditUserModal" tabindex="-1" aria-labelledby="adminEditUserModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminEditUserModalLabel">Edit User</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="adminEditUserForm" action="#" method="POST">
+          <div class="modal-body">
+            <input type="hidden" name="user_id" />
+            <div class="mb-3">
+              <label class="form-label" for="adminUserNameInput">Full Name</label>
+              <input id="adminUserNameInput" type="text" class="form-control" name="name" required />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="adminUserEmailInput">Email Address</label>
+              <input id="adminUserEmailInput" type="email" class="form-control" name="email" required />
+            </div>
+            <div class="mb-0">
+              <label class="form-label" for="adminUserPhoneInput">Phone Number</label>
+              <input id="adminUserPhoneInput" type="tel" class="form-control" name="phone"
+                placeholder="09XX XXX XXXX" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-green">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminEditProductModal" tabindex="-1" aria-labelledby="adminEditProductModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminEditProductModalLabel">Edit Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="adminEditProductForm" action="#" method="POST">
+            <input type="hidden" name="product_id" />
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="adminProductNameInput">Uniform Name</label>
+                <input id="adminProductNameInput" type="text" class="form-control" name="name" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="adminProductCategoryInput">Category</label>
+                <select id="adminProductCategoryInput" class="form-select" name="category_id" required></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="adminProductSizeInput">Size</label>
+                <select id="adminProductSizeInput" class="form-select" name="size" required>
+                  <option value="" disabled>Select size</option>
+                  <option>XS</option>
+                  <option>S</option>
+                  <option>M</option>
+                  <option>L</option>
+                  <option>XL</option>
+                  <option>XXL</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="adminProductQtyInput">Qty</label>
+                <input id="adminProductQtyInput" type="number" class="form-control" name="quantity" min="0" required />
+              </div>
+              <div class="col-md-2">
+                <label class="form-label" for="adminProductPriceInput">Price</label>
+                <input id="adminProductPriceInput" type="number" class="form-control" name="price" min="1" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="adminProductDescriptionInput">Description</label>
+                <textarea id="adminProductDescriptionInput" class="form-control" name="description" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer px-0 pb-0 mt-4 border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn-green">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">

@@ -251,6 +251,10 @@ function renderAdminUsers() {
                 </div>
                 <div class="admin-user-controls">
                     <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
+                    <button type="button" class="icon-btn" title="Edit user"
+                        onclick="openAdminEditUser('${user._id}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
                     <select class="admin-role-select" ${isSelf ? 'disabled' : ''}
                         onchange="updateUserRole('${user._id}', this.value, this)">
                         <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
@@ -320,6 +324,10 @@ function renderAdminProducts() {
                 </div>
                 <div class="admin-user-controls">
                     <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
+                    <button type="button" class="icon-btn" title="Edit product"
+                        onclick="openAdminEditProduct('${product._id}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
                     <button type="button" class="btn ${status === 'removed' ? 'btn-outline-success' : 'btn-outline-danger'} btn-sm"
                         onclick="toggleProductStatus('${product._id}', '${status}', this)">
                         ${status === 'removed' ? 'Restore' : 'Remove'}
@@ -494,6 +502,70 @@ async function toggleUserStatus(userId, currentStatus, btn) {
     });
 }
 
+function openAdminEditUser(userId) {
+    const user = adminUsers.find((item) => item._id === userId);
+    const form = document.getElementById('adminEditUserForm');
+    const modalEl = document.getElementById('adminEditUserModal');
+    if (!user || !form || !modalEl) return;
+
+    form.elements.user_id.value = user._id;
+    form.elements.name.value = user.name || '';
+    form.elements.email.value = user.email || '';
+    form.elements.phone.value = user.phone || '';
+
+    new bootstrap.Modal(modalEl).show();
+}
+
+async function submitAdminEditUser(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const userId = form.elements.user_id.value;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn?.innerHTML;
+    const payload = {
+        name: form.elements.name.value.trim(),
+        email: form.elements.email.value.trim(),
+        phone: form.elements.phone.value.trim(),
+    };
+
+    if (!payload.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        showToast('Please enter a valid name and email address.', 'error');
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
+            method: 'PATCH',
+            headers: adminHeaders(),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not update user.');
+
+        const currentUser = getUser();
+        if (String(currentUser?._id) === String(userId) && typeof saveUser === 'function') {
+            saveUser({ ...currentUser, ...data });
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('adminEditUserModal'))?.hide();
+        showToast('User updated.');
+        await Promise.all([loadAdminUsers(), loadAdminSummary()]);
+    } catch (err) {
+        showToast(err.message || 'Could not update user.', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+}
+
 async function updateAdminUser(userId, payload, options = {}) {
     const { control, fallback, loadingText = 'Saving...', successMessage = 'User updated.' } = options;
     const originalText = control?.innerHTML;
@@ -524,6 +596,99 @@ async function updateAdminUser(userId, payload, options = {}) {
         if (control) {
             control.disabled = originalDisabled;
             if (control.tagName !== 'SELECT') control.innerHTML = originalText;
+        }
+    }
+}
+
+async function populateAdminProductCategories(selectedCategoryId = '') {
+    if (!adminCategories.length) {
+        const res = await fetch(`${API_BASE}/categories`, { cache: 'no-store' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not load categories.');
+        adminCategories = data;
+    }
+
+    const select = document.querySelector('#adminEditProductForm [name="category_id"]');
+    if (!select) return;
+
+    select.innerHTML = '<option value="" disabled>Select a category</option>';
+    adminCategories.forEach((category) => {
+        const option = document.createElement('option');
+        option.value = category._id;
+        option.textContent = category.name;
+        select.appendChild(option);
+    });
+    select.value = selectedCategoryId || '';
+}
+
+async function openAdminEditProduct(productId) {
+    const product = adminProducts.find((item) => item._id === productId);
+    const form = document.getElementById('adminEditProductForm');
+    const modalEl = document.getElementById('adminEditProductModal');
+    if (!product || !form || !modalEl) return;
+
+    try {
+        const categoryId = product.category_id?._id || product.category_id || '';
+        await populateAdminProductCategories(categoryId);
+
+        form.elements.product_id.value = product._id;
+        form.elements.name.value = product.name || '';
+        form.elements.category_id.value = categoryId;
+        form.elements.size.value = product.size || '';
+        form.elements.quantity.value = product.quantity ?? 0;
+        form.elements.price.value = product.price ?? '';
+        form.elements.description.value = product.description || '';
+
+        new bootstrap.Modal(modalEl).show();
+    } catch (err) {
+        showToast(err.message || 'Could not prepare product edit form.', 'error');
+    }
+}
+
+async function submitAdminEditProduct(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const productId = form.elements.product_id.value;
+    const btn = form.querySelector('button[type="submit"]');
+    const originalText = btn?.innerHTML;
+    const payload = {
+        name: form.elements.name.value.trim(),
+        category_id: form.elements.category_id.value,
+        size: form.elements.size.value,
+        quantity: Number(form.elements.quantity.value),
+        price: Number(form.elements.price.value),
+        description: form.elements.description.value.trim(),
+    };
+
+    if (!payload.name || !payload.category_id || !payload.size || payload.quantity < 0 || payload.price < 1) {
+        showToast('Please complete the product details before saving.', 'error');
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/products/${productId}`, {
+            method: 'PATCH',
+            headers: adminHeaders(),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not update product.');
+
+        bootstrap.Modal.getInstance(document.getElementById('adminEditProductModal'))?.hide();
+        showToast('Product updated.');
+        await Promise.all([loadAdminProducts(), loadAdminSummary()]);
+    } catch (err) {
+        showToast(err.message || 'Could not update product.', 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
         }
     }
 }
@@ -640,6 +805,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!allowed) return;
 
     document.getElementById('categoryForm')?.addEventListener('submit', saveCategory);
+    document.getElementById('adminEditUserForm')?.addEventListener('submit', submitAdminEditUser);
+    document.getElementById('adminEditProductForm')?.addEventListener('submit', submitAdminEditProduct);
     document.getElementById('cancelCategoryEditBtn')?.addEventListener('click', resetCategoryForm);
     document.getElementById('confirmDeleteCategoryBtn')?.addEventListener('click', deleteCategory);
     document.getElementById('adminUserSearch')?.addEventListener('input', renderAdminUsers);
