@@ -340,42 +340,29 @@ function initProfileDropdown() {
 
 // ─── Boot ─────────────────────────────────────
 function initModalLayoutStabilizer() {
-    if (window.bootstrap?.Modal && !window.bootstrap.Modal.__uniformityStableLayout) {
-        const modalProto = window.bootstrap.Modal.prototype;
-        const originalShow = modalProto.show;
-
-        modalProto._adjustDialog = function () { };
-        modalProto._resetAdjustments = function () { };
-        modalProto.show = function (...args) {
-            if (this._scrollBar) {
-                this._scrollBar.hide = function () { };
-                this._scrollBar.reset = function () { };
+    const setModalScrollbarGap = () => {
+        const gap = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+        document.documentElement.classList.add('modal-scroll-locked');
+        document.documentElement.style.setProperty('--modal-scrollbar-gap', `${gap}px`);
+        document.querySelectorAll('.topbar').forEach((el) => {
+            if (!el.style.getPropertyValue('--topbar-modal-padding-right')) {
+                el.style.setProperty('--topbar-modal-padding-right', window.getComputedStyle(el).paddingRight);
             }
-            return originalShow.apply(this, args);
-        };
-
-        window.bootstrap.Modal.__uniformityStableLayout = true;
-    }
-
-    const resetInjectedPadding = () => {
-        document.body.style.overflow = '';
-        document.body.style.paddingRight = '0px';
-        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
-            el.style.paddingRight = '0px';
         });
     };
 
-    const clearInjectedPadding = () => {
+    const clearModalScrollbarGap = () => {
+        document.documentElement.classList.remove('modal-scroll-locked');
+        document.documentElement.style.removeProperty('--modal-scrollbar-gap');
         document.body.style.removeProperty('padding-right');
-        document.querySelectorAll('.page-wrapper, .main-content').forEach((el) => {
+        document.querySelectorAll('.topbar').forEach((el) => {
+            el.style.removeProperty('--topbar-modal-padding-right');
             el.style.removeProperty('padding-right');
         });
     };
 
-    document.addEventListener('show.bs.modal', resetInjectedPadding);
-    document.addEventListener('shown.bs.modal', resetInjectedPadding);
-    document.addEventListener('hide.bs.modal', resetInjectedPadding);
-    document.addEventListener('hidden.bs.modal', clearInjectedPadding);
+    document.addEventListener('show.bs.modal', setModalScrollbarGap);
+    document.addEventListener('hidden.bs.modal', clearModalScrollbarGap);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

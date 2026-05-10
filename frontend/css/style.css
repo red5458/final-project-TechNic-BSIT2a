@@ -43,6 +43,10 @@ html {
   scrollbar-gutter: stable;
 }
 
+html.modal-scroll-locked {
+  overflow-y: hidden !important;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background: var(--bg);
@@ -54,14 +58,14 @@ body {
 }
 
 body.modal-open {
-  overflow: visible !important;
-  overflow-y: scroll !important;
-  padding-right: 0 !important;
+  overflow: hidden !important;
+  overflow-x: hidden !important;
+  padding-right: var(--modal-scrollbar-gap, 0px) !important;
 }
 
-body.modal-open .page-wrapper,
-body.modal-open .main-content {
-  padding-right: 0 !important;
+body.modal-open .topbar {
+  right: 0 !important;
+  padding-right: calc(var(--topbar-modal-padding-right, 2rem) + var(--modal-scrollbar-gap, 0px)) !important;
 }
 
 body,
@@ -844,11 +848,22 @@ body.landing-page {
   font-weight: 400;
 }
 
+.form-select {
+  padding-right: 2.6rem;
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236B7280' viewBox='0 0 16 16'%3E%3Cpath d='M4.2 6.2a1 1 0 0 1 1.4 0L8 8.6l2.4-2.4a1 1 0 1 1 1.4 1.4L8.7 10.8a1 1 0 0 1-1.4 0L4.2 7.6a1 1 0 0 1 0-1.4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .form-control:focus,
 .form-select:focus {
   border-color: var(--primary-light);
   box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.15);
-  background: #fff;
+  background-color: #fff;
   outline: none;
 }
 
@@ -2727,7 +2742,31 @@ body.landing-page {
   font-weight: 700;
 }
 
-.admin-list-main span:not(.admin-list-icon) {
+.admin-role-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: .45rem;
+  padding: .12rem .45rem;
+  border-radius: 999px;
+  font-size: .66rem;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  vertical-align: middle;
+}
+
+.admin-role-badge-admin {
+  background: #FEF3C7;
+  color: #B45309;
+}
+
+.admin-role-badge-user {
+  background: #DCFCE7;
+  color: #15803D;
+}
+
+.admin-list-main span:not(.admin-list-icon):not(.admin-role-badge) {
   display: block;
   color: var(--text-muted);
   font-size: .74rem;

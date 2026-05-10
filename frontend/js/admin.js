@@ -237,29 +237,27 @@ function renderAdminUsers() {
             ? new Date(user.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' })
             : '-';
         const status = user.status || 'active';
-        const statusClass = status === 'disabled' ? 'status-cancelled' : 'status-delivered';
+        const role = user.role || 'user';
+        const roleClass = role === 'admin' ? 'admin-role-badge-admin' : 'admin-role-badge-user';
 
         return `
             <div class="admin-list-row admin-user-row">
                 <div class="admin-list-main">
                     <span class="admin-list-icon"><i class="bi bi-person-fill"></i></span>
                     <div>
-                        <strong>${escapeHtml(user.name || 'Unnamed User')}${isSelf ? ' (You)' : ''}</strong>
+                        <strong>
+                            ${escapeHtml(user.name || 'Unnamed User')}${isSelf ? ' (You)' : ''}
+                            <span class="admin-role-badge ${roleClass}">${escapeHtml(role)}</span>
+                        </strong>
                         <span>${escapeHtml(user.email || '')}</span>
                         <span>Joined ${escapeHtml(joinedDate)}</span>
                     </div>
                 </div>
                 <div class="admin-user-controls">
-                    <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
                     <button type="button" class="icon-btn" title="Edit user"
                         onclick="openAdminEditUser('${user._id}')">
                         <i class="bi bi-pencil-square"></i>
                     </button>
-                    <select class="admin-role-select" ${isSelf ? 'disabled' : ''}
-                        onchange="updateUserRole('${user._id}', this.value, this)">
-                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
-                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-                    </select>
                     <button type="button" class="btn ${status === 'disabled' ? 'btn-outline-success' : 'btn-outline-danger'} btn-sm"
                         ${isSelf ? 'disabled' : ''}
                         onclick="toggleUserStatus('${user._id}', '${status}', this)">
@@ -304,7 +302,6 @@ function renderAdminProducts() {
 
     list.innerHTML = products.map((product) => {
         const status = product.status || 'active';
-        const statusClass = status === 'removed' ? 'status-cancelled' : 'status-delivered';
         const image = product.image_url
             ? `<img src="${escapeHtml(product.image_url)}" alt="${escapeHtml(product.name || 'Product')}" />`
             : '<i class="bi bi-image"></i>';
@@ -323,7 +320,6 @@ function renderAdminProducts() {
                     </div>
                 </div>
                 <div class="admin-user-controls">
-                    <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
                     <button type="button" class="icon-btn" title="Edit product"
                         onclick="openAdminEditProduct('${product._id}')">
                         <i class="bi bi-pencil-square"></i>
@@ -484,15 +480,6 @@ async function saveCategory(event) {
     }
 }
 
-async function updateUserRole(userId, role, select) {
-    const previousRole = adminUsers.find((user) => user._id === userId)?.role || 'user';
-    await updateAdminUser(userId, { role }, {
-        control: select,
-        fallback: () => { if (select) select.value = previousRole; },
-        successMessage: 'User role updated.',
-    });
-}
-
 async function toggleUserStatus(userId, currentStatus, btn) {
     const status = currentStatus === 'disabled' ? 'active' : 'disabled';
     await updateAdminUser(userId, { status }, {
@@ -512,6 +499,8 @@ function openAdminEditUser(userId) {
     form.elements.name.value = user.name || '';
     form.elements.email.value = user.email || '';
     form.elements.phone.value = user.phone || '';
+    form.elements.role.value = user.role || 'user';
+    form.elements.role.disabled = String(user._id) === String(getUser()?._id);
 
     new bootstrap.Modal(modalEl).show();
 }
@@ -527,6 +516,7 @@ async function submitAdminEditUser(event) {
         name: form.elements.name.value.trim(),
         email: form.elements.email.value.trim(),
         phone: form.elements.phone.value.trim(),
+        role: form.elements.role.disabled ? undefined : form.elements.role.value,
     };
 
     if (!payload.name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
