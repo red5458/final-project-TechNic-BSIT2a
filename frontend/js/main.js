@@ -411,6 +411,23 @@ function runWhenIdle(callback, timeout = 700) {
     }
 }
 
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+
+    const register = () => {
+        navigator.serviceWorker.register('/sw.js')
+            .catch(() => {
+                // PWA install still fails gracefully if service workers are unavailable.
+            });
+    };
+
+    if (document.readyState === 'complete') {
+        register();
+    } else {
+        window.addEventListener('load', register, { once: true });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
     buildSidebar();
@@ -423,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initModalLayoutStabilizer();
     updateCartCountBadges();
     applyCachedOrderBadges();
+    registerServiceWorker();
 
     if (hadSavedSession) {
         runWhenIdle(async () => {
