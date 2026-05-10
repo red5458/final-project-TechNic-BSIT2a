@@ -1,5 +1,9 @@
 # Uniformity
 
+<p align="center">
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="200"/>
+</p>
+
 Uniformity is a full-stack web marketplace for buying and selling pre-loved school uniforms. The system helps students browse available uniforms, manage a cart, place orders, sell their own listings, and track fulfillment through a buyer-seller order flow. It also includes an admin panel for managing users, products, categories, and orders without hardcoded data changes.
 
 The application is served as a single Render web service: the Express backend provides the REST API and also serves the static frontend files. A basic Progressive Web App layer is included so the app can be installed and can load cached pages when offline.
@@ -158,6 +162,26 @@ finalprojectTechNic-BSIT2a/
 ### My Profile
 
 ![My Profile](docs/lab11/My%20Profile.png)
+
+## System Diagrams
+
+### Data Flow Diagram
+
+<p align="center">
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776955475/DFD_apfxk4.png" alt="Data Flow Diagram" width="700"/>
+</p>
+
+### Entity Relationship Diagram
+
+<p align="center">
+  <img src="docs/planning/ERD.png" alt="Entity Relationship Diagram" width="700"/>
+</p>
+
+### Unified Modeling Language Diagram
+
+<p align="center">
+  <img src="docs/planning/UML.svg" alt="UML Diagram" width="700"/>
+</p>
 
 ## Contributors
 
