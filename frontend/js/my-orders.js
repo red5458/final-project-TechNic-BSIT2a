@@ -84,11 +84,7 @@ function buildOrderCard(order) {
                 onclick="event.stopPropagation(); confirmReceipt('${order._id}', this)">
                 <i class="bi bi-check-circle me-1"></i>Received
            </button>`
-        : order.status === 'delivered'
-            ? `<span class="status-badge status-delivered" style="display:inline-flex;align-items:center;gap:.3rem;">
-                <i class="bi bi-check-circle-fill"></i>Completed
-           </span>`
-            : '';
+        : '';
     const actionsHTML = [actionBtn, deleteBtn].filter(Boolean).join('');
 
     const imageUrl = imageItem?.product_id?.image_url || '';

@@ -133,7 +133,7 @@ function renderOrderDetails(order) {
             actionCard.innerHTML = `
                 <h6 style="font-weight:700;font-size:1.1rem;margin-bottom:.5rem;color:#fff;">Order has Shipped!</h6>
                 <p style="font-size:.88rem;color:rgba(255,255,255,.8);margin-bottom:1.25rem;line-height:1.6;">
-                    Your items are on the way. Once you receive them, please confirm delivery to complete the order.
+                    Your items are on the way. Once you receive them, please confirm delivery.
                 </p>
                 <button class="btn w-100" id="confirmReceiptDetailBtn"
                     style="background:#fff;color:var(--primary-dark);font-weight:700;padding:.8rem;border-radius:50px;transition:var(--transition);">

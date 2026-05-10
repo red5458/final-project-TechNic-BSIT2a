@@ -4,7 +4,7 @@
             Filter, Sort, Search, Pagination
    ============================================ */
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 8;
 let allProducts  = [];
 let currentPageNum  = 1;
 

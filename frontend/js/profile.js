@@ -9,7 +9,7 @@ function setText(id, value) {
 }
 
 function formatCurrency(value) {
-    return `PHP ${Number(value || 0).toFixed(2)}`;
+    return `₱${Number(value || 0).toFixed(2)}`;
 }
 
 function populateProfile() {
@@ -62,19 +62,12 @@ async function loadProfileStats() {
         setText('profileStatOrdersReceived', stats.ordersReceived ?? 0);
         setText('profileStatSpent', formatCurrency(stats.totalSpent));
         setText('profileStatEarned', formatCurrency(stats.totalEarned));
-
-        setText('sellerSnapshotListings', `${stats.activeListings ?? 0} active`);
-        setText('sellerSnapshotOrders', `${stats.ordersReceived ?? 0} received`);
-        setText('sellerSnapshotEarned', formatCurrency(stats.totalEarned));
     } catch {
         setText('profileStatOrders', '0');
         setText('profileStatListings', '0');
         setText('profileStatOrdersReceived', '0');
         setText('profileStatSpent', formatCurrency(0));
         setText('profileStatEarned', formatCurrency(0));
-        setText('sellerSnapshotListings', '0 active');
-        setText('sellerSnapshotOrders', '0 received');
-        setText('sellerSnapshotEarned', formatCurrency(0));
     }
 }
 
@@ -105,6 +98,13 @@ async function loadRecentOrders() {
 
         const recent = orders.slice(0, 3);
         listEl.innerHTML = recent.map((order) => {
+            const firstItem = order.items?.[0];
+            const imageItem = order.items?.find((item) => item.product_id?.image_url) || firstItem;
+            const firstName = firstItem?.product_id?.name || 'Order Item';
+            const extraCount = (order.items?.length || 1) - 1;
+            const extraText = extraCount > 0
+                ? ` <span style="font-weight:400;font-size:.85rem;color:var(--text-muted);">(+${extraCount} other item/s)</span>`
+                : '';
             const shortId = order._id.slice(-8).toUpperCase();
             const total = formatCurrency(order.total_amount);
             const orderDate = order.createdAt || order.created_at;
@@ -121,26 +121,31 @@ async function loadRecentOrders() {
             const statusTxt = order.status
                 ? order.status.charAt(0).toUpperCase() + order.status.slice(1)
                 : 'Pending';
+            const imageUrl = imageItem?.product_id?.image_url || '';
+            const imgHTML = imageUrl
+                ? `<img src="${imageUrl}" alt="${imageItem?.product_id?.name || 'Order item'}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=&quot;bi bi-image&quot;></i>';" />`
+                : `<i class="bi bi-image"></i>`;
 
             return `
-                <article class="order-card">
-                    <div class="order-card-top">
-                        <div>
-                            <div class="order-card-title">Order #${shortId}</div>
-                            <div class="order-card-sub">Placed on ${placedOn}</div>
+                <article class="order-card profile-order-preview"
+                    onclick="window.location.href='my-order-details.html?id=${order._id}'">
+                    <div class="d-flex gap-3">
+                        <div class="profile-order-thumb">
+                            ${imgHTML}
                         </div>
-                        <span class="status-badge ${statusCls}">${statusTxt}</span>
-                    </div>
-                    <div class="order-card-grid">
-                        <div class="order-data"><span>Total</span><strong>${total}</strong></div>
-                        <div class="order-data">
-                            <span>Delivery</span>
-                            <strong style="font-size:.78rem;">${(order.delivery_address || '').split(',')[0] || '-'}</strong>
+                        <div class="flex-grow-1 d-flex flex-column justify-content-center min-width-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="profile-order-id">Order ID: #${shortId}</span>
+                                <span class="status-badge ${statusCls}">${statusTxt}</span>
+                            </div>
+                            <div class="profile-order-title">
+                                ${firstName}${extraText}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-end mt-auto profile-order-meta-row">
+                                <div class="profile-order-date">Placed on ${placedOn}</div>
+                                <strong class="profile-order-total">${total}</strong>
+                            </div>
                         </div>
-                    </div>
-                    <div class="order-card-actions">
-                        <a href="my-order-details.html?id=${order._id}" class="btn-green"
-                            style="padding:.65rem 1rem;font-size:.82rem;">View Order</a>
                     </div>
                 </article>`;
         }).join('');
