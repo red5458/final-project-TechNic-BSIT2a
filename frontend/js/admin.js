@@ -3,6 +3,8 @@ let adminUsers = [];
 let adminProducts = [];
 let adminOrders = [];
 let pendingDeleteCategoryId = null;
+let selectedAdminOrderStatus = 'all';
+let pendingAdminConfirmResolve = null;
 
 function adminToken() {
     return localStorage.getItem('token');
@@ -340,6 +342,8 @@ function renderAdminOrders() {
     const query = getAdminSearchQuery('adminOrderSearch');
     const orders = adminOrders.filter((order) => {
         const items = Array.isArray(order.items) ? order.items : [];
+        const matchesStatus = selectedAdminOrderStatus === 'all' || order.status === selectedAdminOrderStatus;
+        if (!matchesStatus) return false;
         return matchesAdminSearch(
             query,
             order._id,
@@ -371,17 +375,9 @@ function renderAdminOrders() {
         return;
     }
 
-    const statusClassMap = {
-        pending: 'status-pending',
-        confirmed: 'status-confirmed',
-        shipped: 'status-shipped',
-        delivered: 'status-delivered',
-        cancelled: 'status-cancelled',
-    };
-
     list.innerHTML = orders.map((order) => {
         const status = order.status || 'pending';
-        const statusClass = statusClassMap[status] || 'status-pending';
+        const statusClass = getAdminStatusClass(status);
         const placedDate = order.created_at
             ? new Date(order.created_at).toLocaleDateString('en-PH', { dateStyle: 'medium' })
             : '-';
@@ -408,16 +404,219 @@ function renderAdminOrders() {
             <div class="admin-list-row admin-order-row">
                 <div class="admin-order-main">
                     <div class="admin-order-topline">
-                        <strong>Order #${escapeHtml(shortId)}</strong>
-                        <span class="status-badge ${statusClass}">${escapeHtml(status)}</span>
+                        <div class="admin-order-id-status">
+                            <strong>Order #${escapeHtml(shortId)}</strong>
+                            <span class="status-badge ${statusClass}">${escapeHtml(getAdminStatusLabel(status))}</span>
+                        </div>
                     </div>
                     <div class="admin-order-meta">
                         Buyer: ${escapeHtml(buyer)}${buyerEmail ? ` (${escapeHtml(buyerEmail)})` : ''} | Placed ${escapeHtml(placedDate)} | ${escapeHtml(total)}
                     </div>
                     <div class="admin-order-items">${itemSummary}</div>
                 </div>
+                <div class="admin-order-actions">
+                    <select class="admin-status-select" aria-label="Update order status"
+                        onchange="updateAdminOrderStatus('${order._id}', this.value, this)">
+                        ${renderStatusOptions(['pending', 'shipped', 'delivered', 'cancelled'], status)}
+                    </select>
+                    <button type="button" class="icon-btn" title="View order details"
+                        onclick="openAdminOrderDetails('${order._id}')">
+                        <i class="bi bi-receipt"></i>
+                    </button>
+                </div>
             </div>`;
     }).join('');
+}
+
+function getAdminStatusClass(status) {
+    const statusClassMap = {
+        pending: 'status-pending',
+        shipped: 'status-shipped',
+        fulfilled: 'status-shipped',
+        delivered: 'status-delivered',
+        cancelled: 'status-cancelled',
+    };
+    return statusClassMap[status] || 'status-pending';
+}
+
+function renderStatusOptions(statuses, currentStatus) {
+    return statuses.map((status) => {
+        const label = getAdminStatusLabel(status);
+        return `<option value="${status}" ${status === currentStatus ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    }).join('');
+}
+
+function getAdminStatusLabel(status) {
+    if (status === 'shipped') return 'fulfilled';
+    return status || 'pending';
+}
+
+function openAdminOrderDetails(orderId) {
+    const order = adminOrders.find((item) => item._id === orderId);
+    const modalEl = document.getElementById('adminOrderDetailsModal');
+    const body = document.getElementById('adminOrderDetailsBody');
+    const subtitle = document.getElementById('adminOrderDetailsSubtitle');
+    if (!order || !modalEl || !body) return;
+
+    const shortId = String(order._id || '').slice(-8).toUpperCase();
+    const placedDate = order.created_at
+        ? new Date(order.created_at).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' })
+        : '-';
+    const buyer = order.buyer_id || {};
+    const items = Array.isArray(order.items) ? order.items : [];
+    const status = order.status || 'pending';
+
+    if (subtitle) {
+        subtitle.textContent = `Order #${shortId} | ${placedDate}`;
+    }
+
+    const itemRows = items.length ? items.map((item) => {
+        const product = item.product_id || {};
+        const seller = item.seller_id || {};
+        const itemStatus = item.status || 'pending';
+        const lineTotal = Number(item.price || 0) * Number(item.quantity || 0);
+
+        return `
+            <div class="admin-receipt-item">
+                <div>
+                    <strong>${escapeHtml(product.name || 'Deleted product')}</strong>
+                    <small>Size ${escapeHtml(product.size || '-')} | Qty ${Number(item.quantity || 0)} | Seller: ${escapeHtml(seller.name || 'Unknown seller')}</small>
+                    <small>${escapeHtml(seller.email || '')}</small>
+                </div>
+                <div style="text-align:right;">
+                    <strong>PHP ${lineTotal.toFixed(2)}</strong>
+                    <span class="status-badge ${getAdminStatusClass(itemStatus)} mt-2">${escapeHtml(getAdminStatusLabel(itemStatus))}</span>
+                </div>
+            </div>`;
+    }).join('') : '<p class="text-muted mb-0">No items found.</p>';
+
+    body.innerHTML = `
+        <div class="admin-receipt">
+            <div class="admin-receipt-block">
+                <div class="admin-receipt-title">Buyer</div>
+                <div class="admin-receipt-line"><span>Name</span><strong>${escapeHtml(buyer.name || 'Unknown buyer')}</strong></div>
+                <div class="admin-receipt-line"><span>Email</span><strong>${escapeHtml(buyer.email || '-')}</strong></div>
+                ${buyer.phone ? `<div class="admin-receipt-line"><span>Phone</span><strong>${escapeHtml(buyer.phone)}</strong></div>` : ''}
+                <div class="admin-receipt-line"><span>Address</span><strong>${escapeHtml(order.delivery_address || '-')}</strong></div>
+            </div>
+            <div class="admin-receipt-block">
+                <div class="admin-receipt-title">Order</div>
+                <div class="admin-receipt-line"><span>Placed</span><strong>${escapeHtml(placedDate)}</strong></div>
+            </div>
+            <div class="admin-receipt-block">
+                <div class="admin-receipt-title">Items Ordered</div>
+                ${itemRows}
+                <div class="admin-receipt-total"><span>Total</span><strong>PHP ${Number(order.total_amount || 0).toFixed(2)}</strong></div>
+            </div>
+        </div>`;
+
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+async function updateAdminOrderStatus(orderId, status, control) {
+    const order = adminOrders.find((item) => item._id === orderId);
+    const previousStatus = order?.status || 'pending';
+
+    if (status === 'cancelled' && previousStatus !== 'cancelled') {
+        const confirmed = await confirmAdminAction(
+            'Cancel this order?',
+            'This will also cancel its items and return the stock to the products.'
+        );
+        if (!confirmed) {
+            if (control?.tagName === 'SELECT') control.value = previousStatus;
+            return;
+        }
+    }
+
+    await updateAdminOrder(orderId, { status }, {
+        control,
+        fallback: () => { if (control?.tagName === 'SELECT') control.value = previousStatus; },
+        successMessage: status === 'cancelled' ? 'Order cancelled.' : 'Order status updated.',
+    });
+}
+
+async function updateAdminOrder(orderId, payload, options = {}) {
+    const { control, fallback, loadingText = 'Saving...', successMessage = 'Order updated.' } = options;
+    const originalText = control?.innerHTML;
+    const originalDisabled = control?.disabled;
+
+    if (control) {
+        control.disabled = true;
+        if (control.tagName !== 'SELECT') {
+            control.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+        }
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/admin/orders/${orderId}`, {
+            method: 'PATCH',
+            headers: adminHeaders(),
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.msg || 'Could not update order.');
+
+        applyAdminOrderStatus(orderId, payload.status);
+        showToast(successMessage || loadingText);
+        renderAdminOrders();
+        loadAdminSummary().catch(() => null);
+        if (document.getElementById('adminOrderDetailsModal')?.classList.contains('show')) {
+            openAdminOrderDetails(orderId);
+        }
+    } catch (err) {
+        fallback?.();
+        showToast(err.message || 'Could not update order.', 'error');
+    } finally {
+        if (control) {
+            control.disabled = originalDisabled;
+            if (control.tagName !== 'SELECT') control.innerHTML = originalText;
+        }
+    }
+}
+
+function applyAdminOrderStatus(orderId, status) {
+    const order = adminOrders.find((item) => item._id === orderId);
+    if (!order || !status) return;
+
+    order.status = status;
+    if (status === 'cancelled' && Array.isArray(order.items)) {
+        order.items = order.items.map((item) => ({ ...item, status: 'cancelled' }));
+    }
+}
+
+function applyAdminCategory(category) {
+    if (!category?._id) return;
+    const index = adminCategories.findIndex((item) => item._id === category._id);
+    if (index >= 0) {
+        adminCategories[index] = category;
+    } else {
+        adminCategories.push(category);
+    }
+    adminCategories.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+function removeAdminCategory(categoryId) {
+    adminCategories = adminCategories.filter((category) => category._id !== categoryId);
+}
+
+function applyAdminUser(user) {
+    if (!user?._id) return;
+    const index = adminUsers.findIndex((item) => item._id === user._id);
+    if (index >= 0) {
+        adminUsers[index] = user;
+    } else {
+        adminUsers.unshift(user);
+    }
+}
+
+function applyAdminProduct(product) {
+    if (!product?._id) return;
+    const index = adminProducts.findIndex((item) => item._id === product._id);
+    if (index >= 0) {
+        adminProducts[index] = product;
+    } else {
+        adminProducts.unshift(product);
+    }
 }
 
 function resetCategoryForm() {
@@ -467,9 +666,11 @@ async function saveCategory(event) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Could not save category.');
 
+        applyAdminCategory(data);
         resetCategoryForm();
         showToast(id ? 'Category updated.' : 'Category added.');
-        await Promise.all([loadAdminCategories(), loadAdminSummary()]);
+        renderAdminCategories();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         showToast(err.message || 'Could not save category.', 'error');
     } finally {
@@ -543,9 +744,11 @@ async function submitAdminEditUser(event) {
             saveUser({ ...currentUser, ...data });
         }
 
+        applyAdminUser(data);
         bootstrap.Modal.getInstance(document.getElementById('adminEditUserModal'))?.hide();
         showToast('User updated.');
-        await Promise.all([loadAdminUsers(), loadAdminSummary()]);
+        renderAdminUsers();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         showToast(err.message || 'Could not update user.', 'error');
     } finally {
@@ -577,8 +780,10 @@ async function updateAdminUser(userId, payload, options = {}) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Could not update user.');
 
+        applyAdminUser(data);
         showToast(successMessage);
-        await Promise.all([loadAdminUsers(), loadAdminSummary()]);
+        renderAdminUsers();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         fallback?.();
         showToast(err.message || 'Could not update user.', 'error');
@@ -670,9 +875,11 @@ async function submitAdminEditProduct(event) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Could not update product.');
 
+        applyAdminProduct(data);
         bootstrap.Modal.getInstance(document.getElementById('adminEditProductModal'))?.hide();
         showToast('Product updated.');
-        await Promise.all([loadAdminProducts(), loadAdminSummary()]);
+        renderAdminProducts();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         showToast(err.message || 'Could not update product.', 'error');
     } finally {
@@ -701,8 +908,10 @@ async function toggleProductStatus(productId, currentStatus, btn) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Could not update product.');
 
+        applyAdminProduct(data);
         showToast(status === 'removed' ? 'Product removed.' : 'Product restored.');
-        await Promise.all([loadAdminProducts(), loadAdminSummary()]);
+        renderAdminProducts();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         showToast(err.message || 'Could not update product.', 'error');
     } finally {
@@ -739,10 +948,12 @@ async function deleteCategory() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Could not delete category.');
 
+        removeAdminCategory(pendingDeleteCategoryId);
         bootstrap.Modal.getInstance(document.getElementById('deleteCategoryModal'))?.hide();
         pendingDeleteCategoryId = null;
         showToast('Category deleted.');
-        await Promise.all([loadAdminCategories(), loadAdminSummary()]);
+        renderAdminCategories();
+        loadAdminSummary().catch(() => null);
     } catch (err) {
         showToast(err.message || 'Could not delete category.', 'error');
     } finally {
@@ -780,6 +991,27 @@ function renderAdminNoResults(message) {
         </div>`;
 }
 
+function confirmAdminAction(title, message) {
+    const modalEl = document.getElementById('adminConfirmActionModal');
+    if (!modalEl) return Promise.resolve(false);
+
+    document.getElementById('adminConfirmActionTitle').textContent = title;
+    document.getElementById('adminConfirmActionText').textContent = message;
+
+    return new Promise((resolve) => {
+        pendingAdminConfirmResolve = resolve;
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    });
+}
+
+function resolveAdminConfirm(value) {
+    if (pendingAdminConfirmResolve) {
+        pendingAdminConfirmResolve(value);
+        pendingAdminConfirmResolve = null;
+    }
+}
+
 function escapeHtml(value) {
     return String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
@@ -799,10 +1031,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('adminEditProductForm')?.addEventListener('submit', submitAdminEditProduct);
     document.getElementById('cancelCategoryEditBtn')?.addEventListener('click', resetCategoryForm);
     document.getElementById('confirmDeleteCategoryBtn')?.addEventListener('click', deleteCategory);
+    document.getElementById('adminConfirmActionBtn')?.addEventListener('click', () => {
+        resolveAdminConfirm(true);
+        bootstrap.Modal.getInstance(document.getElementById('adminConfirmActionModal'))?.hide();
+    });
+    document.getElementById('adminConfirmActionModal')?.addEventListener('hidden.bs.modal', () => {
+        resolveAdminConfirm(false);
+    });
     document.getElementById('adminUserSearch')?.addEventListener('input', renderAdminUsers);
     document.getElementById('adminProductSearch')?.addEventListener('input', renderAdminProducts);
     document.getElementById('adminOrderSearch')?.addEventListener('input', renderAdminOrders);
     document.getElementById('adminCategorySearch')?.addEventListener('input', renderAdminCategories);
+    document.querySelectorAll('[data-order-status]').forEach((button) => {
+        button.addEventListener('click', () => {
+            selectedAdminOrderStatus = button.dataset.orderStatus || 'all';
+            document.querySelectorAll('[data-order-status]').forEach((chip) => {
+                chip.classList.toggle('active', chip === button);
+            });
+            renderAdminOrders();
+        });
+    });
 
     try {
         await Promise.all([

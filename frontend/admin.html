@@ -132,6 +132,13 @@
               <input type="search" id="adminOrderSearch" placeholder="Search orders..." />
             </label>
           </div>
+          <div class="admin-order-tools" aria-label="Filter orders by status">
+            <button type="button" class="admin-filter-chip active" data-order-status="all">All</button>
+            <button type="button" class="admin-filter-chip" data-order-status="pending">Pending</button>
+            <button type="button" class="admin-filter-chip" data-order-status="shipped">Fulfilled</button>
+            <button type="button" class="admin-filter-chip" data-order-status="delivered">Delivered</button>
+            <button type="button" class="admin-filter-chip" data-order-status="cancelled">Cancelled</button>
+          </div>
 
           <div class="admin-list" id="orderList">
             <div class="state-center state-center-sm">
@@ -293,6 +300,47 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
           <button type="button" class="btn btn-danger" id="confirmDeleteCategoryBtn">
             <i class="bi bi-trash3-fill me-1"></i>Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminOrderDetailsModal" tabindex="-1" aria-labelledby="adminOrderDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="adminOrderDetailsModalLabel">Order Details</h5>
+            <p class="mb-0 text-muted" id="adminOrderDetailsSubtitle" style="font-size:.82rem;"></p>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="adminOrderDetailsBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="adminConfirmActionModal" tabindex="-1" aria-labelledby="adminConfirmActionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="adminConfirmActionModalLabel">Confirm Action</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-1" id="adminConfirmActionTitle" style="font-weight:700;color:var(--text);">Confirm this action?</p>
+          <p class="mb-0 text-muted" id="adminConfirmActionText" style="font-size:.88rem;"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep</button>
+          <button type="button" class="btn btn-danger" id="adminConfirmActionBtn">
+            <i class="bi bi-check-circle-fill me-1"></i>Confirm
           </button>
         </div>
       </div>

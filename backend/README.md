@@ -19,6 +19,7 @@ backend/
 |   |-- cloudinary.js
 |   `-- db.js
 |-- controllers/
+|   |-- adminController.js
 |   |-- authController.js
 |   |-- cartController.js
 |   |-- categoryController.js
@@ -26,6 +27,7 @@ backend/
 |   |-- productController.js
 |   `-- userController.js
 |-- middleware/
+|   |-- adminOnly.js
 |   `-- auth.js
 |-- models/
 |   |-- Cart.js
@@ -36,6 +38,7 @@ backend/
 |   |-- Product.js
 |   `-- User.js
 |-- routes/
+|   |-- adminRoutes.js
 |   |-- authRoutes.js
 |   |-- cartRoutes.js
 |   |-- categoryRoutes.js
@@ -104,12 +107,12 @@ x-auth-token: your_jwt_here
 
 | Model | Purpose |
 |---|---|
-| User | Stores account info, hashed password, and phone |
+| User | Stores account info, hashed password, phone, role, and account status |
 | Category | Product category records |
-| Product | Uniform listings with seller, category, price, quantity, description, and image URL |
+| Product | Uniform listings with seller, category, price, quantity, description, image URL, and listing status |
 | Cart | One cart per user |
 | CartItem | Product entries inside a cart |
-| Order | Top-level buyer order record |
+| Order | Top-level buyer order record with delivery details, total amount, status, and buyer visibility |
 | OrderItem | Per-product order line tied to seller and order |
 
 ## API Routes
@@ -137,9 +140,10 @@ x-auth-token: your_jwt_here
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/` | Create category | No |
 | GET | `/` | Get all categories | No |
-| DELETE | `/:id` | Delete category | No |
+| POST | `/` | Create category | Admin |
+| PATCH | `/:id` | Update category | Admin |
+| DELETE | `/:id` | Delete unused category | Admin |
 
 ### Products `/api/products`
 
@@ -172,6 +176,20 @@ x-auth-token: your_jwt_here
 | PATCH | `/:orderId/cancel` | Cancel pending buyer order and restore stock | Yes |
 | PATCH | `/:orderId/deliver` | Mark shipped order as delivered | Yes |
 
+### Admin `/api/admin`
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| GET | `/me` | Verify admin access | Admin |
+| GET | `/summary` | Get admin dashboard counts | Admin |
+| GET | `/users` | Get all users for account management | Admin |
+| PATCH | `/users/:userId` | Update user profile fields, role, or account status | Admin |
+| GET | `/products` | Get all products including removed listings | Admin |
+| PATCH | `/products/:productId` | Update product details or active/removed status | Admin |
+| GET | `/orders` | Get all orders with buyer and item details | Admin |
+| PATCH | `/orders/:orderId` | Update order status or cancel an order | Admin |
+| PATCH | `/order-items/:itemId` | Update an order item status | Admin |
+
 ## Order Behavior
 
 - Checkout validates every item against the latest product record before creating orders.
@@ -181,8 +199,19 @@ x-auth-token: your_jwt_here
 - Pending orders can be cancelled by the buyer.
 - Cancelling an order marks its order items as cancelled and restores stock.
 - Sellers cannot fulfill cancelled items or cancelled orders.
-- Seller fulfillment is item-level; when every item in an order is fulfilled, the order moves to `shipped`.
+- Seller fulfillment is item-level; when every item in an order is fulfilled, the order moves to `shipped`, which is displayed as fulfilled in the UI.
 - Buyers can mark shipped orders as delivered.
+- Admins can monitor all orders and update order status when needed.
+- Admin cancellation marks order items as cancelled and restores product stock.
+
+## Admin Behavior
+
+- Admin-only routes require both a valid JWT and `role: admin`.
+- Disabled users cannot continue through protected authentication flows.
+- Admin users can edit account name, email, phone, role, and active/disabled status.
+- Admin product updates support product details and active/removed listing status.
+- Public product browsing excludes removed products.
+- Admin category create/update/delete is centralized through protected category routes.
 
 ## Scripts
 

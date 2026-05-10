@@ -4,6 +4,9 @@ const Order = require('../models/Order');
 const OrderItem = require('../models/OrderItem');
 const Category = require('../models/Category');
 
+const ORDER_STATUSES = ['pending', 'shipped', 'delivered', 'cancelled'];
+const ORDER_ITEM_STATUSES = ['pending', 'fulfilled', 'cancelled'];
+
 exports.getAdminSummary = async (req, res) => {
     try {
         const [
@@ -220,5 +223,83 @@ exports.getAdminOrders = async (req, res) => {
         res.json(hydratedOrders);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updateAdminOrder = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!ORDER_STATUSES.includes(status)) {
+            return res.status(400).json({ error: 'Invalid order status.' });
+        }
+
+        const order = await Order.findById(req.params.orderId);
+        if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+        const previousStatus = order.status;
+        const items = await OrderItem.find({ order_id: order._id });
+
+        if (status === 'cancelled' && previousStatus !== 'cancelled') {
+            for (const item of items) {
+                if (item.status !== 'cancelled') {
+                    await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: Number(item.quantity || 0) } });
+                }
+            }
+            await OrderItem.updateMany({ order_id: order._id }, { status: 'cancelled' });
+        }
+
+        if (status !== 'cancelled' && previousStatus === 'cancelled') {
+            return res.status(400).json({ error: 'Cancelled orders cannot be reopened.' });
+        }
+
+        order.status = status;
+        await order.save();
+
+        res.json({ message: 'Order updated.' });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+exports.updateAdminOrderItem = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!ORDER_ITEM_STATUSES.includes(status)) {
+            return res.status(400).json({ error: 'Invalid item status.' });
+        }
+
+        const item = await OrderItem.findById(req.params.itemId);
+        if (!item) return res.status(404).json({ error: 'Order item not found.' });
+
+        const order = await Order.findById(item.order_id);
+        if (!order) return res.status(404).json({ error: 'Order not found.' });
+        if (order.status === 'cancelled') {
+            return res.status(400).json({ error: 'Items in cancelled orders cannot be updated.' });
+        }
+
+        if (item.status === 'cancelled' && status !== 'cancelled') {
+            return res.status(400).json({ error: 'Cancelled items cannot be reopened.' });
+        }
+
+        if (status === 'cancelled' && item.status !== 'cancelled') {
+            await Product.findByIdAndUpdate(item.product_id, { $inc: { quantity: Number(item.quantity || 0) } });
+        }
+
+        item.status = status;
+        await item.save();
+
+        const items = await OrderItem.find({ order_id: item.order_id });
+        if (items.every((orderItem) => orderItem.status === 'cancelled')) {
+            order.status = 'cancelled';
+        } else if (items.every((orderItem) => orderItem.status === 'fulfilled')) {
+            order.status = 'shipped';
+        } else if (order.status === 'shipped' && items.some((orderItem) => orderItem.status === 'pending')) {
+            order.status = 'pending';
+        }
+        await order.save();
+
+        res.json({ message: 'Order item updated.' });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
     }
 };
