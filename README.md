@@ -1,71 +1,84 @@
 # Uniformity
 
 <p align="center">
-  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="200"/>
+  <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="220"/>
 </p>
 
-Uniformity is a full-stack web marketplace for buying and selling pre-loved school uniforms. The system helps students browse available uniforms, manage a cart, place orders, sell their own listings, and track fulfillment through a buyer-seller order flow. It also includes an admin panel for managing users, products, categories, and orders without hardcoded data changes.
+<h3 align="center">Uniformity: A Pre-Loved School Uniform Marketplace</h3>
 
-The application is served as a single Render web service: the Express backend provides the REST API and also serves the static frontend files. A basic Progressive Web App layer is included so the app can be installed and can load cached pages when offline.
+<p align="center">
+  <em>Buy, sell, and manage school uniforms in one simple full-stack web app.</em>
+</p>
 
-## Live Demo
+<hr/>
 
-[Open Uniformity on Render](https://final-project-technic-bsit2a.onrender.com)
+<p align="center">
+  <a href="https://final-project-technic-bsit2a.onrender.com">
+    <img src="https://img.shields.io/badge/LIVE%20DEMO-Open%20App-2D6A4F?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo"/>
+  </a>
+  <img src="https://img.shields.io/badge/VERSION-1.0-95B8A4?style=for-the-badge" alt="Version 1.0"/>
+</p>
 
-## Features
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white" alt="HTML5"/>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white" alt="CSS3"/>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black" alt="JavaScript"/>
+  <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=flat&logo=bootstrap&logoColor=white" alt="Bootstrap"/>
+  <img src="https://img.shields.io/badge/Node.js-5FA04E?style=flat&logo=nodedotjs&logoColor=white" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white" alt="Express.js"/>
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white" alt="MongoDB"/>
+  <img src="https://img.shields.io/badge/Render-000000?style=flat&logo=render&logoColor=white" alt="Render"/>
+  <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat&logo=cloudinary&logoColor=white" alt="Cloudinary"/>
+</p>
 
-- User registration, login, JWT authentication, and protected routes
-- Student account flow that can act as both buyer and seller
-- Product browsing with search, category/size filters, sorting, and pagination
-- Product detail page with seller contact area, image preview overlay, and related products
-- Cart management with quantity controls, delete confirmation, stock-aware limits, and live badge count
-- Checkout with saved name/phone fields and delivery details
-- Seller-aware order creation: items from different sellers become separate orders
-- Buyer order history, order details, pending order cancellation, received confirmation, and order history deletion
-- Seller listing management with add, edit, delete, and incoming order fulfillment
-- Seller order status flow from pending to fulfilled, then delivered after buyer receipt confirmation
-- Admin dashboard with statistics and management sections
-- Admin controls for users, products, categories, and orders
-- Search/filter tools inside admin sections
-- Responsive layouts for desktop, tablet, and mobile screens
-- Sticky topbars, mobile sidebar, modal confirmations, and polished UI states
-- PWA support with `manifest.json`, service worker caching, installability, and basic offline app-shell loading
+<hr/>
 
-## Technologies Used
+## 🌱 About the Project
 
-### Frontend
+Uniformity is a full-stack web marketplace for buying and selling pre-loved school uniforms. The system helps students browse available uniforms, manage a cart, place orders, sell their own listings, and track fulfillment through a buyer-seller order flow.
 
-- HTML5
-- CSS3
-- Bootstrap 5
-- Bootstrap Icons
-- Vanilla JavaScript
-- Progressive Web App assets: Web App Manifest and Service Worker
+The application is served as a single Render web service. The Express backend provides the REST API and also serves the static frontend files. A basic Progressive Web App layer is included so the app can be installed and can load cached pages when offline.
 
-### Backend
+## ✨ Features
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- JSON Web Token authentication
-- bcrypt password hashing
-- Cloudinary image upload support
+- 🔐 User registration, login, JWT authentication, and protected routes
+- 👥 Student account flow that can act as both buyer and seller
+- 🔎 Product browsing with search, category/size filters, sorting, and pagination
+- 🧵 Product detail page with seller contact area, image preview overlay, and related products
+- 🛒 Cart management with quantity controls, delete confirmation, stock-aware limits, and live badge count
+- 📦 Checkout with saved name/phone fields and delivery details
+- 🧾 Seller-aware order creation where items from different sellers become separate orders
+- 📍 Buyer order history, order details, cancellation, receipt confirmation, and history deletion
+- 🏷️ Seller listing management with add, edit, delete, and incoming order fulfillment
+- 🚚 Seller order status flow from pending to fulfilled, then delivered after buyer receipt confirmation
+- 🛠️ Admin dashboard for users, products, categories, and orders
+- 📱 Responsive layouts for desktop, tablet, and mobile screens
+- ⚡ PWA support with `manifest.json`, service worker caching, installability, and basic offline app-shell loading
 
-### Tools and Deployment
+## 🚀 Live Demo
 
-- Git and GitHub
-- Render Web Service
-- VS Code
-- Chrome DevTools for PWA testing
+Open the deployed project here:
 
-## Installation Instructions
+[https://final-project-technic-bsit2a.onrender.com](https://final-project-technic-bsit2a.onrender.com)
+
+## 🧰 Tech Stack
+
+| Frontend | Backend | Database & Storage | Tools & Deployment |
+|---|---|---|---|
+| HTML5 | Node.js | MongoDB | Git & GitHub |
+| CSS3 | Express.js | Mongoose | Render Web Service |
+| Bootstrap 5 | JSON Web Token | Cloudinary | VS Code |
+| Bootstrap Icons | bcryptjs |  | Chrome DevTools |
+| Vanilla JavaScript | Multer |  |  |
+| PWA Manifest & Service Worker | dotenv |  |  |
+
+## ⚙️ Installation Instructions
 
 ### 1. Clone the Repository
 
 ```bash
 git clone <repository-url>
-cd finalprojectTechNic-BSIT2a
+cd final-project-TechNic-BSIT2a
 ```
 
 ### 2. Install Backend Dependencies
@@ -102,17 +115,16 @@ http://localhost:5000
 
 The backend serves the frontend from the `frontend/` folder, so the same local server handles both static pages and `/api` routes.
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```text
-finalprojectTechNic-BSIT2a/
+final-project-TechNic-BSIT2a/
 |-- backend/
 |   |-- config/
 |   |-- controllers/
 |   |-- middleware/
 |   |-- models/
 |   |-- routes/
-|   |-- utils/
 |   `-- server.js
 |-- database/
 |-- docs/
@@ -129,7 +141,7 @@ finalprojectTechNic-BSIT2a/
 `-- README.md
 ```
 
-## Screenshots
+## 📸 Screenshots
 
 ### Landing Page
 
@@ -163,7 +175,7 @@ finalprojectTechNic-BSIT2a/
 
 ![My Profile](docs/lab11/My%20Profile.png)
 
-## System Diagrams
+## 🧭 System Diagrams
 
 ### Data Flow Diagram
 
@@ -183,7 +195,7 @@ finalprojectTechNic-BSIT2a/
   <img src="docs/planning/Final-UML.svg" alt="UML Diagram" width="700"/>
 </p>
 
-## Contributors
+## 👨‍💻 Contributors
 
 | Name | Role |
 |---|---|
@@ -193,13 +205,13 @@ finalprojectTechNic-BSIT2a/
 | Kurt Jushua S. Hernandez | Database Manager, Tester, Debugger |
 | Mharie Franz Registrado | Tester, Debugger |
 
-## Group Information
+## 🎓 Group Information
 
 **Group Name:** TechNic  
 **Course & Block:** BSIT-2A  
 **School:** Bicol University Polangui
 
-## Notes
+## 📝 Notes
 
 - `node_modules/` and `.env` are excluded through `.gitignore`.
 - Runtime secrets should stay inside `backend/.env` and should not be committed.
