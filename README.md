@@ -4,10 +4,10 @@
   <img src="https://res.cloudinary.com/dbx0kk6wq/image/upload/v1776216871/Uniformity-logo_bevwxj.png" alt="Uniformity Logo" width="220"/>
 </p>
 
-<h3 align="center">Uniformity: A Pre-Loved School Uniform Marketplace</h3>
+<h3 align="center">Uniformity: A Pre-Loved Uniform Marketplace</h3>
 
 <p align="center">
-  <em>Buy, sell, and manage school uniforms in one simple full-stack web app.</em>
+  <em>Buy, sell, and manage school/professional uniforms in one simple full-stack web app.</em>
 </p>
 
 <hr/>
@@ -36,7 +36,7 @@
 
 ## 🌱 About the Project
 
-Uniformity is a full-stack web marketplace for buying and selling pre-loved school uniforms. The system helps students browse available uniforms, manage a cart, place orders, sell their own listings, and track fulfillment through a buyer-seller order flow.
+Uniformity is a full-stack web marketplace for buying and selling pre-loved uniforms. The system helps students browse available uniforms, manage a cart, place orders, sell their own listings, and track fulfillment through a buyer-seller order flow.
 
 The application is served as a single Render web service. The Express backend provides the REST API and also serves the static frontend files. A basic Progressive Web App layer is included so the app can be installed and can load cached pages when offline.
 
