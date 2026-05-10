@@ -142,6 +142,30 @@ function updateCartCountBadges() {
     });
 }
 
+async function refreshCartCountFromServer() {
+    const token = localStorage.getItem('token');
+    const user = getUser();
+    if (!token || !user?._id) {
+        localStorage.removeItem('cartItemCount');
+        updateCartCountBadges();
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/cart/${user._id}`, {
+            headers: { 'x-auth-token': token },
+        });
+        const data = res.ok ? await res.json() : { items: [] };
+        const items = Array.isArray(data.items) ? data.items : [];
+        const count = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+        localStorage.setItem('cartItemCount', String(count));
+    } catch {
+        localStorage.setItem('cartItemCount', String(getCartCount()));
+    }
+
+    updateCartCountBadges();
+}
+
 function setBadgeCount(selector, count) {
     document.querySelectorAll(selector).forEach((badge) => {
         if (count > 0) {
@@ -441,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartCountBadges();
     applyCachedOrderBadges();
     registerServiceWorker();
+    runWhenIdle(refreshCartCountFromServer, 900);
 
     if (hadSavedSession) {
         runWhenIdle(async () => {

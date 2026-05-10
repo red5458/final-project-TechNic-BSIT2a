@@ -317,6 +317,21 @@ function renderIncomingOrders(orders) {
     }).join('');
 }
 
+function applyFulfilledOrderItem(orderId, itemId) {
+    const order = sellerOrders.find((entry) => entry._id === orderId);
+    if (!order) return;
+
+    const item = (order.items || []).find((entry) => entry._id === itemId);
+    if (!item) return;
+
+    item.status = 'fulfilled';
+
+    const activeItems = (order.items || []).filter((entry) => entry.status !== 'cancelled');
+    if (activeItems.length > 0 && activeItems.every((entry) => entry.status === 'fulfilled')) {
+        order.status = 'shipped';
+    }
+}
+
 function openSellerOrderDetails(orderId) {
     const order = sellerOrders.find((entry) => entry._id === orderId);
     if (!order) {
@@ -403,7 +418,7 @@ async function confirmFulfilledItem() {
     const token = localStorage.getItem('token');
     if (!token || !fulfillingOrderItem) return;
 
-    const { itemId, btn } = fulfillingOrderItem;
+    const { orderId, itemId, btn } = fulfillingOrderItem;
     const confirmBtn = document.getElementById('confirmFulfillOrderBtn');
     const originalText = btn?.innerHTML;
     const originalConfirmText = confirmBtn?.innerHTML;
@@ -429,9 +444,10 @@ async function confirmFulfilledItem() {
         if (modal) modal.hide();
 
         fulfillingOrderItem = null;
+        applyFulfilledOrderItem(orderId, itemId);
+        renderIncomingOrders(sellerOrders);
         showToast('Order item marked as fulfilled.');
-        await loadIncomingOrders();
-        await loadSellerStats();
+        loadSellerStats();
         window.dispatchEvent(new Event('orders-updated'));
     } catch (err) {
         showToast(err.message || 'Could not update order item.', 'error');

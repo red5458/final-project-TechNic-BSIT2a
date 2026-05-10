@@ -675,27 +675,28 @@ async function addToCart(productId, sellerId, price, quantity = 1, details = {})
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || data.msg || 'Failed to add to cart.');
 
-        // Also mirror to localStorage so checkout can read it
-        const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const existing = localCart.find(i => i.product_id === productId);
-        if (existing) {
-            existing.quantity += quantity;
-            existing.name = existing.name || details.name || 'Selected product';
-            existing.size = existing.size || details.size || '';
-            existing.image_url = existing.image_url || details.image_url || '';
-        } else {
-            localCart.push({
-                product_id: productId,
-                seller_id: sellerId,
-                name: details.name || 'Selected product',
-                size: details.size || '',
-                image_url: details.image_url || '',
-                price,
-                quantity,
-            });
-        }
+        const updatedCartRes = await fetch(`${API_BASE}/cart/${user._id}`, {
+            headers: { 'x-auth-token': token },
+        });
+        const updatedCartData = updatedCartRes.ok ? await updatedCartRes.json() : { items: [] };
+        const updatedItems = Array.isArray(updatedCartData.items) ? updatedCartData.items : [];
+
+        const localCart = updatedItems.map((item) => {
+            const product = item.product_id || {};
+            return {
+                product_id: product._id || item.product_id || productId,
+                seller_id: product.seller_id?._id || product.seller_id || sellerId,
+                name: product.name || details.name || 'Selected product',
+                size: product.size || details.size || '',
+                image_url: product.image_url || details.image_url || '',
+                price: Number(product.price ?? price ?? 0),
+                quantity: Number(item.quantity || 0),
+            };
+        });
+
+        const cartCount = updatedItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
         localStorage.setItem('cart', JSON.stringify(localCart));
-        localStorage.setItem('cartItemCount', String(localCart.reduce((sum, item) => sum + Number(item.quantity || 0), 0)));
+        localStorage.setItem('cartItemCount', String(cartCount));
         window.dispatchEvent(new Event('cart-updated'));
 
         showToast('Item added to cart!');
