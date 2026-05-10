@@ -20,11 +20,9 @@
             <div class="topbar">
                 <div class="d-flex align-items-center gap-3">
                     <button class="icon-btn mobile-nav-toggle" type="button"><i class="bi bi-list"></i></button>
-                    <a href="my-orders.html"
-                        style="color:var(--text-muted);font-size:.9rem;font-weight:500;transition:var(--transition);"
-                        onmouseover="this.style.color='var(--primary)'"
-                        onmouseout="this.style.color='var(--text-muted)'">
-                        <i class="bi bi-arrow-left me-1"></i>Back to Orders
+                    <a href="my-orders.html" class="order-back-link" aria-label="Back to Orders">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Back to Orders</span>
                     </a>
                     <span class="topbar-title">Order Details</span>
                 </div>
@@ -200,7 +198,7 @@
                             <p class="mb-1" style="font-weight:700;color:var(--text);">Confirm that you received this
                                 order?</p>
                             <p class="mb-0 text-muted" style="font-size:.88rem;">
-                                This will mark the order as delivered and complete the transaction.
+                                This will mark the order as delivered.
                             </p>
                         </div>
                     </div>

@@ -22,7 +22,10 @@
           <button class="icon-btn mobile-nav-toggle" type="button" aria-label="Open navigation">
             <i class="bi bi-list"></i>
           </button>
-          <span style="font-weight:700;font-size:.95rem;">My Profile</span>
+          <div class="topbar-heading">
+            <span class="topbar-title">My Profile</span>
+            <small>Account details and marketplace activity</small>
+          </div>
         </div>
         <div class="topbar-actions">
           <button class="icon-btn" id="profileTopBtn" title="Account" type="button">
@@ -58,30 +61,45 @@
 
             <div class="profile-stat-grid">
               <div class="profile-highlight-card">
-                <strong id="profileStatOrders">-</strong>
-                <span>Orders placed</span>
+                <div class="profile-stat-icon"><i class="bi bi-bag-check-fill"></i></div>
+                <div>
+                  <span>Orders placed</span>
+                  <strong id="profileStatOrders">-</strong>
+                </div>
               </div>
               <div class="profile-highlight-card">
-                <strong id="profileStatListings">-</strong>
-                <span>Active listings</span>
+                <div class="profile-stat-icon"><i class="bi bi-tags-fill"></i></div>
+                <div>
+                  <span>Active listings</span>
+                  <strong id="profileStatListings">-</strong>
+                </div>
               </div>
               <div class="profile-highlight-card">
-                <strong id="profileStatOrdersReceived">0</strong>
-                <span>Orders received</span>
+                <div class="profile-stat-icon"><i class="bi bi-inboxes-fill"></i></div>
+                <div>
+                  <span>Orders received</span>
+                  <strong id="profileStatOrdersReceived">0</strong>
+                </div>
               </div>
               <div class="profile-highlight-card">
-                <strong id="profileStatSpent">PHP 0.00</strong>
-                <span>Total spent</span>
+                <div class="profile-stat-icon"><i class="bi bi-credit-card-fill"></i></div>
+                <div>
+                  <span>Total spent</span>
+                  <strong id="profileStatSpent">₱0.00</strong>
+                </div>
               </div>
               <div class="profile-highlight-card">
-                <strong id="profileStatEarned">PHP 0.00</strong>
-                <span>Total earned</span>
+                <div class="profile-stat-icon"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                  <span>Total earned</span>
+                  <strong id="profileStatEarned">₱0.00</strong>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="profile-layout">
+        <div class="profile-layout profile-layout-single">
           <div class="profile-main">
             <section class="surface-card section-card">
               <div class="section-card-header">
@@ -125,45 +143,6 @@
               </div>
             </section>
           </div>
-
-          <aside class="profile-side">
-            <section class="surface-card section-card profile-side-note">
-              <div class="section-card-header">
-                <div>
-                  <h6>Account Status</h6>
-                  <p>Everything looks ready for buying and selling.</p>
-                </div>
-              </div>
-              <ul>
-                <li><i class="bi bi-check-circle-fill"></i><span>Email address is verified.</span></li>
-                <li><i class="bi bi-check-circle-fill"></i><span>Account is active and in good standing.</span></li>
-                <li><i class="bi bi-check-circle-fill"></i><span>Your listings are visible to buyers right now.</span></li>
-              </ul>
-            </section>
-
-            <section class="surface-card section-card">
-              <div class="section-card-header">
-                <div>
-                  <h6>Seller Snapshot</h6>
-                  <p>Performance from your recent marketplace activity.</p>
-                </div>
-              </div>
-              <div class="detail-list" style="grid-template-columns:1fr;">
-                <div class="profile-detail-card">
-                  <span>Active Listings</span>
-                  <strong id="sellerSnapshotListings">0 active</strong>
-                </div>
-                <div class="profile-detail-card">
-                  <span>Orders Received</span>
-                  <strong id="sellerSnapshotOrders">0 received</strong>
-                </div>
-                <div class="profile-detail-card">
-                  <span>Total Earned</span>
-                  <strong id="sellerSnapshotEarned">PHP 0.00</strong>
-                </div>
-              </div>
-            </section>
-          </aside>
         </div>
       </div>
     </div>

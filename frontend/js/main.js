@@ -268,16 +268,54 @@ function initMobileNav() {
     const sidebar = document.querySelector('.sidebar');
     if (!toggle || !sidebar) return;
 
+    let backdrop = document.querySelector('.sidebar-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        document.body.appendChild(backdrop);
+    }
+
+    const closeSidebar = () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+        document.body.classList.remove('sidebar-open');
+    };
+
+    const openSidebar = () => {
+        sidebar.classList.add('open');
+        backdrop.classList.add('show');
+        document.body.classList.add('sidebar-open');
+    };
+
     toggle.addEventListener('click', e => {
         e.stopPropagation();
-        sidebar.classList.toggle('open');
+        if (sidebar.classList.contains('open')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
     });
+
+    backdrop.addEventListener('click', closeSidebar);
+
     document.addEventListener('click', e => {
         if (sidebar.classList.contains('open') &&
             !sidebar.contains(e.target) &&
             !toggle.contains(e.target)) {
-            sidebar.classList.remove('open');
+            closeSidebar();
         }
+    });
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+            closeSidebar();
+        }
+    });
+
+    sidebar.querySelectorAll('.sidebar-link, .sidebar-user, .sidebar-logout').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 992) closeSidebar();
+        });
     });
 }
 
@@ -365,17 +403,17 @@ function initModalLayoutStabilizer() {
     document.addEventListener('hidden.bs.modal', clearModalScrollbarGap);
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+function runWhenIdle(callback, timeout = 700) {
+    if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(callback, { timeout });
+    } else {
+        setTimeout(callback, 120);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
     const hadSavedSession = Boolean(localStorage.getItem('token') || getUser());
     buildSidebar();
-    const sessionValid = hadSavedSession ? await validateStoredSession() : false;
-
-    if (hadSavedSession && !sessionValid && !isPublicPage()) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    if (sessionValid) buildSidebar();
     enforceAuth();
     populateSidebarUser();
     initLogout();
@@ -385,7 +423,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     initModalLayoutStabilizer();
     updateCartCountBadges();
     applyCachedOrderBadges();
-    updateOrderCountBadges();
+
+    if (hadSavedSession) {
+        runWhenIdle(async () => {
+            const sessionValid = await validateStoredSession();
+            if (!sessionValid && !isPublicPage()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            if (sessionValid) populateSidebarUser();
+        });
+    }
+
+    runWhenIdle(updateOrderCountBadges, 1200);
 });
 
 window.addEventListener('storage', (event) => {

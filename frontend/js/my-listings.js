@@ -39,6 +39,25 @@ function formatSellerAddress(value) {
     return parts.length ? parts.join('<br/>') : '-';
 }
 
+function getSellerOrderItemStatus(order, item) {
+    const orderStatus = order?.status;
+    const itemStatus = item?.status;
+
+    if (orderStatus === 'cancelled' || itemStatus === 'cancelled') {
+        return { className: 'status-sold', text: 'Cancelled', isFinal: true };
+    }
+
+    if (orderStatus === 'delivered') {
+        return { className: 'status-delivered', text: 'Delivered', isFinal: true };
+    }
+
+    if (itemStatus === 'fulfilled') {
+        return { className: 'status-fulfilled', text: 'Fulfilled', isFinal: false };
+    }
+
+    return { className: 'status-pending', text: 'Pending', isFinal: false };
+}
+
 let sellerListings = [];
 let sellerOrders = [];
 let listingCategories = [];
@@ -259,24 +278,14 @@ function renderIncomingOrders(orders) {
         const image = item.product_id?.image_url
             ? `<img src="${sellerEscape(item.product_id.image_url)}" alt="${productName}" />`
             : `<i class="bi bi-image"></i>`;
-        const isCancelled = order.status === 'cancelled' || item.status === 'cancelled';
-        const statusCls = isCancelled
-            ? 'status-sold'
-            : item.status === 'fulfilled'
-                ? 'status-fulfilled'
-                : 'status-pending';
-        const statusTxt = isCancelled
-            ? 'Cancelled'
-            : item.status === 'fulfilled'
-                ? 'Fulfilled'
-                : 'Pending';
+        const displayStatus = getSellerOrderItemStatus(order, item);
 
         const detailBtn = `<button class="btn-sm-action btn-view" title="View order details" aria-label="View order details"
                     onclick="openSellerOrderDetails('${order._id}')">
                     <i class="bi bi-eye-fill"></i><span>View Order Details</span>
                </button>`;
 
-        const actionBtn = !isCancelled && item.status !== 'fulfilled'
+        const actionBtn = !displayStatus.isFinal && item.status !== 'fulfilled'
             ? `<button class="seller-fulfill-btn"
                     onclick="markFulfilled('${order._id}', '${item._id}', this)">
                     <i class="bi bi-check-lg me-1"></i>Mark Fulfilled
@@ -297,7 +306,7 @@ function renderIncomingOrders(orders) {
                 <td data-label="Buyer">${buyerName}</td>
                 <td data-label="Qty">${item.quantity}</td>
                 <td data-label="Total"><strong class="seller-money">${total}</strong></td>
-                <td data-label="Status"><span class="status-badge ${statusCls}">${statusTxt}</span></td>
+                <td data-label="Status"><span class="status-badge ${displayStatus.className}">${displayStatus.text}</span></td>
                 <td data-label="Actions">
                     <div class="seller-row-actions">
                         ${detailBtn}
@@ -355,17 +364,7 @@ function openSellerOrderDetails(orderId) {
             const image = product.image_url
                 ? `<img src="${product.image_url}" alt="${product.name || 'Item'}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`
                 : `<i class="bi bi-image text-muted"></i>`;
-            const isCancelled = order.status === 'cancelled' || item.status === 'cancelled';
-            const itemStatusCls = isCancelled
-                ? 'status-sold'
-                : item.status === 'fulfilled'
-                    ? 'status-fulfilled'
-                    : 'status-pending';
-            const itemStatusTxt = isCancelled
-                ? 'Cancelled'
-                : item.status === 'fulfilled'
-                    ? 'Fulfilled'
-                    : 'Pending';
+            const displayStatus = getSellerOrderItemStatus(order, item);
             const lineTotal = formatCurrency(Number(item.price || 0) * Number(item.quantity || 0));
 
             return `
@@ -376,7 +375,7 @@ function openSellerOrderDetails(orderId) {
                     <div class="seller-order-item-copy">
                         <strong>${product.name || 'Unknown Item'}</strong>
                         <span>Size ${product.size || '-'} - Qty ${item.quantity} - ${formatCurrency(item.price)} each</span>
-                        <span class="status-badge ${itemStatusCls}">${itemStatusTxt}</span>
+                        <span class="status-badge ${displayStatus.className}">${displayStatus.text}</span>
                     </div>
                     <strong class="seller-order-item-total">${lineTotal}</strong>
                 </article>`;
