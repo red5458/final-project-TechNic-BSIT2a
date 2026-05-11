@@ -206,6 +206,16 @@ final-project-TechNic-BSIT2a/
 | Kurt Jushua S. Hernandez | Database Manager, Tester, Debugger |
 | Mharie Franz Registrado | Tester, Debugger |
 
+## Overall Contributions
+
+| Member | Overall Contribution |
+|---|---|
+| Mcxyron B. Cipriano | Developed and maintained the backend of Uniformity, including the Express server, API routes, controllers, authentication flow, protected middleware, order processing, cart handling, product management, admin functions, and Cloudinary image upload support. |
+| Jay L. Romano | Designed and implemented the frontend interface using HTML, CSS, Bootstrap, Bootstrap Icons, and vanilla JavaScript. Built the main user pages for browsing uniforms, viewing product details, managing cart items, checkout, profile, orders, listings, and admin interactions. |
+| Paul Orlando B. Red | Led project coordination and overall task management. Managed GitHub repository organization, documentation, project reports, README preparation, deployment notes, database planning support, and ensured that project files, diagrams, screenshots, and final outputs were organized for submission. |
+| Kurt Jushua S. Hernandez | Assisted with database planning, schema review, testing, and debugging. Helped validate MongoDB/Mongoose models, product and order data behavior, cart and checkout workflows, and supported troubleshooting of backend and frontend issues during integration. |
+| Mharie Franz Registrado | Performed system testing and debugging support across the user workflows. Helped check registration, login, browsing, cart, checkout, buyer order tracking, seller listing management, admin features, responsive layout behavior, and user-facing errors before final deployment. |
+
 ## 🎓 Group Information
 
 **Group Name:** TechNic  
