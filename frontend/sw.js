@@ -1,4 +1,4 @@
-const CACHE_NAME = 'uniformity-cache-v3';
+const CACHE_NAME = 'uniformity-cache-v11';
 
 const APP_SHELL = [
   '/',
@@ -27,8 +27,8 @@ const APP_SHELL = [
   '/js/product-detail.js',
   '/js/admin.js',
   '/img/logo.png',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/img/icon-192.png',
+  '/img/icon-512.png',
   '/manifest.json'
 ];
 

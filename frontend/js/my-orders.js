@@ -22,6 +22,7 @@ async function loadMyOrders() {
         });
         const orders = await res.json();
 
+        window.myOrdersCache = Array.isArray(orders) ? orders : [];
         orders.length === 0 ? renderEmptyOrders() : renderOrders(orders);
     } catch {
         container.innerHTML = `
@@ -37,6 +38,40 @@ function renderOrders(orders) {
     if (!container) return;
 
     container.innerHTML = `<div class="row m-0">${orders.map((order) => buildOrderCard(order)).join('')}</div>`;
+}
+
+function updateCachedOrderStatus(orderId, status) {
+    const orders = window.myOrdersCache || [];
+    const order = orders.find((item) => String(item._id) === String(orderId));
+    if (!order) return null;
+
+    order.status = status;
+    if (Array.isArray(order.items)) {
+        order.items = order.items.map((item) => ({
+            ...item,
+            status: status === 'cancelled' ? 'cancelled' : item.status,
+        }));
+    }
+
+    return order;
+}
+
+function replaceOrderCard(order) {
+    const wrapper = document.querySelector(`[data-order-id="${order._id}"]`);
+    if (!wrapper) return;
+
+    wrapper.outerHTML = buildOrderCard(order);
+}
+
+function removeOrderCard(orderId) {
+    const wrapper = document.querySelector(`[data-order-id="${orderId}"]`);
+    if (wrapper) wrapper.remove();
+
+    window.myOrdersCache = (window.myOrdersCache || []).filter((order) => String(order._id) !== String(orderId));
+
+    if (!document.querySelector('[data-order-id]')) {
+        renderEmptyOrders();
+    }
 }
 
 function buildOrderCard(order) {
@@ -93,7 +128,7 @@ function buildOrderCard(order) {
         : `<i class="bi bi-image"></i>`;
 
     return `
-        <div class="col-12 mb-3">
+        <div class="col-12 mb-3" data-order-id="${order._id}">
             <div class="order-card"
                 style="border:1px solid var(--border);border-radius:var(--radius);padding:1rem;background:#fff;cursor:pointer;transition:transform 0.1s,box-shadow 0.1s;"
                 onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)';"
@@ -153,11 +188,11 @@ async function submitCancelConfirmation() {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Cancelling...';
+        btn.style.opacity = '0.65';
     }
     if (confirmBtn) {
         confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cancelling...';
+        confirmBtn.style.opacity = '0.65';
     }
 
     try {
@@ -173,18 +208,21 @@ async function submitCancelConfirmation() {
 
         pendingCancelConfirmation = null;
         showToast('Order cancelled.');
-        await loadMyOrders();
+        const updatedOrder = updateCachedOrderStatus(orderId, 'cancelled');
+        if (updatedOrder) replaceOrderCard(updatedOrder);
         window.dispatchEvent(new Event('orders-updated'));
     } catch (err) {
         showToast(err.message || 'Could not cancel order.', 'error');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
+            btn.style.opacity = '';
         }
     } finally {
         if (confirmBtn) {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalConfirmText;
+            confirmBtn.style.opacity = '';
         }
     }
 }
@@ -210,11 +248,11 @@ async function submitReceiptConfirmation() {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Saving...';
+        btn.style.opacity = '0.65';
     }
     if (confirmBtn) {
         confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+        confirmBtn.style.opacity = '0.65';
     }
 
     try {
@@ -230,18 +268,21 @@ async function submitReceiptConfirmation() {
 
         pendingReceiptConfirmation = null;
         showToast('Order marked as received.');
-        await loadMyOrders();
+        const updatedOrder = updateCachedOrderStatus(orderId, 'delivered');
+        if (updatedOrder) replaceOrderCard(updatedOrder);
         window.dispatchEvent(new Event('orders-updated'));
     } catch (err) {
         showToast(err.message || 'Could not confirm receipt.', 'error');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
+            btn.style.opacity = '';
         }
     } finally {
         if (confirmBtn) {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalConfirmText;
+            confirmBtn.style.opacity = '';
         }
     }
 }
@@ -267,11 +308,11 @@ async function submitDeleteConfirmation() {
 
     if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Deleting...';
+        btn.style.opacity = '0.65';
     }
     if (confirmBtn) {
         confirmBtn.disabled = true;
-        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
+        confirmBtn.style.opacity = '0.65';
     }
 
     try {
@@ -287,18 +328,20 @@ async function submitDeleteConfirmation() {
 
         pendingDeleteConfirmation = null;
         showToast('Order removed from My Orders.');
-        await loadMyOrders();
+        removeOrderCard(orderId);
         window.dispatchEvent(new Event('orders-updated'));
     } catch (err) {
         showToast(err.message || 'Could not delete order.', 'error');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = originalText;
+            btn.style.opacity = '';
         }
     } finally {
         if (confirmBtn) {
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = originalConfirmText;
+            confirmBtn.style.opacity = '';
         }
     }
 }
