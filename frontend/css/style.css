@@ -3670,10 +3670,12 @@ body.landing-page {
 }
 
 .seller-card {
-  background: var(--bg-soft);
+  background: linear-gradient(135deg, rgba(240, 244, 238, .95), rgba(224, 239, 229, .95));
+  border: 1px solid rgba(82, 183, 136, .28);
   border-radius: var(--radius);
   padding: 1.5rem;
   margin-top: .25rem;
+  box-shadow: 0 10px 28px rgba(45, 106, 79, .08);
 }
 
 .detail-listed-date {
@@ -3687,7 +3689,7 @@ body.landing-page {
 .seller-card h6 {
   font-size: .75rem;
   margin-bottom: 1rem;
-  color: var(--text-muted);
+  color: var(--primary-dark);
   text-transform: uppercase;
   letter-spacing: 1px;
   font-family: 'Poppins', sans-serif;
@@ -3827,17 +3829,19 @@ body.landing-page {
   white-space: nowrap;
 }
 
-.seller-contact-panel {
-  margin-top: 0;
-  padding-top: 0;
-  border-top: 0;
-}
-
 .seller-card-layout {
   display: grid;
   grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr);
   gap: 1.5rem;
   align-items: center;
+}
+
+.seller-contact-panel {
+  margin-top: 0;
+  padding: 1rem;
+  border: 1px solid rgba(82, 183, 136, .22);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, .72);
 }
 
 .seller-contact-heading {
@@ -3873,7 +3877,7 @@ body.landing-page {
   padding: .55rem .85rem;
   border-radius: 999px;
   background: #fff;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(82, 183, 136, .35);
   color: var(--primary-dark);
   font-size: .82rem;
   font-weight: 700;
@@ -4405,6 +4409,7 @@ textarea {
 
 .profile-highlight-card>div:last-child {
   min-width: 0;
+  flex: 1;
 }
 
 .profile-highlight-card strong {
@@ -4414,9 +4419,8 @@ textarea {
   color: #fff;
   line-height: 1.15;
   margin-top: .18rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .profile-highlight-card span {
@@ -4426,7 +4430,7 @@ textarea {
   font-weight: 600;
   letter-spacing: .06em;
   text-transform: uppercase;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .profile-stat-icon {
@@ -4821,6 +4825,31 @@ textarea {
 
   .profile-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .7rem;
+  }
+
+  .profile-highlight-card {
+    align-items: flex-start;
+    gap: .65rem;
+    padding: .78rem;
+  }
+
+  .profile-highlight-card strong {
+    font-size: .92rem;
+    line-height: 1.2;
+  }
+
+  .profile-highlight-card span {
+    font-size: .62rem;
+    line-height: 1.25;
+    letter-spacing: .035em;
+  }
+
+  .profile-stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    font-size: .85rem;
   }
 
   .seller-stats-grid {
@@ -6217,7 +6246,16 @@ button:active,
 
   .seller-contact-panel {
     padding-top: 1rem;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(82, 183, 136, .22);
+  }
+
+  .seller-contact-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .seller-contact-btn {
+    width: 100%;
   }
 
   .you-may-like-section {
@@ -6258,6 +6296,19 @@ button:active,
   .order-card-sub,
   .order-card-title {
     overflow-wrap: anywhere;
+  }
+
+  .profile-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-highlight-card {
+    align-items: center;
+    padding: .85rem;
+  }
+
+  .profile-highlight-card strong {
+    font-size: 1rem;
   }
 
   .section-card-header {
@@ -6991,5 +7042,128 @@ button:active,
     grid-column: 2 / 3;
     justify-self: start;
     margin-top: -.25rem;
+  }
+
+  .profile-stat-grid {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    grid-template-columns: 1fr !important;
+    gap: .7rem;
+    justify-items: stretch;
+  }
+
+  .profile-highlight-card {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr);
+    align-items: start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    gap: .6rem;
+    padding: .78rem;
+  }
+
+  .profile-highlight-card>div:last-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .profile-highlight-card span,
+  .profile-highlight-card strong {
+    max-width: 100%;
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+
+  .profile-highlight-card span {
+    display: block;
+    font-size: .64rem;
+    line-height: 1.25;
+    letter-spacing: .015em;
+  }
+
+  .profile-highlight-card strong {
+    display: block;
+    font-size: clamp(.88rem, 4.5vw, 1rem);
+    line-height: 1.2;
+  }
+
+  .profile-header,
+  .profile-header-inner,
+  .profile-identity,
+  .profile-meta-list,
+  .profile-meta-pill,
+  .profile-header-actions,
+  .profile-copy,
+  .profile-main,
+  .profile-layout,
+  .profile-layout-single {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .profile-meta-list {
+    gap: .55rem;
+    margin-top: .75rem;
+  }
+
+  .profile-meta-pill {
+    border-radius: 14px;
+    padding: .5rem .65rem;
+    font-size: .74rem;
+    line-height: 1.25;
+  }
+
+  .profile-meta-pill span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .profile-header-actions .btn,
+  .profile-header-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100%;
+    padding: .68rem .8rem !important;
+    font-size: .82rem;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 380px) {
+  .profile-header {
+    padding-left: .75rem;
+    padding-right: .75rem;
+  }
+
+  .profile-highlight-card {
+    grid-template-columns: 28px minmax(0, 1fr);
+    padding: .7rem;
+  }
+
+  .profile-stat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: .78rem;
+  }
+
+  .profile-meta-pill {
+    align-items: flex-start;
+    gap: .38rem;
+    padding: .48rem .58rem;
+    font-size: .7rem;
+  }
+
+  .profile-header-actions .btn,
+  .profile-header-actions button {
+    padding: .62rem .7rem !important;
+    font-size: .78rem;
   }
 }
