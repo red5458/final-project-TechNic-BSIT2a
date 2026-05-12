@@ -67,6 +67,10 @@ JWT_SECRET=your_jwt_secret
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
+GMAIL_CLIENT_ID=your_google_oauth_client_id
+GMAIL_CLIENT_SECRET=your_google_oauth_client_secret
+GMAIL_REFRESH_TOKEN=your_google_oauth_refresh_token
+GMAIL_USER=your_gmail_sender_address
 ```
 
 ### 3. Seed categories if needed
@@ -122,6 +126,8 @@ x-auth-token: your_jwt_here
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
 | POST | `/register` | Register user and return JWT | No |
+| POST | `/verify-email` | Verify registration OTP and return JWT | No |
+| POST | `/resend-otp` | Send a new registration OTP | No |
 | POST | `/login` | Login and get JWT | No |
 | GET | `/me` | Get current logged-in user | Yes |
 

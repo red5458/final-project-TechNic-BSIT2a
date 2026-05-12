@@ -167,6 +167,9 @@ async function finishLogin(token) {
 //  POST /api/auth/register
 // ============================================
 const registerForm = document.getElementById('registerForm');
+const verifyOtpForm = document.getElementById('verifyOtpForm');
+let pendingVerificationEmail = '';
+
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -216,13 +219,93 @@ if (registerForm) {
             const data = await res.json();
             if (!res.ok) throw new Error(data.msg || 'Registration failed.');
 
-            await finishLogin(data.token);
-            showToast('Account created successfully! Redirecting...');
-            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+            if (data.requiresVerification) {
+                pendingVerificationEmail = data.email || email;
+                const emailLabel = document.getElementById('otpEmailLabel');
+                if (emailLabel) emailLabel.textContent = pendingVerificationEmail;
+
+                registerForm.style.display = 'none';
+                if (verifyOtpForm) verifyOtpForm.style.display = 'block';
+                showToast('OTP sent. Please check your email.');
+                return;
+            }
+
+            if (data.token) {
+                await finishLogin(data.token);
+                showToast('Account created successfully! Redirecting...');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+            }
 
         } catch (err) {
             setLoading(btn, false, originalText);
             showToast(err.message || 'Something went wrong. Try again.', 'error');
+        }
+    });
+}
+
+if (verifyOtpForm) {
+    verifyOtpForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAllErrors(verifyOtpForm);
+
+        const otpInput = verifyOtpForm.querySelector('[name="otp"]');
+        const btn = document.getElementById('verifyOtpBtn');
+        const originalText = btn.innerHTML;
+        const otp = otpInput.value.trim();
+
+        if (!/^\d{6}$/.test(otp)) {
+            showFieldError(otpInput, 'Enter the 6-digit OTP from your email.');
+            return;
+        }
+
+        setLoading(btn, true);
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingVerificationEmail, otp }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'OTP verification failed.');
+
+            await finishLogin(data.token);
+            showToast('Email verified! Redirecting...');
+            setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+        } catch (err) {
+            setLoading(btn, false, originalText);
+            showToast(err.message || 'Could not verify OTP.', 'error');
+        }
+    });
+}
+
+const resendOtpBtn = document.getElementById('resendOtpBtn');
+if (resendOtpBtn) {
+    resendOtpBtn.addEventListener('click', async () => {
+        if (!pendingVerificationEmail) {
+            showToast('Register first so we know where to send the OTP.', 'error');
+            return;
+        }
+
+        const originalText = resendOtpBtn.innerHTML;
+        resendOtpBtn.disabled = true;
+        resendOtpBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Sending...';
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/resend-otp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: pendingVerificationEmail }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.msg || 'Could not resend OTP.');
+
+            showToast('A new OTP has been sent.');
+        } catch (err) {
+            showToast(err.message || 'Could not resend OTP.', 'error');
+        } finally {
+            resendOtpBtn.disabled = false;
+            resendOtpBtn.innerHTML = originalText;
         }
     });
 }
