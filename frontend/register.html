@@ -96,6 +96,27 @@
               </button>
             </form>
 
+            <form id="verifyOtpForm" action="#" method="POST" style="display:none;">
+              <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.86rem;">
+                We sent a 6-digit OTP to <strong id="otpEmailLabel"></strong>.
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="otpCode">Verification Code</label>
+                <div class="input-icon-wrap">
+                  <i class="bi bi-shield-lock-fill"></i>
+                  <input type="text" class="form-control" id="otpCode" name="otp" placeholder="Enter 6-digit OTP"
+                    inputmode="numeric" maxlength="6" required />
+                </div>
+              </div>
+              <button type="submit" class="btn-auth" id="verifyOtpBtn">
+                <i class="bi bi-check-circle-fill me-2"></i>Verify Email
+              </button>
+              <button type="button" class="btn btn-link w-100 mt-2" id="resendOtpBtn"
+                style="color:var(--primary);font-weight:600;text-decoration:none;">
+                Resend code
+              </button>
+            </form>
+
             <div class="auth-divider"><span>or</span></div>
 
             <div class="auth-footer-link">
@@ -113,7 +134,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/api.js"></script>
+  <script src="js/api.js?v=email-otp"></script>
   <script src="js/main.js"></script>
 </body>
 
