@@ -73,6 +73,33 @@ async function sendOtpEmail(to, otp) {
     });
 }
 
+async function sendPasswordResetOtpEmail(to, otp) {
+    assertGmailConfig();
+
+    const html = `
+        <div style="font-family:Arial,sans-serif;line-height:1.5;color:#1f2937;">
+            <h2 style="color:#2D6A4F;">Reset your password</h2>
+            <p>Your Uniformity password reset code is:</p>
+            <p style="font-size:28px;font-weight:700;letter-spacing:4px;margin:16px 0;">${otp}</p>
+            <p>This code expires in 10 minutes.</p>
+            <p style="color:#6b7280;font-size:13px;">If you did not request a password reset, you can ignore this email.</p>
+        </div>
+    `;
+
+    const raw = makeEmail({
+        to,
+        subject: 'Your Uniformity password reset code',
+        html,
+        text: `Your Uniformity password reset code is ${otp}. This code expires in 10 minutes.`,
+    });
+
+    return gmail.users.messages.send({
+        userId: 'me',
+        requestBody: { raw },
+    });
+}
+
 module.exports = {
     sendOtpEmail,
+    sendPasswordResetOtpEmail,
 };

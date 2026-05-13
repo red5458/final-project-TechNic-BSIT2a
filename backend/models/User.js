@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
   isEmailVerified: { type: Boolean, default: false },
   emailVerificationOtpHash: { type: String, default: null },
   emailVerificationOtpExpiresAt: { type: Date, default: null },
+  passwordResetOtpHash: { type: String, default: null },
+  passwordResetOtpExpiresAt: { type: Date, default: null },
   created_at: { type: Date, default: Date.now }
 });
 

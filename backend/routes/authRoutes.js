@@ -7,6 +7,8 @@ const {
     getMe,
     verifyEmail,
     resendOtp,
+    forgotPassword,
+    resetPassword,
 } = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
@@ -21,6 +23,12 @@ router.post('/resend-otp', resendOtp);
 
 // POST /api/auth/login - Log in
 router.post('/login', login);
+
+// POST /api/auth/forgot-password - Send reset OTP
+router.post('/forgot-password', forgotPassword);
+
+// POST /api/auth/reset-password - Reset password using OTP
+router.post('/reset-password', resetPassword);
 
 // GET /api/auth/me - Get logged-in user profile
 router.get('/me', auth, getMe);

@@ -2,7 +2,7 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sendOtpEmail } = require('../utils/gmailSender');
+const { sendOtpEmail, sendPasswordResetOtpEmail } = require('../utils/gmailSender');
 
 const OTP_EXPIRES_IN_MINUTES = 10;
 
@@ -35,6 +35,17 @@ async function setAndSendVerificationOtp(user) {
 
     await user.save();
     await sendOtpEmail(user.email, otp);
+}
+
+async function setAndSendPasswordResetOtp(user) {
+    const otp = generateOtp();
+    const salt = await bcrypt.genSalt(10);
+
+    user.passwordResetOtpHash = await bcrypt.hash(otp, salt);
+    user.passwordResetOtpExpiresAt = new Date(Date.now() + OTP_EXPIRES_IN_MINUTES * 60 * 1000);
+
+    await user.save();
+    await sendPasswordResetOtpEmail(user.email, otp);
 }
 
 // @desc    Register a new user
@@ -165,7 +176,7 @@ exports.login = async (req, res) => {
         // 1. Check if user exists
         let user = await User.findOne({ email: normalizedEmail });
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(404).json({ msg: 'Email is not registered.' });
         }
 
         if (user.status === 'disabled') {
@@ -179,10 +190,84 @@ exports.login = async (req, res) => {
         // 2. Compare password with hashed password in DB
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
+            return res.status(400).json({ msg: 'Password is incorrect.' });
         }
 
         signToken(user.id, res);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Send password reset OTP
+// @route   POST /api/auth/forgot-password
+exports.forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(404).json({ msg: 'Email is not registered.' });
+        }
+
+        if (user.status === 'disabled') {
+            return res.status(403).json({ msg: 'This account has been disabled.' });
+        }
+
+        await setAndSendPasswordResetOtp(user);
+        res.json({
+            msg: 'Password reset code sent. Please check your email.',
+            email: user.email,
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// @desc    Reset password with OTP
+// @route   POST /api/auth/reset-password
+exports.resetPassword = async (req, res) => {
+    const { email, otp, password } = req.body;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedOtp = String(otp || '').trim();
+
+    try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+            return res.status(404).json({ msg: 'Email is not registered.' });
+        }
+
+        if (user.status === 'disabled') {
+            return res.status(403).json({ msg: 'This account has been disabled.' });
+        }
+
+        if (!password || password.length < 8) {
+            return res.status(400).json({ msg: 'Password must be at least 8 characters.' });
+        }
+
+        if (!user.passwordResetOtpHash || !user.passwordResetOtpExpiresAt) {
+            return res.status(400).json({ msg: 'No active reset code found. Please request a new code.' });
+        }
+
+        if (user.passwordResetOtpExpiresAt < new Date()) {
+            return res.status(400).json({ msg: 'Reset code has expired. Please request a new code.' });
+        }
+
+        const isMatch = await bcrypt.compare(normalizedOtp, user.passwordResetOtpHash);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid reset code.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        user.passwordResetOtpHash = null;
+        user.passwordResetOtpExpiresAt = null;
+        await user.save();
+
+        res.json({ msg: 'Password reset successfully. You can now log in.' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
