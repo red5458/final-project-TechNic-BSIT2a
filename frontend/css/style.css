@@ -43,6 +43,10 @@ html {
   scrollbar-gutter: stable;
 }
 
+.auth-card {
+  min-height: 520px;
+}
+
 html.modal-scroll-locked {
   overflow-y: hidden !important;
 }
