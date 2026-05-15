@@ -16,7 +16,7 @@
   <a href="https://final-project-technic-bsit2a.onrender.com">
     <img src="https://img.shields.io/badge/LIVE%20DEMO-Open%20App-2D6A4F?style=for-the-badge&logo=render&logoColor=white" alt="Live Demo"/>
   </a>
-  <img src="https://img.shields.io/badge/VERSION-1.0-95B8A4?style=for-the-badge" alt="Version 1.0"/>
+  <img src="https://img.shields.io/badge/VERSION-v1.0.1-95B8A4?style=for-the-badge" alt="Version v1.0.1"/>
 </p>
 
 <p align="center">
@@ -29,6 +29,7 @@
   <img src="https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white" alt="MongoDB"/>
   <img src="https://img.shields.io/badge/Render-000000?style=flat&logo=render&logoColor=white" alt="Render"/>
   <img src="https://img.shields.io/badge/Cloudinary-3448C5?style=flat&logo=cloudinary&logoColor=white" alt="Cloudinary"/>
+  <img src="https://img.shields.io/badge/Gmail%20API-EA4335?style=flat&logo=gmail&logoColor=white" alt="Gmail API"/>
   <img src="https://img.shields.io/badge/PWA-5A0FC8?style=flat&logo=pwa&logoColor=white" alt="PWA"/>
 </p>
 
@@ -42,7 +43,7 @@ The application is served as a single Render web service. The Express backend pr
 
 ## ✨ Features
 
-- 🔐 User registration, login, JWT authentication, and protected routes
+- 🔐 User registration with Gmail API OTP email verification, login, JWT authentication, and protected routes
 - 👥 Student account flow that can act as both buyer and seller
 - 🔎 Product browsing with search, category/size filters, sorting, and pagination
 - 🧵 Product detail page with seller contact area, image preview overlay, and related products
@@ -71,7 +72,8 @@ Open the deployed project here:
 | Bootstrap 5 | JSON Web Token | Cloudinary | VS Code |
 | Bootstrap Icons | bcryptjs |  | Chrome DevTools |
 | Vanilla JavaScript | Multer |  |  |
-| PWA Manifest & Service Worker | dotenv |  |  |
+| PWA Manifest & Service Worker | googleapis Gmail API |  |  |
+|  | dotenv |  |  |
 
 ## ⚙️ Installation Instructions
 
@@ -105,6 +107,19 @@ GMAIL_CLIENT_SECRET=your_google_oauth_client_secret
 GMAIL_REFRESH_TOKEN=your_google_oauth_refresh_token
 GMAIL_USER=your_gmail_sender_address
 ```
+
+The Gmail values are used for OTP email verification during registration. `GMAIL_USER` should match the Gmail account that authorized the OAuth refresh token.
+
+### Gmail OTP Setup
+
+Uniformity sends registration OTP codes through the Gmail API instead of SMTP. To configure it:
+
+1. Enable the Gmail API in Google Cloud Console.
+2. Configure the OAuth consent screen and add the sender Gmail as a test user if the app is still in testing mode.
+3. Create an OAuth client and generate a refresh token with the `https://www.googleapis.com/auth/gmail.send` scope.
+4. Add `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, and `GMAIL_USER` to `backend/.env` and Render environment variables.
+
+During registration, the backend creates the account as unverified, sends a 6-digit OTP to the provided email address, and only returns a JWT after the user submits the correct OTP.
 
 ### 4. Run the App Locally
 
@@ -230,5 +245,6 @@ final-project-TechNic-BSIT2a/
 
 - `node_modules/` and `.env` are excluded through `.gitignore`.
 - Runtime secrets should stay inside `backend/.env` and should not be committed.
+- Gmail OAuth secrets and refresh tokens should be treated like passwords and regenerated if exposed.
 - PWA files are intentionally kept in `frontend/` because that folder is served as the site root.
 - Documentation assets are kept in `docs/` for lab reports, planning diagrams, and screenshots.
